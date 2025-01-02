@@ -2,9 +2,10 @@ from sqlalchemy import Column, Integer, String
 from .database import Base
 
 class TeachingPlan(Base):
-    __tablename__ = 'teahcing_plan'
-    tp_name = Column(String, primary_key=True, index=True)
-    writer_name = Column(String, primary_key=True, index=True)
+    __tablename__ = 'teaching_plan'
+    id = Column(Integer, primary_key=True, autoincrement=True) 
+    tp_name = Column(String)
+    writer_name = Column(String)
     team = Column(String)
     semester = Column(String)
     category = Column(String)
