@@ -49,7 +49,7 @@ def search_teaching_plans(
     # 作者搜尋
     if filters.writer_name:
         query = query.filter(TeachingPlan.writer_name.ilike(f"%{filters.writer_name}%"))
-
+    print(query.all())
     try:
         results = query.all()
         return {

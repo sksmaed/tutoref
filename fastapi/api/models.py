@@ -1,9 +1,9 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, Float, String, Text, ForeignKey
+from sqlalchemy.orm import relationship
 from .database import Base
 
 class TeachingPlan(Base):
     __tablename__ = 'teaching_plan'
-    id = Column(Integer, primary_key=True, autoincrement=True) 
     tp_name = Column(String)
     writer_name = Column(String)
     team = Column(String)
@@ -19,6 +19,14 @@ class TeachingPlan(Base):
     sheet_pdf = Column(String)
     slide_pptx = Column(String)
     slide_pdf = Column(String)
+    id = Column(Integer, primary_key=True, autoincrement=True) 
+
+class SearchContent(Base):
+    __tablename__ = "search_contents"
+    
+    teaching_plan_id = Column(Integer, ForeignKey("teaching_plan.id"), primary_key=True)
+    content = Column(Text, nullable=False)
+    similarity_score = Column(Float)
     
 class Admin(Base):
     __tablename__ = 'admin'
