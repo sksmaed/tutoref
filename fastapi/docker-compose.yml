@@ -21,12 +21,22 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "cluster.routing.allocation.disk.threshold_enabled=false"  # 暫時關閉磁碟閾值檢查
+      - "cluster.routing.allocation.disk.watermark.low=95%" 
+      - "cluster.routing.allocation.disk.watermark.high=98%"
+      - "cluster.routing.allocation.disk.watermark.flood_stage=99%"
     ports:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+        reservations:
+          memory: 1g
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cat/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -38,8 +48,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     environment:
       DATABASE_URL: ${DATABASE_URL}
       ELASTICSEARCH_URL: http://elasticsearch:9200

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List, Optional
@@ -17,68 +17,64 @@ class SearchFilters(BaseModel):
     writer_name: Optional[str] = None
 
 @router.post("/api/search")
-def search_teaching_plans(
+async def search_teaching_plans(
+    request: Request,
     filters: SearchFilters,
     db: Session = Depends(get_db)
 ):
-    query = db.query(TeachingPlan)
-
-    # 套用篩選條件
-    if filters.semester:
-        query = query.filter(TeachingPlan.semester.in_(filters.semester))
-    
-    if filters.category:
-        query = query.filter(TeachingPlan.category.in_(filters.category))
-    
-    if filters.duration:
-        query = query.filter(TeachingPlan.duration.in_(filters.duration))
-    
-    if filters.grade:
-        query = query.filter(TeachingPlan.grade.in_(filters.grade))
-
-    # 關鍵字搜尋
-    if filters.keyword:
-        query = query.filter(
-            or_(
-                TeachingPlan.tp_name.ilike(f"%{filters.keyword}%"),
-                TeachingPlan.outline.ilike(f"%{filters.keyword}%"),
-                TeachingPlan.objectives.ilike(f"%{filters.keyword}%")
-            )
-        )
-
-    # 作者搜尋
-    if filters.writer_name:
-        query = query.filter(TeachingPlan.writer_name.ilike(f"%{filters.writer_name}%"))
-    print(query.all())
     try:
-        results = query.all()
+        # 構建 ES 搜尋查詢
+        es_query = {
+            "bool": {
+                "must": [],
+                "filter": []
+            }
+        }
+        
+        # 添加關鍵字搜尋
+        if filters.keyword:
+            es_query["bool"]["must"].append({
+                "multi_match": {
+                    "query": filters.keyword,
+                    "fields": ["tp_name", "content"]
+                }
+            })
+        
+        # 添加過濾條件
+        for field in ["semester", "category", "grade"]:
+            if getattr(filters, field):
+                es_query["bool"]["filter"].append({
+                    "terms": {field: getattr(filters, field)}
+                })
+        
+        # 執行 ES 搜尋
+        es_results = await request.app.state.es_client.search(
+            {"query": es_query}
+        )
+        
+        # 獲取結果 ID 和分數
+        result_ids = []
+        scores = {}
+        for hit in es_results["hits"]["hits"]:
+            result_id = int(hit["_id"].split("_")[0])
+            result_ids.append(result_id)
+            scores[result_id] = hit["_score"]
+        
+        # 從資料庫獲取完整資料
+        teaching_plans = db.query(TeachingPlan).filter(
+            TeachingPlan.id.in_(result_ids)
+        ).all()
+        
+        print(scores)
+        # 更新相似度分數
+        for plan in teaching_plans:
+            if plan.search_content:
+                plan.search_content.similarity_score = scores.get(plan.id)
+        
         return {
             "status": "success",
-            "data": [
-                {
-                    "id": plan.id,
-                    "team": plan.team,
-                    "semester": plan.semester,
-                    "writer_name": plan.writer_name,
-                    "category": plan.category,
-                    "tp_name": plan.tp_name,
-                    "grade": plan.grade,
-                    "duration": plan.duration,
-                    "staffing": plan.staffing,
-                    "venue": plan.venue,
-                    "objectives": plan.objectives,
-                    "outline": plan.outline,
-                    "sheet_docx": plan.sheet_docx,
-                    "sheet_pdf": plan.sheet_pdf,
-                    "slide_pptx": plan.slide_pptx,
-                    "slide_pdf": plan.slide_pdf,
-                }
-                for plan in results
-            ],
-            "count": len(results)
+            "data": [plan for plan in teaching_plans],
+            "count": len(teaching_plans)
         }
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Database error: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=str(e))

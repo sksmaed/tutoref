@@ -8,4 +8,8 @@ python-multipart
 pytest
 pytest-asyncio
 PyJWT
-alembic
+aiohttp
+PyPDF2
+sentence-transformers
+elasticsearch
+numpy
