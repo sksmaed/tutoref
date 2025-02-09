@@ -28,9 +28,9 @@ class TeachingPlanProcessor:
         semester = f"{semester_match.group(1)}-{semester_match.group(2)}" if semester_match else ""
 
         # 提取家別
-        team_match = re.search(r'家別\s*[□■](加拿|新武|霧鹿|利稻|電光)', text)
+        team_match = re.search(r'■\s*(加拿|新武|霧鹿|利稻|電光)', text)
         team = team_match.group(1) if team_match else ""
-
+        
         # 基本資料映射
         basic_info = {
             'tp_name': self._extract_field(text, r'課程名稱\s*(.*?)\s*(?:課程目標|$)'),
@@ -47,9 +47,9 @@ class TeachingPlanProcessor:
         }
 
         # 提取流程內容
-        content = self._extract_procedure_content(text)
+        # content = self._extract_procedure_content(text)
         
-        return basic_info, content
+        return basic_info
 
     def _extract_field(self, text: str, pattern: str) -> str:
         """提取特定欄位內容"""

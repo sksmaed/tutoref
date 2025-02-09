@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { TeachingPlan } from '../../types/api';
-import { DURATION_MAP } from '@/lib/constant';
+import { DURATION_MAP, SEMESTER_MAP } from '@/lib/constant';
 
 interface LessonPlanModalProps {
   isOpen: boolean;
@@ -40,7 +40,7 @@ const LessonPlanModal: React.FC<LessonPlanModalProps> = ({
                 <td className="border px-4 py-2 bg-gray-50 text-center font-medium">家別</td>
                 <td className="border px-4 py-2 text-center">{lessonData.team}</td>
                 <td className="border px-4 py-2 bg-gray-50 text-center font-medium">期數</td>
-                <td className="border px-4 py-2 text-center">{lessonData.semester}</td>
+                <td className="border px-4 py-2 text-center">{SEMESTER_MAP[lessonData.semester] || `${lessonData.semester}`}</td>
                 <td className="border px-4 py-2 bg-gray-50 text-center font-medium">撰寫者</td>
                 <td className="border px-4 py-2 text-center">{lessonData.writer_name}</td>
               </tr>

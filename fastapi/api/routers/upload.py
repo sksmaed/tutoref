@@ -33,28 +33,27 @@ async def upload_teaching_plan(
         text = processor.extract_pdf_text(temp_path)
         
         # 解析教案內容
-        basic_info, procedure_content = processor.parse_teaching_plan(text)
-        
-        # 生成 embeddings
-        embeddings = processor.generate_embeddings(procedure_content)
+        basic_info = processor.parse_teaching_plan(text)
+
+        doc = {
+            "semester": basic_info["semester"],
+            "category": basic_info["category"],
+            "grade": basic_info["grade"],
+            "duration": basic_info["duration"],
+            "writer_name": basic_info["writer_name"],
+            "objectives": basic_info["objectives"],
+            "outline": basic_info["outline"],
+        }
         
         # 創建教案記錄
         teaching_plan = models.TeachingPlan(**basic_info)
         db.add(teaching_plan)
         db.flush()  # 獲取 ID
         
-        # 創建搜索內容記錄
-        search_content = models.SearchContent(
-            teaching_plan_id=teaching_plan.id,
-            content=procedure_content
-        )
-        db.add(search_content)
-        
         # 更新 Elasticsearch
         await request.app.state.es_client.index_teaching_plan(
-            teaching_plan=teaching_plan.__dict__,
-            search_content={"content": procedure_content},
-            embeddings_data=embeddings
+            teaching_plan_id=str(teaching_plan.id),
+            doc=doc
         )
         
         db.commit()

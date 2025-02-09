@@ -1,6 +1,9 @@
 from elasticsearch import AsyncElasticsearch
 import logging
 from typing import Dict, List, Optional
+from .utils.doc_preprocessor import TeachingPlanProcessor
+
+processor = TeachingPlanProcessor()
 
 class ESClient:
     def __init__(self, elasticsearch_url: str):
@@ -23,23 +26,9 @@ class ESClient:
         
         mappings = {
             "properties": {
-                "tp_name": {"type": "text", "analyzer": "custom_analyzer"},
-                "writer_name": {"type": "keyword"},
-                "team": {"type": "keyword"},
-                "semester": {"type": "keyword"},
-                "category": {"type": "keyword"},
-                "grade": {"type": "keyword"},
                 "objectives": {"type": "text", "analyzer": "custom_analyzer"},
                 "outline": {"type": "text", "analyzer": "custom_analyzer"},
-                "content": {"type": "text", "analyzer": "custom_analyzer"},
-                "text_chunks": {
-                    "type": "text",
-                    "analyzer": "custom_analyzer"
-                },
-                "embeddings": {
-                    "type": "dense_vector",
-                    "dims": 384  # MiniLM-L12 輸出維度
-                }
+                "content": {"type": "text", "analyzer": "custom_analyzer"}
             }
         }
 
@@ -52,70 +41,73 @@ class ESClient:
             )
             logging.info(f"Created index {self.index_name}")
 
-    async def index_teaching_plan(self, 
-                                teaching_plan: Dict, 
-                                search_content: Optional[Dict] = None,
-                                embeddings_data: Optional[Dict] = None):
-        """索引教案文檔與向量"""
-        doc = {
-            "tp_name": teaching_plan["tp_name"],
-            "writer_name": teaching_plan["writer_name"],
-            "team": teaching_plan["team"],
-            "semester": teaching_plan["semester"],
-            "category": teaching_plan["category"],
-            "grade": teaching_plan["grade"],
-            "objectives": teaching_plan["objectives"],
-            "outline": teaching_plan["outline"]
-        }
-        
-        if search_content:
-            doc["content"] = search_content["content"]
-            
-        if embeddings_data:
-            # 確保每個文本塊和對應的向量以正確的格式儲存
-            docs = []
-            for chunk, embedding in zip(embeddings_data["chunks"], embeddings_data["embeddings"]):
-                chunk_doc = doc.copy()
-                chunk_doc["text_chunks"] = chunk
-                chunk_doc["embeddings"] = embedding  # 確保 embedding 是一個一維數組
-                docs.append(chunk_doc)
-            
-            # 批量索引文檔
-            body = []
-            for i, chunk_doc in enumerate(docs):
-                body.extend([
-                    {"index": {"_index": self.index_name, "_id": f"{teaching_plan['id']}_{i}"}},
-                    chunk_doc
-                ])
-            
-            await self.client.bulk(operations=body)
-        else:
-            # 如果沒有 embeddings，就只索引基本文檔
+    async def index_teaching_plan(self, teaching_plan_id: str, doc: Dict):
+        """
+        索引教案文檔
+        :param teaching_plan_id: 教案ID
+        :param doc: 包含 objectives, outline 和 content 的文檔
+        """
+        try:
             await self.client.index(
                 index=self.index_name,
-                id=teaching_plan["id"],
+                id=teaching_plan_id,
                 document=doc
             )
-    
-    async def search(self, query: Dict, filters: Optional[Dict] = None) -> List[Dict]:
+            logging.info(f"Indexed teaching plan {teaching_plan_id}")
+        except Exception as e:
+            logging.error(f"Error indexing teaching plan: {str(e)}")
+            raise
+
+    async def search(self, query: str, writer_name: Optional[str] = None, filters: Optional[Dict] = None, top_k: int = 5) -> List[Dict]:
         """
         搜尋教案
-        :param query: 搜尋查詢
+        :param query: 搜尋關鍵字
         :param filters: 過濾條件
-        :return: 搜尋結果列表
+        :param top_k: 返回的結果數量
+        :return: 符合條件的文檔列表
         """
+        
+        must_clauses = []
+        
+        # 主要關鍵字搜尋
+        if query.strip():
+            must_clauses.append({
+                "multi_match": {
+                    "query": query,
+                    "fields": ["objectives", "outline"],
+                    "type": "best_fields",
+                    "operator": "or"
+                }
+            })
+
+        # 搜尋作者名稱（writer_name）
+        if writer_name and writer_name.strip():
+            must_clauses.append({
+                "wildcard": {
+                    "writer_name": {
+                        "value": f"*{writer_name}*",  # 允許部分匹配
+                        "case_insensitive": True  # 不區分大小寫
+                    }
+                }
+            })
+
+        # 如果沒有關鍵字，也沒有作者名稱，就回傳所有資料
+        if not must_clauses:
+            must_clauses.append({"match_all": {}})
+
         search_body = {
             "query": {
                 "bool": {
-                    "must": [query]
+                    "must": must_clauses,
+                    "filter": []
                 }
-            }
+            },
+            "size": top_k
         }
 
-        # 如果有過濾條件，加入到查詢中
+        # 過濾條件
         if filters:
-            search_body["query"]["bool"]["filter"] = []
-            for field, value in filters.dict().items():
+            for field, value in filters.items():
                 if value:
                     if isinstance(value, list):
                         search_body["query"]["bool"]["filter"].append(
@@ -125,46 +117,15 @@ class ESClient:
                         search_body["query"]["bool"]["filter"].append(
                             {"term": {field: value}}
                         )
-        search_body["query"]["bool"]["must"] = []
-        
-        try:
-            response = await self.client.search(
-                index=self.index_name,
-                body=search_body,
-                size=100  # 可以根據需要調整返回的結果數量
-            )
-            return response
-        except Exception as e:
-            logging.error(f"Search error: {str(e)}")
-            raise
 
-    async def vector_search(self, query_vector: List[float], top_k: int = 5) -> List[Dict]:
-        """
-        向量搜尋
-        :param query_vector: 查詢向量
-        :param top_k: 返回的結果數量
-        :return: 最相似的文檔列表
-        """
-        search_body = {
-            "query": {
-                "script_score": {
-                    "query": {"match_all": {}},
-                    "script": {
-                        "source": "cosineSimilarity(params.query_vector, 'embeddings') + 1.0",
-                        "params": {"query_vector": query_vector}
-                    }
-                }
-            },
-            "size": top_k
-        }
-
+        print(search_body)
         try:
             response = await self.client.search(
                 index=self.index_name,
                 body=search_body
             )
-            hits = response["hits"]["hits"]
-            return [hit["_source"] for hit in hits]
+            hits = response["hits"]
+            return hits
         except Exception as e:
-            logging.error(f"Vector search error: {str(e)}")
+            logging.error(f"Search error: {str(e)}")
             raise

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TeachingPlan } from '../../types/api';
 import LessonPlanModal from './LessonPlanModal';
+import { SEMESTER_MAP } from '@/lib/constant';
 
 interface ResultTableProps {
   results: TeachingPlan[];
@@ -36,7 +37,7 @@ const ResultTable: React.FC<ResultTableProps> = ({ results }) => {
             results.map((plan) => (
               <tr key={plan.id}>
                 <td className="py-2 px-4 border text-center">{plan.team}</td>
-                <td className="py-2 px-4 border text-center">{plan.semester}</td>
+                <td className="py-2 px-4 border text-center">{SEMESTER_MAP[plan.semester] || `${plan.semester}`}</td>
                 <td className="py-2 px-4 border text-center">{plan.category}</td>
                 <td className="py-2 px-4 border text-center">{plan.tp_name}</td>
                 <td className="py-2 px-4 border text-center">{plan.writer_name}</td>

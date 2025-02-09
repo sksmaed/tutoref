@@ -1,3 +1,4 @@
+import { DURATION_INVERSE_MAP } from '@/lib/constant';
 import { SearchParams, SearchResponse } from '@/types/api';
 
 export async function searchTeachingPlans(params: SearchParams): Promise<SearchResponse> {
@@ -5,8 +6,8 @@ export async function searchTeachingPlans(params: SearchParams): Promise<SearchR
     const mappedParams = {
       semester: params.filters.semester,
       category: params.filters.category,
-      duration: params.filters.duration,
       grade: params.filters.grade,
+      duration: params.filters.duration.map(d => DURATION_INVERSE_MAP[d]).filter(n => n !== undefined),
       keyword: params.keyword,
       writer_name: params.author,
     };
