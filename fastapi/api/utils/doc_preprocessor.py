@@ -28,7 +28,7 @@ class TeachingPlanProcessor:
         semester = f"{semester_match.group(1)}-{semester_match.group(2)}" if semester_match else ""
 
         # 提取家別
-        team_match = re.search(r'■\s*(加拿|新武|霧鹿|利稻|電光)', text)
+        team_match = re.search(r'■\s*(加拿|初來|新武|霧鹿|利稻|電光)', text)
         team = team_match.group(1) if team_match else ""
         
         # 基本資料映射
@@ -38,12 +38,12 @@ class TeachingPlanProcessor:
             'team': team,
             'semester': semester,
             'category': self._extract_field(text, r'課程類別\s*(.*?)\s*(?:\n|$)'),
-            'grade': self._extract_field(text, r'適用上課年齡\s*(.*?)\s*(?:\n|$)'),
+            'grade': self._extract_field(text, r'適用上課年級\s*(.*?)\s*(?:\n|$)'),
             'duration': self._extract_duration(text),
             'staffing': self._extract_field(text, r'課程所需人力\s*(.*?)\s*(?:\n|$)'),
             'venue': self._extract_field(text, r'課程所需場地\s*(.*?)\s*(?:\n|$)'),
             'objectives': self._extract_field(text, r'課程目標\s*(.*?)\s*(?:課程大綱|$)'),
-            'outline': self._extract_field(text, r'課程大綱\s*(.*?)\s*(?:適用上課年齡|$)')
+            'outline': self._extract_field(text, r'課程大綱\s*(.*?)\s*(?:適用上課年級|$)')
         }
 
         # 提取流程內容

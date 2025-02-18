@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { TeachingPlan } from '../../types/api';
-import { DURATION_MAP, SEMESTER_MAP } from '@/lib/constant';
+import { DURATION_MAP } from '@/lib/constant';
 
 interface LessonPlanModalProps {
   isOpen: boolean;
@@ -40,7 +40,7 @@ const LessonPlanModal: React.FC<LessonPlanModalProps> = ({
                 <td className="border px-4 py-2 bg-gray-50 text-center font-medium">家別</td>
                 <td className="border px-4 py-2 text-center">{lessonData.team}</td>
                 <td className="border px-4 py-2 bg-gray-50 text-center font-medium">期數</td>
-                <td className="border px-4 py-2 text-center">{SEMESTER_MAP[lessonData.semester] || `${lessonData.semester}`}</td>
+                <td className="border px-4 py-2 text-center">{lessonData.semester}</td>
                 <td className="border px-4 py-2 bg-gray-50 text-center font-medium">撰寫者</td>
                 <td className="border px-4 py-2 text-center">{lessonData.writer_name}</td>
               </tr>
@@ -84,41 +84,57 @@ const LessonPlanModal: React.FC<LessonPlanModalProps> = ({
               <tr>
                 <td className="border px-4 py-2 text-center w-1/6">教案紙</td>
                 <td className="border px-4 py-2 text-center w-1/6">
-                  <a
-                    href={lessonData.sheet_docx}
-                    download
-                    className="text-blue-600 hover:text-blue-800 underline"
-                  >
-                    docx檔
-                  </a>
+                  {lessonData.sheet_docx ? (
+                    <a
+                      href={lessonData.sheet_docx}
+                      download
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      docx檔
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">docx檔</span>
+                  )}
                 </td>
                 <td className="border px-4 py-2 text-center w-1/6">
-                <a
-                    href={lessonData.sheet_pdf}
-                    download
-                    className="text-blue-600 hover:text-blue-800 underline"
-                  >
-                    pdf檔
-                  </a>
+                  {lessonData.sheet_pdf ? (
+                    <a
+                      href={lessonData.sheet_pdf}
+                      download
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      pdf檔
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">pdf檔</span>
+                  )}
                 </td>
                 <td className="border px-4 py-2 text-center w-1/6">投影片</td>
                 <td className="border px-4 py-2 text-center w-1/6">
-                  <a
-                    href={lessonData.slide_pptx}
-                    download
-                    className="text-blue-600 hover:text-blue-800 underline"
-                  >
-                    pptx檔
-                  </a>
+                  {lessonData.slide_pptx ? (
+                    <a
+                      href={lessonData.slide_pptx}
+                      download
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      pptx檔
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">pptx檔</span>
+                  )}
                 </td>
                 <td className="border px-4 py-2 text-center w-1/6">
-                <a
-                    href={lessonData.slide_pdf}
-                    download
-                    className="text-blue-600 hover:text-blue-800 underline"
-                  >
-                    pdf檔
-                  </a>
+                  {lessonData.slide_pdf ? (
+                    <a
+                      href={lessonData.slide_pdf}
+                      download
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      pdf檔
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">pdf檔</span>
+                  )}
                 </td>
               </tr>
             </tbody>

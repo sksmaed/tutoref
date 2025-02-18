@@ -15,6 +15,7 @@ export interface SearchParams {
     filters: FilterOptions;
     keyword?: string;
     author?: string;
+    teamHash?: string;
 }
 
 export interface SearchResponse {

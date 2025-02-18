@@ -4,12 +4,14 @@ import { SearchParams, SearchResponse } from '@/types/api';
 export async function searchTeachingPlans(params: SearchParams): Promise<SearchResponse> {
   try {
     const mappedParams = {
+      team: params.filters.team,
       semester: params.filters.semester,
       category: params.filters.category,
       grade: params.filters.grade,
       duration: params.filters.duration.map(d => DURATION_INVERSE_MAP[d]).filter(n => n !== undefined),
       keyword: params.keyword,
       writer_name: params.author,
+      teamHash: params.teamHash,
     };
 
     const response = await fetch('http://localhost:8000/api/search', {
