@@ -7,6 +7,11 @@ import { Loader2 } from 'lucide-react';
 import { TeachingPlan } from '@/types/api';
 import EditModal from '@/components/layout/editModal';
 import { useToast } from '@/hooks/use-toast';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 
 const UploadPage = () => {
@@ -30,7 +35,7 @@ const UploadPage = () => {
 
       setUploadedFiles(filesArray); // 更新已選擇的檔案清單
 
-      const response = await fetch('http://localhost:8000/api/upload-file', {
+      const response = await fetch(`${BACKEND_URL}/api/upload-file`, {
         method: 'POST',
         body: formData
       });
@@ -46,7 +51,7 @@ const UploadPage = () => {
 
   const handleSubmit = async () => {
     try {
-        const response = await fetch("http://localhost:8000/api/submit-plans", {
+        const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

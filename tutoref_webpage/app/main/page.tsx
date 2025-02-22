@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Head from 'next/head';
 import Image from "next/image"
 import { searchTeachingPlans } from '../api/search';
@@ -15,6 +15,14 @@ import { Toaster } from '@/components/ui/toaster';
 import { useSearchParams } from 'next/navigation';
 
 export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPageContent />
+    </Suspense>
+  );
+}
+
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const teamHash = searchParams.get('team') as string;
 

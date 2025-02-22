@@ -1,5 +1,10 @@
 import { DURATION_INVERSE_MAP } from '@/lib/constant';
 import { SearchParams, SearchResponse } from '@/types/api';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export async function searchTeachingPlans(params: SearchParams): Promise<SearchResponse> {
   try {
@@ -14,7 +19,7 @@ export async function searchTeachingPlans(params: SearchParams): Promise<SearchR
       teamHash: params.teamHash,
     };
 
-    const response = await fetch('http://localhost:8000/api/search', {
+    const response = await fetch(`${BACKEND_URL}/api/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,7 +34,7 @@ export async function searchTeachingPlans(params: SearchParams): Promise<SearchR
     const data: SearchResponse = await response.json();
     return data;
   } catch (error) {
-    console.error('搜尋錯誤:', error);
+    console.error('Error searching teaching plans:', error);
     throw error;
   }
 }
