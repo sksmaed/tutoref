@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Announcement } from '../../types/announcement';
 
-export async function getServerSideProps(context: any) {
+import { GetServerSidePropsContext } from 'next';
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { id } = context.query;
   const res = await fetch(`https://your-api/announcements/${id}`);
   const announcement = await res.json();
@@ -14,7 +16,7 @@ export async function getServerSideProps(context: any) {
 }
 
 function AnnouncementDetail({ announcement }: { announcement: Announcement }) {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(true);
 
   return (
     <div>

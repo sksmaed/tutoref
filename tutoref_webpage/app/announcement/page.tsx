@@ -34,7 +34,7 @@ const AnnouncementList = ({ announcements }: AnnouncementListProps) => {
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold text-center text-gray-900 mb-12">公告列表</h1>
           <ul className="space-y-4">
-            {announcementData.map((announcement) => (
+            {announcements.map((announcement) => (
               <Link key={announcement.id} href={`/announcement/${announcement.id}`} passHref>
                 <li
                   className="cursor-pointer hover:bg-gray-100 p-4 rounded-md shadow-md transition-transform transform hover:scale-105"

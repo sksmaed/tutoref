@@ -1,6 +1,4 @@
 'use client'
-import { useState, useEffect, useRef } from 'react';
-import Head from 'next/head';
 import Image from "next/image"
 
 import logo from '../public/logo.png';
