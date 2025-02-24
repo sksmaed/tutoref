@@ -35,7 +35,7 @@ const UploadPage = () => {
 
       setUploadedFiles(filesArray); // 更新已選擇的檔案清單
 
-      const response = await fetch(`/api/upload-file`, {
+      const response = await fetch(`${BACKEND_URL}/api/upload-file`, {
         method: 'POST',
         body: formData
       });
