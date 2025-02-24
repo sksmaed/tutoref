@@ -55,7 +55,6 @@ const UploadPage = () => {
             method: "POST",
             headers: {
               'Content-Type': 'application/json',
-              'allow_origins': '"https://www.tutoref.tw"',
             },
             body: JSON.stringify(parsedPlans),
         });
