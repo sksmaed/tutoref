@@ -23,7 +23,7 @@ export async function searchTeachingPlans(params: SearchParams): Promise<SearchR
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '"https://www.tutoref.tw"',
+        'Access-Control-Allow-Origin': 'https://www.tutoref.tw',
       },
       body: JSON.stringify(mappedParams),
     });
