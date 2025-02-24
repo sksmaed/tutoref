@@ -1,8 +1,8 @@
 import { TeachingPlan } from "@/types/api";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button'
-import { Checkbox } from "@/components/ui/checkbox";;
+import { Button } from '@/components/ui/button';
+import { Checkbox } from "@/components/ui/checkbox";
 import { DialogHeader } from "../ui/dialog";
 import { useState, useEffect } from "react";
 
@@ -17,13 +17,19 @@ const EditModal = ({
     onClose: () => void, 
     onSave: (updatedPlan: TeachingPlan) => void 
 }) => {
-    const [editedPlan, setEditedPlan] = useState<TeachingPlan>(plan);
+    const [editedPlan, setEditedPlan] = useState<TeachingPlan>({
+        ...plan,
+        is_open: Number(plan.is_open)
+    });
 
     useEffect(() => {
-        setEditedPlan(plan);
+        setEditedPlan({
+            ...plan,
+            is_open: Number(plan.is_open)
+        });
     }, [plan]);
 
-    const handleChange = (field: keyof TeachingPlan, value: string | boolean) => {
+    const handleChange = (field: keyof TeachingPlan, value: string | number) => {
         setEditedPlan(prev => ({ ...prev, [field]: value }));
     };
 
@@ -40,7 +46,7 @@ const EditModal = ({
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             {Object.keys(plan)
-              .filter(key => key !== 'id') // 排除 id
+              .filter(key => key !== 'id')
               .map((key) => (
                 <div key={key} className="space-y-2">
                   <label className="text-sm font-medium">{key}</label>
@@ -48,13 +54,13 @@ const EditModal = ({
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="is_open"
-                        checked={!!editedPlan.is_open}
+                        checked={editedPlan.is_open === 1}
                         onCheckedChange={(checked) => 
-                          handleChange('is_open', !!checked)
+                          handleChange('is_open', checked ? 1 : 0)
                         }
                       />
                       <label htmlFor="is_open" className="text-sm">
-                        {editedPlan.is_open ? '公開' : '不公開'}
+                        {editedPlan.is_open === 1 ? '公開' : '不公開'}
                       </label>
                     </div>
                   ) : key === 'objectives' || key === 'outline' ? (
