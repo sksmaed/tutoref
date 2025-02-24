@@ -54,7 +54,8 @@ const UploadPage = () => {
         const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
             method: "POST",
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'allow_origins': '"https://www.tutoref.tw"',
             },
             body: JSON.stringify(parsedPlans),
         });

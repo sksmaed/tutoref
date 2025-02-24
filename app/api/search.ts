@@ -22,7 +22,8 @@ export async function searchTeachingPlans(params: SearchParams): Promise<SearchR
     const response = await fetch(`${BACKEND_URL}/api/search`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'allow_origins': '"https://www.tutoref.tw"',
       },
       body: JSON.stringify(mappedParams),
     });
