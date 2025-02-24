@@ -41,4 +41,5 @@ export interface TeachingPlan {
     sheet_pdf: string;
     slide_pptx: string;
     slide_pdf: string;
+    is_open: boolean;
 }

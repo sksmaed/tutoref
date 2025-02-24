@@ -1,7 +1,8 @@
 import { TeachingPlan } from "@/types/api";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
+import { Checkbox } from "@/components/ui/checkbox";;
 import { DialogHeader } from "../ui/dialog";
 import { useState, useEffect } from "react";
 
@@ -22,7 +23,7 @@ const EditModal = ({
         setEditedPlan(plan);
     }, [plan]);
 
-    const handleChange = (field: keyof TeachingPlan, value: string) => {
+    const handleChange = (field: keyof TeachingPlan, value: string | boolean) => {
         setEditedPlan(prev => ({ ...prev, [field]: value }));
     };
 
@@ -43,7 +44,20 @@ const EditModal = ({
               .map((key) => (
                 <div key={key} className="space-y-2">
                   <label className="text-sm font-medium">{key}</label>
-                  {key === 'objectives' || key === 'outline' ? (
+                  {key === 'is_open' ? (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="is_open"
+                        checked={!!editedPlan.is_open}
+                        onCheckedChange={(checked) => 
+                          handleChange('is_open', !!checked)
+                        }
+                      />
+                      <label htmlFor="is_open" className="text-sm">
+                        {editedPlan.is_open ? '公開' : '不公開'}
+                      </label>
+                    </div>
+                  ) : key === 'objectives' || key === 'outline' ? (
                     <textarea
                       className="w-full p-2 border rounded-md"
                       value={editedPlan[key as keyof TeachingPlan] as string}
