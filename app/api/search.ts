@@ -21,6 +21,9 @@ export async function searchTeachingPlans(params: SearchParams): Promise<SearchR
 
     const response = await fetch(`${BACKEND_URL}/api/search`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(mappedParams),
     });
 
