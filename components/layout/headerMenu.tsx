@@ -43,6 +43,12 @@ export default function HeaderMenu() {
           >
             Package
           </a>
+          <a 
+            href="https://forms.gle/wsHwLjfar88Tz5yb6"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
+            錯誤回報
+          </a>
         </div>
       )}
     </div>
