@@ -8,7 +8,6 @@ const AnnouncementPage = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   useEffect(() => {
-    // Fetch announcements from your API or data source
     const fetchAnnouncements = async () => {
       const response = await fetch('/api/announcements');
       const data = await response.json();

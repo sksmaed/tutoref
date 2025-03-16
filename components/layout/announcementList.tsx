@@ -22,7 +22,10 @@ const AnnouncementList = ({ announcements }: AnnouncementListProps) => {
                 <h2 className="text-lg font-semibold">{announcement.title}</h2>
                 <p className="text-gray-600">{announcement.content.substring(0, 50)}...</p>
                 <div className="flex justify-between">
-                  <p className="text-sm text-gray-500">發布者：{announcement.publisher}</p>
+                  <p className="text-sm text-gray-500">發布者：{announcement.writer_name}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-500">發布時間：{new Date(announcement.created_at).toLocaleString()}</p>
                 </div>
               </li>
             </Link>

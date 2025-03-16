@@ -6,9 +6,16 @@ interface ResultTableProps {
   results: TeachingPlan[];
 }
 
+const ITEMS_PER_PAGE = 50;
+
 const ResultTable: React.FC<ResultTableProps> = ({ results }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<TeachingPlan | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentResults = results.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handleViewClick = (lesson: TeachingPlan) => {
     setSelectedLesson(lesson);
@@ -32,8 +39,8 @@ const ResultTable: React.FC<ResultTableProps> = ({ results }) => {
           </tr>
         </thead>
         <tbody>
-          {results.length > 0 ? (
-            results.map((plan) => (
+          {currentResults.length > 0 ? (
+            currentResults.map((plan) => (
               <tr key={plan.id}>
                 <td className="py-2 px-4 border text-center">{plan.team}</td>
                 <td className="py-2 px-4 border text-center">{plan.semester}</td>
@@ -59,7 +66,26 @@ const ResultTable: React.FC<ResultTableProps> = ({ results }) => {
           )}
         </tbody>
       </table>
-
+      
+      {/* 分頁控制按鈕 */}
+      <div className="flex justify-center items-center mt-4 space-x-4">
+        <button 
+          className={`px-4 py-2 rounded-md ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          上一頁
+        </button>
+        <span className="text-lg font-semibold">{currentPage} / {totalPages}</span>
+        <button 
+          className={`px-4 py-2 rounded-md ${currentPage === totalPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          下一頁
+        </button>
+      </div>
+      
       {selectedLesson && (
         <LessonPlanModal
           isOpen={isModalOpen}
