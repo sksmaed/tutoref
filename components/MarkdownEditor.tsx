@@ -1,9 +1,5 @@
-import React, { useState } from 'react';
-import MarkdownIt from 'markdown-it';
-import MdEditor from 'react-markdown-editor-lite';
-import 'react-markdown-editor-lite/lib/index.css';
-
-const mdParser = new MarkdownIt();
+import React, { useState } from "react";
+import MDEditor from "@uiw/react-md-editor";
 
 interface MarkdownEditorProps {
   initialContent: string;
@@ -13,23 +9,12 @@ interface MarkdownEditorProps {
 const MarkdownEditor = ({ initialContent, onSave }: MarkdownEditorProps) => {
   const [content, setContent] = useState(initialContent);
 
-  const handleEditorChange = ({ text }: { text: string }) => {
-    setContent(text);
-  };
-
-  const handleSave = () => {
-    onSave(content);
-  };
-
   return (
-    <div>
-      <MdEditor
-        value={content}
-        style={{ height: '500px' }}
-        renderHTML={(text) => mdParser.render(text)}
-        onChange={handleEditorChange}
-      />
-      <button onClick={handleSave}>Save</button>
+    <div className="container">
+      <MDEditor value={content} onChange={(value) => setContent(value || "")} />
+      <button onClick={() => onSave(content)} className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">
+        Save
+      </button>
     </div>
   );
 };
