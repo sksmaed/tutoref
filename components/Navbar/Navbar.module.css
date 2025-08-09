@@ -1,6 +1,5 @@
 :root {
   --nav-height: 60px;
-  --nav-width: 1280px;
   --nav-padding-x: 52px;
   --nav-padding-y: 10px;
 
@@ -9,6 +8,16 @@
   --bg: #ffffff;
 
   --menu-gap: 20px;
+  --menu-item-width: 100px;
+  --menu-item-height: 36px;
+  --menu-item-padding-x: 22px;
+  --menu-item-padding-y: 7px;
+  --menu-item-font-size: 14px;
+  --menu-item-font-weight: 400;
+
+  --icon-width: 20px;
+  --icon-height: 20px;
+  --icon-gap: 20px;
   --radius: 10px;
 }
 
@@ -27,7 +36,7 @@
 .container {
   max-width: var(--nav-width);
   height: var(--nav-height);
-  margin: 0 auto;
+  margin: 0;
   padding: var(--nav-padding-y) var(--nav-padding-x);
   display: flex;
   align-items: center;
@@ -41,27 +50,31 @@
 
 .menuGroup {
   display: flex;
+  flex-grow: 0;
   align-items: center;
-  gap: var(--menu-gap);
 }
 
 .menuItem {
+  width: var(--menu-item-width);
+  height: var(--menu-item-height);
   color: var(--text);
   text-decoration: none;
-  font-weight: 500;
-  font-size: 16px;
-  padding: 6px 8px;
+  font-weight: var(--menu-item-font-weight);
+  font-size: var(--menu-item-font-size);
+  padding: var(--menu-item-padding-y) var(--menu-item-padding-x);
   transition: color 0.2s;
 }
 
 .menuItem:hover {
-  color: #f38920;  /* 橘色：hover 時才變色 */
+  color: var(--hover);
+  /* 橘色：hover 時才變色 */
 }
 
 .iconWrap {
-  width: 20px;
-  height: 20px;
+  width: var(--icon-width);
+  height: var(--icon-height);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: var(--icon-gap);
 }
