@@ -50,9 +50,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-Hant">
-      <body>
+      <body className="flex flex-col h-screen">
         <Navbar />
-        <main style={{ maxWidth: 1200, margin: "24px auto", padding: "0 24px" }}>
+        <main className="flex-1 h-full">
           {children}
         </main>
         <Footer />
