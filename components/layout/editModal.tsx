@@ -2,7 +2,7 @@ import { TeachingPlan } from "@/types/api";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { DialogHeader } from "../ui/dialog";
 import { useState, useEffect } from "react";
 

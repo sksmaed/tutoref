@@ -8,6 +8,7 @@ interface InputProps {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   state?: InputState;
   disabled?: boolean;
   error?: boolean;
@@ -23,6 +24,7 @@ export const Input: React.FC<InputProps> = ({
   placeholder,
   value,
   onChange,
+  onBlur,
   state,
   disabled = false,
   error = false,
@@ -100,7 +102,10 @@ export const Input: React.FC<InputProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onBlur={(e) => {
+            setIsFocused(false);
+            onBlur?.();
+          }}
           disabled={disabled}
           className={getInputStyles()}
           placeholder={placeholder}
@@ -117,7 +122,7 @@ export const Input: React.FC<InputProps> = ({
               >
                 {showPassword ? (
                   <Image
-                    src="/icons/eye-closed.png"
+                    src="/icons/eye-open.png"
                     alt="hide password"
                     width={20}
                     height={20}
@@ -125,7 +130,7 @@ export const Input: React.FC<InputProps> = ({
                   />
                 ) : (
                   <Image
-                    src="/icons/eye-open.png"
+                    src="/icons/eye-closed.png"
                     alt="show password"
                     width={20}
                     height={20}

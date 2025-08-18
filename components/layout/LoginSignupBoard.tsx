@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Checkbox } from '../ui/Checkbox';
@@ -9,6 +10,7 @@ interface LoginSignupBoardProps {
     onLogin?: (email: string, password: string, rememberMe: boolean) => void;
     onSignup?: (email: string, password: string, confirmPassword: string) => void;
     onGoogleLogin?: () => void;
+    forceTab?: 'login' | 'signup';
     className?: string;
 }
 
@@ -17,49 +19,79 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
     onLogin,
     onSignup,
     onGoogleLogin,
-    className = ''
+    className = '',
+    forceTab,
 }) => {
-    const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState<'login' | 'signup'>("login");
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
+    const [touched, setTouched] = useState({ email: false, password: false, confirm: false });
+    const [submitted, setSubmitted] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('表單提交:', { email, password, confirmPassword, rememberMe });
+        setSubmitted(true);
 
-        if (!email || !password) {
-            setShowWarning(true);
-            return;
-        }
-
-        if (activeTab === 'signup') {
-            onSignup?.(email, password, confirmPassword);
-        } else {
-            setShowWarning(true);
+        if (activeTab === 'login') {
+            const ok = isValidEmail(email) && password.trim() !== '';
+            if (!ok) return;
+            setSubmitted(false);
             onLogin?.(email, password, rememberMe);
+        } else {
+            const ok =
+            isValidEmail(email) &&
+            isValidPassword(password) &&
+            confirmPassword === password;
+
+            if (!ok) return;
+            setSubmitted(false);
+            onSignup?.(email, password, confirmPassword);
         }
     };
 
     // 檢查表單是否完整填寫
     const isFormValid = () => {
         if (activeTab === 'login') {
-            return email.trim() !== '' && password.trim() !== '';
+            return isValidEmail(email) && password.trim() !== '';
         } else {
-            return email.trim() !== '' && password.trim() !== '' && confirmPassword.trim() !== '' && password === confirmPassword;
+            return (
+                isValidEmail(email) &&
+                isValidPassword(password) &&
+                confirmPassword === password
+            );
         }
     };
 
+    const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    const isValidPassword = (s: string) => {
+        if (s.length < 8) return false;
+        const hasLetter = /[A-Za-z]/.test(s);
+        const hasDigit = /\d/.test(s);
+        return hasLetter && hasDigit;
+    };
+
     const handleForgotPassword = () => {
-        // 實現忘記密碼邏輯
-        console.log('忘記密碼');
+        router.push('/forgot-password');
     };
 
     const handleRegisterRedirect = () => {
         setActiveTab('signup');
     };
+
+    useEffect(() => {
+        setTouched({ email: false, password: false, confirm: false });
+        setSubmitted(false);
+        setShowWarning(false); 
+    }, [activeTab]);
+
+    useEffect(() => {
+        if (!forceTab) return;
+        setActiveTab(forceTab);
+    }, [forceTab]); // ← 去掉 activeTab
 
     return (
         <div className={`flex flex-col w-[576px] bg-white rounded-lg pb-10 gap-8`}>
@@ -91,26 +123,39 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                             type="email"
                             placeholder="輸入電子信箱"
                             value={email}
-                            onChange={setEmail}
-                            leftIcon="/icons/mail.png" // 替換為你的圖檔路徑
-                            error={showWarning && !email}
-                            errorMessage={showWarning && !email ? "請輸入電子信箱" : undefined}
+                            onChange={(v) => { setEmail(v); setShowWarning(false); }}
+                            onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                            leftIcon="/icons/mail.png"
+                            error={(touched.email || submitted) && !isValidEmail(email)}
+                            errorMessage={(touched.email || submitted) && !isValidEmail(email)
+                                ? "此為無效電子信箱" : undefined}
                         />
 
                         <Input
                             type="password"
-                            placeholder="輸入密碼"
+                            placeholder={activeTab === 'login' ? "輸入密碼" : "設定密碼（至少 8 碼，英數混合）"}
                             value={password}
-                            onChange={setPassword}
-                            leftIcon="/icons/key.png" // 替換為你的圖檔路徑
+                            onChange={(v) => { setPassword(v); setShowWarning(false); }}
+                            onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+                            leftIcon="/icons/key.png"
                             showPasswordToggle
-                            error={showWarning && !password}
-                            errorMessage={showWarning && !password ? "請輸入密碼" : undefined}
+                            error={
+                                activeTab === 'login'
+                                ? (touched.password || submitted) && password.trim() === ''
+                                : (touched.password || submitted) && !isValidPassword(password)
+                            }
+                            errorMessage={
+                                activeTab === 'login'
+                                ? (touched.password || submitted) && password.trim() === '' ? "請輸入密碼" : undefined
+                                : (touched.password || submitted) && !isValidPassword(password)
+                                    ? "密碼需至少 8 碼，且包含英文與數字"
+                                    : undefined
+                            }
                         />
 
                         {activeTab === 'signup' && (
                             <Warning
-                                message="若您還沒有帳號，記得先註冊再來登入喔！"
+                                message="密碼至少爲 8 個字元，且包含英文及數字噢！"
                                 className="text-sm/normal font-normal"
                             />
                         )}
@@ -120,13 +165,17 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                                 type="password"
                                 placeholder="確認密碼"
                                 value={confirmPassword}
-                                onChange={setConfirmPassword}
-                                leftIcon="/icons/key.png" // 替換為你的圖檔路徑
+                                onChange={(v) => { setConfirmPassword(v); setShowWarning(false); }}
+                                onBlur={() => setTouched((t) => ({ ...t, confirm: true }))}
+                                leftIcon="/icons/key.png"
                                 showPasswordToggle
-                                error={showWarning && password !== confirmPassword}
-                                errorMessage={showWarning && password !== confirmPassword ? "密碼不相符" : undefined}
+                                disabled={!isValidPassword(password)}
+                                error={(touched.confirm || submitted) && confirmPassword !== password}
+                                errorMessage={(touched.confirm || submitted) && confirmPassword !== password
+                                ? "再次輸入之密碼不相符" : undefined}
                             />
                         )}
+
                     </div>
 
                     {activeTab === 'login' && (

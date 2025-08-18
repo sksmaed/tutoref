@@ -6,7 +6,7 @@
 }
 
 .footer {
-  background: none;
+  @apply bg-black-100; /* ← 這行就是把 tailwind 的 bg-black-100 套上 */
 }
 
 .inner {

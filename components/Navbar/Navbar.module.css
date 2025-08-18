@@ -78,3 +78,19 @@
   justify-content: center;
   margin-left: var(--icon-gap);
 }
+
+.noticeLabel { 
+  position: relative; 
+  padding-right: 10px; 
+}
+
+.noticeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  margin-left: 6px; /* 與文字間距 */
+  position: absolute; 
+  right: -50px; 
+  top: -5px; 
+  margin-left: 0;
+}
