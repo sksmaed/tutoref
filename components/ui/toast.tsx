@@ -1,129 +1,104 @@
-"use client"
+'use client';
+import { useEffect } from 'react';
+import Image from 'next/image';
+// 若全站已載入 Noto Sans TC 可忽略；否則建議用 next/font 在 layout 設定。
 
-import * as React from "react"
-import * as ToastPrimitives from "@radix-ui/react-toast"
-import { cva, type VariantProps } from "class-variance-authority"
-import { X } from "lucide-react"
+type Props = {
+  open: boolean;
+  type?: 'success' | 'error' | 'info';
+  title: string;
+  message?: string;
+  timeout?: number; // ms
+  onClose: () => void;
+};
 
-import { cn } from "@/lib/utils"
+export function Toast({
+  open,
+  type = 'success',
+  title,
+  message,
+  timeout = 5000,
+  onClose,
+}: Props) {
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(onClose, timeout);
+    return () => clearTimeout(t);
+  }, [open, timeout, onClose]);
 
-const ToastProvider = ToastPrimitives.Provider
+  if (!open) return null;
 
-const ToastViewport = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Viewport>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Viewport
-    ref={ref}
-    className={cn(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
-      className
-    )}
-    {...props}
-  />
-))
-ToastViewport.displayName = ToastPrimitives.Viewport.displayName
-
-const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
-  {
-    variants: {
-      variant: {
-        default: "border bg-background text-foreground",
-        destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-)
-
-const Toast = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Root>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-    VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
   return (
-    <ToastPrimitives.Root
-      ref={ref}
-      className={cn(toastVariants({ variant }), className)}
-      {...props}
-    />
-  )
-})
-Toast.displayName = ToastPrimitives.Root.displayName
+    <div className="fixed bottom-6 right-6 z-[1000]">
+      <div
+        className="
+          w-[480px] h-[110px]
+          rounded-[8px]
+          bg-[#2A2A2A] opacity-100
+          shadow-lg
+        "
+        role="status"
+        aria-live="polite"
+      >
+        {/* 上下等高：py-6 (= 24px / 24px)，左右仍為 pl-7(28px) / pr-6(24px) */}
+        {/* 用 items-center + justify-between，讓左區與關閉鈕撐開且垂直置中 */}
+        <div className="w-full h-full flex items-start justify-between py-6 pl-7 pr-6">
+          {/* 左區：固定寬 260（照稿），不再固定高度，gap 15 */}
+          <div className="flex items-start w-[260px] gap-[15px] text-white">
+            {/* icon：24×28（不再加 padding-top，避免把內容往下推） */}
+            <div className="pt-1 shrink-0">
+              <Image
+                src="/icons/check-circle.png"
+                alt=""
+                width={24}
+                height={24}
+                className="w-[24px] h-[24px]"
+                priority
+              />
+            </div>
 
-const ToastAction = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Action>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Action
-    ref={ref}
-    className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
-      className
-    )}
-    {...props}
-  />
-))
-ToastAction.displayName = ToastPrimitives.Action.displayName
+            {/* 文字：拿掉 h-[58px]，避免「留一格」；有第二行才給 gap */}
+            <div className={`flex flex-col ${message ? 'gap-[4px]' : ''} overflow-hidden`}>
+              {/* 「登入成功」— Noto Sans TC / 500 / 20px / 150% / #FFFFFF */}
+              <div
+                className="
+                  font-medium text-[20px] leading-[30px]  /* 20px × 150% = 30px */
+                  text-white
+                  truncate
+                "
+                style={{ fontFamily: '"Noto Sans TC", sans-serif' }}
+              >
+                {title}
+              </div>
 
-const ToastClose = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Close>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Close
-    ref={ref}
-    className={cn(
-      "absolute right-1 top-1 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-1 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
-      className
-    )}
-    toast-close=""
-    {...props}
-  >
-    <X className="h-4 w-4" />
-  </ToastPrimitives.Close>
-))
-ToastClose.displayName = ToastPrimitives.Close.displayName
+              {/* 「可以搜尋或管理教案囉～」— Noto Sans TC / 400 / 16px / 150% / #B8B8B8 */}
+              {message && (
+                <div
+                  className="
+                    font-normal text-[16px] leading-[24px]
+                    text-[#B8B8B8]
+                    line-clamp-2
+                  "
+                  style={{ fontFamily: '"Noto Sans TC", sans-serif' }}
+                >
+                  {message}
+                </div>
+              )}
+            </div>
+          </div>
 
-const ToastTitle = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Title>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Title
-    ref={ref}
-    className={cn("text-sm font-semibold [&+div]:text-xs", className)}
-    {...props}
-  />
-))
-ToastTitle.displayName = ToastPrimitives.Title.displayName
-
-const ToastDescription = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Description>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Description
-    ref={ref}
-    className={cn("text-sm opacity-90", className)}
-    {...props}
-  />
-))
-ToastDescription.displayName = ToastPrimitives.Description.displayName
-
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
-
-type ToastActionElement = React.ReactElement<typeof ToastAction>
-
-export {
-  type ToastProps,
-  type ToastActionElement,
-  ToastProvider,
-  ToastViewport,
-  Toast,
-  ToastTitle,
-  ToastDescription,
-  ToastClose,
-  ToastAction,
+          {/* 右側關閉鈕固定在右邊，不縮小 */}
+          <button
+            className="text-white/80 hover:text-white transition-opacity shrink-0"
+            onClick={onClose}
+            aria-label="關閉提示"
+            title="關閉"
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

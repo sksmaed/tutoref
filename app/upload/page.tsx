@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import { Loader2 } from 'lucide-react';
 import { TeachingPlan } from '@/types/api';
 import EditModal from '@/components/layout/editModal';
@@ -25,7 +25,7 @@ const UploadPage = () => {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     setIsUploading(true);
-    
+
     try {
       const formData = new FormData();
       const filesArray = Array.from(e.target.files);
@@ -39,7 +39,7 @@ const UploadPage = () => {
         method: 'POST',
         body: formData
       });
-      
+
       const data = await response.json();
       setParsedPlans(data);
     } catch (error) {
@@ -51,38 +51,38 @@ const UploadPage = () => {
 
   const handleSubmit = async () => {
     try {
-        const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
-            method: "POST",
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(parsedPlans),
-        });
+      const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(parsedPlans),
+      });
 
-        if (!response.ok) {
-            throw new Error("Failed to submit teaching plans");
-        }
+      if (!response.ok) {
+        throw new Error("Failed to submit teaching plans");
+      }
 
-        toast({
-            title: "✅ 提交成功",
-            description: "教案已成功提交到系統。",
-            variant: "default",
-        });
+      toast({
+        title: "✅ 提交成功",
+        description: "教案已成功提交到系統。",
+        variant: "default",
+      });
     } catch (error) {
-        console.error("Submit error:", error);
-        toast({
-            title: "❌ 提交失敗",
-            description: "請稍後再試。",
-            variant: "destructive",
-        });
+      console.error("Submit error:", error);
+      toast({
+        title: "❌ 提交失敗",
+        description: "請稍後再試。",
+        variant: "destructive",
+      });
     }
-};
+  };
 
   return (
     <div className="container mx-auto p-6">
       <div className="bg-white rounded-lg shadow p-6">
         <h1 className="text-2xl font-bold mb-6">批量上傳教案</h1>
-        
+
         <div className="mb-8">
           <Input
             type="file"
@@ -151,14 +151,14 @@ const UploadPage = () => {
         )}
 
         {selectedPlan && (
-          <EditModal 
-            plan={selectedPlan} 
-            isOpen={isEditModalOpen} 
-            onClose={() => setIsEditModalOpen(false)} 
+          <EditModal
+            plan={selectedPlan}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
             onSave={(updatedPlan) => {
               setParsedPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
             }}
-          />        
+          />
         )}
       </div>
     </div>

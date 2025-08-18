@@ -1,21 +1,33 @@
-// 'use client'
-// import Image from "next/image"
+'use client';
+import { useEffect, useState } from 'react';
+import { popFlash, Flash } from '@/utils/flash';
+import { Toast } from '@/components/ui/toast';
 
-// import logo from '../public/logo.png';
+export default function Home() {
+  const [toast, setToast] = useState<Flash | null>(null);
+  const [open, setOpen] = useState(false);
 
-// export default function WelcomePage() {
+  useEffect(() => {
+    const f = popFlash();
+    if (f) {
+      setToast(f);
+      setOpen(true);
+    }
+  }, []);
 
-//   return (
-//       <main className="max-w-4xl mx-auto p-4">
-//         {/* 插入圖片 */}
-//         <div className="mb-4 flex justify-center">
-//           <Image src={logo} alt="教案檢索系統圖片" className="w-auto " />
-//         </div>
-//       </main>
-//   );
-// }
+  return (
+    <div>
+      {/* 你的首頁內容 ... */}
+      <main className="...">教案檢索 ...</main>
 
-// app/page.tsx
-export default function Page() {
-  return <div>這是首頁內容</div>;
+      <Toast
+        open={open && !!toast}
+        type={toast?.type}
+        title={toast?.title ?? ''}
+        message={toast?.message}
+        timeout={toast?.timeout ?? 5000}
+        onClose={() => setOpen(false)}
+      />
+    </div>
+  );
 }
