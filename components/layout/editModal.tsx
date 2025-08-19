@@ -53,15 +53,12 @@ const EditModal = ({
                 {key === 'is_open' ? (
                   <div className="flex items-center space-x-2">
                     <Checkbox
-                      id="is_open"
                       checked={editedPlan.is_open === 1}
-                      onCheckedChange={(checked) =>
+                      onChange={(checked) =>
                         handleChange('is_open', checked ? 1 : 0)
                       }
+                      label={editedPlan.is_open === 1 ? '公開' : '不公開'}
                     />
-                    <label htmlFor="is_open" className="text-sm">
-                      {editedPlan.is_open === 1 ? '公開' : '不公開'}
-                    </label>
                   </div>
                 ) : key === 'objectives' || key === 'outline' ? (
                   <textarea
@@ -72,18 +69,19 @@ const EditModal = ({
                   />
                 ) : (
                   <Input
+                    placeholder={`請輸入 ${key}`}
                     value={editedPlan[key as keyof TeachingPlan] as string}
-                    onChange={e => handleChange(key as keyof TeachingPlan, e.target.value)}
+                    onChange={(value) => handleChange(key as keyof TeachingPlan, value)}
                   />
                 )}
               </div>
             ))}
         </div>
         <div className="flex justify-end space-x-2 mt-4">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="small" onClick={onClose}>
             取消
           </Button>
-          <Button onClick={handleSave}>
+          <Button variant="small" onClick={handleSave}>
             儲存
           </Button>
         </div>

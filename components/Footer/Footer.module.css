@@ -1,20 +1,13 @@
-:root {
-  --border: #E5E7EB;
-  --text-dim: #6B7280;
-  --container: 1200px;
-  --pad-x: 24px;
-}
-
 .footer {
   @apply bg-black-100; /* ← 這行就是把 tailwind 的 bg-black-100 套上 */
 }
 
 .inner {
-  max-width: var(--container);
+  width: 100%;
   margin: 0 auto;
-  padding: 18px var(--pad-x);
+  padding: 18px 24px;
   text-align: center;
-  color: var(--text-dim);
+  color: theme('colors.black.400');
   font-size: 14px;
 }
 

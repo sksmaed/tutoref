@@ -4,10 +4,11 @@ import Image from 'next/image';
 type InputState = 'default' | 'disabled' | 'entered' | 'error';
 
 interface InputProps {
-  type?: 'text' | 'email' | 'password';
+  type?: 'text' | 'email' | 'password' | 'file';
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  onChangeFile?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onBlur?: () => void;
   state?: InputState;
   disabled?: boolean;
@@ -17,6 +18,7 @@ interface InputProps {
   rightIcon?: string;
   onRightIconClick?: () => void;
   showPasswordToggle?: boolean;
+  multiple?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -24,6 +26,7 @@ export const Input: React.FC<InputProps> = ({
   placeholder,
   value,
   onChange,
+  onChangeFile,
   onBlur,
   state,
   disabled = false,
@@ -32,7 +35,8 @@ export const Input: React.FC<InputProps> = ({
   leftIcon,
   rightIcon,
   onRightIconClick,
-  showPasswordToggle = false
+  showPasswordToggle = false,
+  multiple = false
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -99,14 +103,21 @@ export const Input: React.FC<InputProps> = ({
 
         <input
           type={inputType}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={type === 'file' ? undefined : value}
+          onChange={(e) => {
+            if (type === 'file' && onChangeFile) {
+              onChangeFile(e);
+            } else {
+              onChange(e.target.value);
+            }
+          }}
           onFocus={() => setIsFocused(true)}
           onBlur={(e) => {
             setIsFocused(false);
             onBlur?.();
           }}
           disabled={disabled}
+          multiple={type === 'file' ? multiple : undefined}
           className={getInputStyles()}
           placeholder={placeholder}
         />

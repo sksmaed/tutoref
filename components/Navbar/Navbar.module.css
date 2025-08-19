@@ -1,31 +1,8 @@
-:root {
-  --nav-height: 60px;
-  --nav-padding-x: 52px;
-  --nav-padding-y: 10px;
-
-  --text: #1f1f1f;
-  --hover: #f38920;
-  --bg: #ffffff;
-
-  --menu-gap: 20px;
-  --menu-item-width: 100px;
-  --menu-item-height: 36px;
-  --menu-item-padding-x: 22px;
-  --menu-item-padding-y: 7px;
-  --menu-item-font-size: 14px;
-  --menu-item-font-weight: 400;
-
-  --icon-width: 20px;
-  --icon-height: 20px;
-  --icon-gap: 20px;
-  --radius: 10px;
-}
-
 .header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: var(--bg);
+  background-color: #ffffff;
   transition: box-shadow 0.2s ease;
 }
 
@@ -34,10 +11,10 @@
 }
 
 .container {
-  max-width: var(--nav-width);
-  height: var(--nav-height);
+  width: 100%;
+  height: 60px;
   margin: 0;
-  padding: var(--nav-padding-y) var(--nav-padding-x);
+  padding: 10px 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -55,28 +32,27 @@
 }
 
 .menuItem {
-  width: var(--menu-item-width);
-  height: var(--menu-item-height);
-  color: var(--text);
+  width: 100px;
+  height: 36px;
+  color: theme('colors.black.900');
   text-decoration: none;
-  font-weight: var(--menu-item-font-weight);
-  font-size: var(--menu-item-font-size);
-  padding: var(--menu-item-padding-y) var(--menu-item-padding-x);
+  font-weight: 400;
+  font-size: 14px;
+  padding: 7px 22px;
   transition: color 0.2s;
 }
 
 .menuItem:hover {
-  color: var(--hover);
-  /* 橘色：hover 時才變色 */
+  color: #f38920;
 }
 
 .iconWrap {
-  width: var(--icon-width);
-  height: var(--icon-height);
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: var(--icon-gap);
+  margin-left: 20px;
 }
 
 .noticeLabel { 
@@ -88,7 +64,7 @@
   width: 8px;
   height: 8px;
   border-radius: 9999px;
-  margin-left: 6px; /* 與文字間距 */
+  margin-left: 6px;
   position: absolute; 
   right: -50px; 
   top: -5px; 
