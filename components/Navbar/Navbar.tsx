@@ -73,7 +73,7 @@ export default function Navbar() {
             style={{ cursor: "pointer" }}
           >
             <Image
-              src={isUserHovered ? "/icon/user-hover.png" : "/icon/user.png"}
+              src={isUserHovered ? "/icons/user-hover.png" : "/icons/user.png"}
               alt="個人"
               width={20}
               height={20}

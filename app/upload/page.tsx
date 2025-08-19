@@ -86,9 +86,11 @@ const UploadPage = () => {
         <div className="mb-8">
           <Input
             type="file"
+            placeholder="選擇檔案"
+            value=""
+            onChange={() => {}} // 對於 file input，這個不會被使用
+            onChangeFile={handleFileUpload}
             multiple
-            onChange={handleFileUpload}
-            className="mb-4"
           />
           {uploadedFiles.length > 0 && (
             <ul className="mb-4 text-sm text-gray-700">
@@ -128,7 +130,7 @@ const UploadPage = () => {
                     <td className="py-2 px-4 border text-center">{plan.writer_name}</td>
                     <td className="py-2 px-4 border text-center">
                       <Button
-                        variant="outline"
+                        variant="small"
                         onClick={() => {
                           setSelectedPlan(plan);
                           setIsEditModalOpen(true);

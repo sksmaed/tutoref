@@ -11,7 +11,7 @@ import ResultTable from '@/components/layout/resultTable';
 import SearchBar from '@/components/layout/searchBar';
 import logo from '@/public/logo.png';
 import { useToast } from '@/hooks/use-toast';
-import { Toaster } from '@/components/ui/toaster';
+import { Toast } from '@/components/ui/toast';
 import { useSearchParams } from 'next/navigation';
 
 export default function SearchPage() {
@@ -58,7 +58,6 @@ function SearchPageContent() {
         toast({
           title: "沒有找到結果",
           description: "試試調整搜尋條件或關鍵字。",
-          duration: 3000,
         });
       }
     } catch (error) {
@@ -67,7 +66,6 @@ function SearchPageContent() {
         variant: "destructive",
         title: "搜尋失敗",
         description: "抱歉，搜尋過程中發生錯誤，請稍後再試。",
-        duration: 3000,
       });
     } finally {
       setIsSearching(false);
@@ -97,7 +95,11 @@ function SearchPageContent() {
           setAuthor={setAuthor}
         />
         <ResultTable results={searchResults}/>
-        <Toaster />
+        <Toast
+          title="搜尋結果已更新"
+          open={!!searchResults.length}
+          onClose={() => {}}
+        />
       </main>
     </div>
   );
