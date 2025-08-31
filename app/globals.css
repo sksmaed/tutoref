@@ -81,3 +81,14 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-track {
+  background: #F1F1F1;      /* black-100 */
+  border-radius: 9999px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #D4D4D4;      /* black-200 */
+  border-radius: 9999px;
+}
+.custom-scroll { scrollbar-width: thin; scrollbar-color: #D4D4D4 #F1F1F1; } /* Firefox */

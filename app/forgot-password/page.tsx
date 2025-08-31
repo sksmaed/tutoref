@@ -3,12 +3,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import Image from 'next/image';
-
-// 假寄信 API（前端只要顯示已寄出）
-async function fakeSendResetEmail(email: string): Promise<'ok'> {
-  await new Promise(r => setTimeout(r, 700));
-  return 'ok';
-}
+import { requestReset } from "@/services/auth";
 
 const isValidEmail = (s: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
@@ -25,9 +20,16 @@ export default function ForgotPasswordPage() {
     setSubmitted(true);
     if (!isValidEmail(email) || sending) return;
     setSending(true);
-    await fakeSendResetEmail(email);
-    setSent(true);
-    setSending(false);
+    try {
+      await requestReset(email); // 後端即使找不到信箱也回 success
+      setSent(true);
+    } catch (err: any) {
+      // 真要分流錯誤，可在這裡用你的 axios 攔截器 error.code / message
+      // 但按現在的後端行為，通常不會進來
+      setSent(true); // 保持相同 UX：一律顯示「已寄出」
+    } finally {
+     setSending(false);
+   }
   };
 
   const showError = (touched || submitted) && !isValidEmail(email);

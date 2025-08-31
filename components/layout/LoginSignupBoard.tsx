@@ -133,7 +133,7 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
 
                         <Input
                             type="password"
-                            placeholder={activeTab === 'login' ? "輸入密碼" : "設定密碼（至少 8 碼，英數混合）"}
+                            placeholder={activeTab === 'login' ? "輸入密碼" : "輸入密碼"}
                             value={password}
                             onChange={(v) => { setPassword(v); setShowWarning(false); }}
                             onBlur={() => setTouched((t) => ({ ...t, password: true }))}
@@ -163,7 +163,7 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                         {activeTab === 'signup' && (
                             <Input
                                 type="password"
-                                placeholder="確認密碼"
+                                placeholder="輸入密碼"
                                 value={confirmPassword}
                                 onChange={(v) => { setConfirmPassword(v); setShowWarning(false); }}
                                 onBlur={() => setTouched((t) => ({ ...t, confirm: true }))}
