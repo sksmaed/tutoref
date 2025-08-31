@@ -31,12 +31,14 @@ module.exports = {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))',
 					100: "#FEF7F1",
+					700: "#F1994A", 
 					900: "#ED7A13"
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))',
-					100: "#F4F7F0"
+				DEFAULT: 'hsl(var(--secondary))',
+				foreground: 'hsl(var(--secondary-foreground))',
+				100: "#F4F7F0",
+				700: "#728A47",       // ✅ 新增：Secondary/700（自然）
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
@@ -68,6 +70,18 @@ module.exports = {
 					500: "#808080",
 					700: "#474747",
 					900: "#0D0D0D",
+				},
+				category: {
+				nature:  "#728A47", // 自然（Secondary/700）
+				social:  "#F1994A", // 社會（Primary/700）
+				general: "#7F478A", // 綜合
+				info:    "#6392B5", // 資訊
+				art:     "#C85F5F", // 藝文
+				chinese: "#C1B349", // 國語
+				health:  "#3D9375", // 健教
+				morning: "#C4789A", // 晨讀
+				english: "#8E5C36", // 英文
+				other:   "#0D0D0D", // 其他（Black/900）
 				},
 				error: {
 					border: "#F24822"

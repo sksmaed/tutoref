@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import LoginSignupBoard from '@/components/layout/LoginSignupBoard';
 import { setFlash } from '@/utils/flash';
 import { Modal } from '@/components/ui/Modal';
-import { fakeLogin, type FailKind, fakeSignup, type SignupResult } from '@/utils/auth.fake';
+import { login as apiLogin, register as apiRegister, initiateGoogleLogin } from "@/services/auth";
+import { useAuth } from "@/hooks/useAuth";
 
 
 const LoginPage: React.FC = () => {
@@ -13,71 +14,112 @@ const LoginPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [failOpen, setFailOpen] = useState(false);
   const [failText, setFailText] = useState<string>('');
-  
+
   const [signupOpen, setSignupOpen] = useState(false);
-  const [signupText, setSignupText] = useState('');
+  const [signupText, setSignupText] = useState<string>('');
   const [signupConfirmText, setSignupConfirmText] = useState<'我知道了' | '前往登入'>('我知道了');
   const [signupOnConfirm, setSignupOnConfirm] = useState<(() => void) | undefined>(undefined);
   const [forceTab, setForceTab] = useState<'login' | 'signup' | undefined>(undefined);
 
+  const { refresh } = useAuth();
 
   const handleLogin = async (email: string, password: string, rememberMe: boolean) => {
     if (submitting) return;
     setSubmitting(true);
-    const result = await fakeLogin(email, password);
-    setSubmitting(false);
+    try {
+      await apiLogin(email, password);
+      await refresh(); // 👈 讓 Navbar 立刻知道已登入
+      setSubmitting(false);
 
-    if (result === 'ok') {
-      // 設定跳轉後的 toast
       setFlash({
         type: 'success',
         title: '登入成功！',
         message: '可以開始檢索教案囉～',
         timeout: 5000,
       });
-      router.push('/'); // 跳到根目錄
-      return;
-    }
+      router.push('/'); // 與你原本行為一致
+    } catch (e: any) {
+      setSubmitting(false);
+      let msg = e.message || '登入失敗，請重試';
+      switch (e.code) {
+        case 'auth:incorrect_password':
+          msg = '密碼錯誤，請重新輸入';
+          break;
+        case 'auth:email_not_registered':
+          msg = (
+            <>
+              此電子信箱尚未被註冊，<br />
+              請重新輸入！
+            </>
+          );
+          break;
+        default:
+          // 保留原始錯誤訊息，避免吃掉其他情況（ex. server error）
+          msg = e.message || '登入失敗，請稍後再試';
+      }
 
-    // 失敗：顯示彈窗
-    if (result === 'wrong_password') {
-      setFailText('密碼錯誤，請重新輸入！');
-    } else {
-      setFailText('此電子信箱尚未被註冊，請重新輸入！');
+      setFailText(msg);
+      setFailOpen(true);
     }
-    setFailOpen(true);
   };
+
 
   const handleSignup = async (email: string, password: string, confirmPassword: string) => {
     if (submitting) return;
     setSubmitting(true);
+    try {
+      await apiRegister({ email, password1: password, password2: confirmPassword });
+      setSubmitting(false);
 
-    const res: SignupResult = await fakeSignup(email);
-    setSubmitting(false);
-
-    if (res === 'duplicated') {
-        // 失敗：信箱已被註冊
-        setSignupText('該信箱已被註冊，請重新輸入！');
-        setSignupConfirmText('我知道了');
-        setSignupOnConfirm(undefined);     // 只關掉
-        setSignupOpen(true);
-        return;
-    }
-
-    // 成功：顯示成功訊息，按「前往登入」→ 切到 login 分頁
-    console.log('註冊成功，請前往登入：', { email });
-    setSignupText('恭喜你註冊成功，現在請前往登入系統！');
-    setSignupConfirmText('前往登入');
-    setSignupOnConfirm(() => () => {
+      setSignupText('恭喜你註冊成功，現在請再次登入系統！');
+      setSignupConfirmText('前往登入');
+      setSignupOnConfirm(() => () => {
         setSignupOpen(false);
-        setForceTab('login');             // <<< 關鍵：切到登入分頁
-    });
-    setSignupOpen(true);
+        setForceTab('login');
+      });
+      setSignupOpen(true);
+    } catch (e: any) {
+      setSubmitting(false);
+
+      // 先組一個預設訊息（可把多個 errors 串成多行）
+      let fallback =
+        (Array.isArray(e.errors) && e.errors.length
+          ? e.errors.map((er: any) => er?.extra_data?.message || er?.message).filter(Boolean).join('\n')
+          : e.message) || '註冊失敗，請確認資料是否正確';
+
+      // 預設按鈕文案與行為
+      let msg: string = fallback;
+      let confirmText: '我知道了' | '前往登入' = '我知道了';
+      let onConfirm: (() => void) | undefined = undefined;
+      console.log('signup error code:', e.code);
+
+      switch (e.code) {
+        case 'auth:email_already_exists':
+          msg = '該信箱已被註冊，請重新登入！';
+          confirmText = '我知道了';
+          console.log('email_already_exists');
+          break;
+        default:
+          // 保持預設
+          break;
+      }
+
+      // ✅ 使用「註冊 Modal」，而不是 fail modal
+      setSignupText(msg);
+      setSignupConfirmText(confirmText);
+      setSignupOnConfirm(onConfirm);
+      setSignupOpen(true);
+    }
   };
 
 
-  const handleGoogleLogin = () => {
-    console.log('Google login (fake)');
+  const handleGoogleLogin = async () => {
+    try {
+      await initiateGoogleLogin(); // 會自動導到 Google
+    } catch (e: any) {
+      setFailText(e.message || 'Google 登入初始化失敗');
+      setFailOpen(true);
+    }
   };
 
   return (
