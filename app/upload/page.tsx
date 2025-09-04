@@ -1,39 +1,35 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Loader2 } from 'lucide-react';
+import { FileUpload } from '@/components/ui/FileUpload';
 import { TeachingPlan } from '@/types/api';
 import EditModal from '@/components/layout/editModal';
 import { useToast } from '@/hooks/use-toast';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-
 
 const UploadPage = () => {
   const [parsedPlans, setParsedPlans] = useState<TeachingPlan[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<TeachingPlan | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const { toast } = useToast();
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
+  const handleFileUpload = async (file: File | null) => {
+    if (!file) {
+      setUploadedFile(null);
+      setParsedPlans([]);
+      return;
+    }
+    
+    setUploadedFile(file);
     setIsUploading(true);
 
     try {
       const formData = new FormData();
-      const filesArray = Array.from(e.target.files);
-      filesArray.forEach(file => {
-        formData.append('files', file);
-      });
-
-      setUploadedFiles(filesArray); // 更新已選擇的檔案清單
+      formData.append('files', file);
 
       const response = await fetch(`${BACKEND_URL}/api/upload-file`, {
         method: 'POST',
@@ -79,90 +75,113 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold mb-6">批量上傳教案</h1>
+    <div className="w-full h-full bg-black-100 flex flex-col items-center pt-[60px]">
+      <h1 className="text-[40px] leading-normal font-bold text-black-900 mb-10">上傳教案</h1>
+      
+      {/* 上傳卡片 */}
+      <div className={`w-[576px] flex flex-col bg-white rounded-lg px-[100px] py-20`}>
+        {/* 使用新的 FileUpload 元件 */}
+        <FileUpload
+          onFileUpload={handleFileUpload}
+          isUploading={isUploading}
+          uploadedFile={uploadedFile}
+        />
 
-        <div className="mb-8">
-          <Input
-            type="file"
-            placeholder="選擇檔案"
-            value=""
-            onChange={() => {}} // 對於 file input，這個不會被使用
-            onChangeFile={handleFileUpload}
-            multiple
-          />
-          {uploadedFiles.length > 0 && (
-            <ul className="mb-4 text-sm text-gray-700">
-              {uploadedFiles.map((file, index) => (
-                <li key={index}>📂 {file.name}</li>
-              ))}
-            </ul>
-          )}
-          {isUploading && (
-            <div className="flex items-center space-x-2">
-              <Loader2 className="animate-spin" />
-              <span>正在解析教案...</span>
+        {/* 載入狀態 */}
+        {isUploading && (
+          <div className="mt-6 text-center">
+            <div className="inline-flex items-center space-x-2 text-primary-900">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-900 border-t-transparent"></div>
+              <span>正在上傳教案...</span>
             </div>
-          )}
-        </div>
-
-        {parsedPlans.length > 0 && (
-          <>
-            <table className="w-full bg-white shadow-md rounded-lg">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="py-2 px-4 border">家別</th>
-                  <th className="py-2 px-4 border">期數</th>
-                  <th className="py-2 px-4 border">課程類別</th>
-                  <th className="py-2 px-4 border">教案名稱</th>
-                  <th className="py-2 px-4 border">撰寫者</th>
-                  <th className="py-2 px-4 border">編輯</th>
-                </tr>
-              </thead>
-              <tbody>
-                {parsedPlans.map((plan) => (
-                  <tr key={plan.id}>
-                    <td className="py-2 px-4 border text-center">{plan.team}</td>
-                    <td className="py-2 px-4 border text-center">{plan.semester}</td>
-                    <td className="py-2 px-4 border text-center">{plan.category}</td>
-                    <td className="py-2 px-4 border text-center">{plan.tp_name}</td>
-                    <td className="py-2 px-4 border text-center">{plan.writer_name}</td>
-                    <td className="py-2 px-4 border text-center">
-                      <Button
-                        variant="small"
-                        onClick={() => {
-                          setSelectedPlan(plan);
-                          setIsEditModalOpen(true);
-                        }}
-                      >
-                        編輯
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div className="mt-6 flex justify-end">
-              <Button onClick={handleSubmit}>
-                確認上傳
+          </div>
+        )}
+        
+        {/* 按鈕區域 */}
+        <div className="flex flex-col gap-3 mt-8">
+          {/* 重新選擇檔案按鈕 - 只在有檔案時顯示 */}
+          {uploadedFile && (
+            <div className="flex justify-center">
+              <Button
+                onClick={() => handleFileUpload(null)}
+                variant="large"
+                disabled={isUploading}
+                className="text-sm bg-white border border-primary-900 text-primary-900 hover:bg-primary-50"
+              >
+                重新選擇檔案
               </Button>
             </div>
-          </>
-        )}
+          )}
 
-        {selectedPlan && (
-          <EditModal
-            plan={selectedPlan}
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            onSave={(updatedPlan) => {
-              setParsedPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
-            }}
-          />
-        )}
+          {/* 確認上傳按鈕*/}
+          <div className="flex justify-center">
+            <Button 
+              onClick={handleSubmit}
+              disabled={!uploadedFile || isUploading}
+              variant="large"
+              className={`
+                ${!uploadedFile ? 'bg-black-300 text-black-500 cursor-not-allowed' : 'bg-primary-900 text-white hover:bg-primary-900/90'}
+              `}
+            >
+              確認上傳
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {/* 解析結果表格 */}
+      {parsedPlans.length > 0 && (
+        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-xl font-bold text-black-900 mb-4">解析結果</h2>
+          <table className="w-full">
+            <thead className="bg-black-100">
+              <tr>
+                <th className="py-3 px-4 text-left font-medium text-black-700">家別</th>
+                <th className="py-3 px-4 text-left font-medium text-black-700">學期</th>
+                <th className="py-3 px-4 text-left font-medium text-black-700">類別</th>
+                <th className="py-3 px-4 text-left font-medium text-black-700">教案名稱</th>
+                <th className="py-3 px-4 text-left font-medium text-black-700">作者</th>
+                <th className="py-3 px-4 text-left font-medium text-black-700">編輯</th>
+              </tr>
+            </thead>
+            <tbody>
+              {parsedPlans.map((plan) => (
+                <tr key={plan.id} className="border-t border-black-200">
+                  <td className="py-3 px-4 text-black-900">{plan.team}</td>
+                  <td className="py-3 px-4 text-black-900">{plan.semester}</td>
+                  <td className="py-3 px-4 text-black-900">{plan.category}</td>
+                  <td className="py-3 px-4 text-black-900">{plan.tp_name}</td>
+                  <td className="py-3 px-4 text-black-900">{plan.writer_name}</td>
+                  <td className="py-3 px-4">
+                    <Button
+                      variant="small"
+                      onClick={() => {
+                        setSelectedPlan(plan);
+                        setIsEditModalOpen(true);
+                      }}
+                      className="bg-primary-900 text-white hover:bg-primary-900/90"
+                    >
+                      編輯
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* 編輯模態框 */}
+      {selectedPlan && (
+        <EditModal
+          plan={selectedPlan}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={(updatedPlan) => {
+            setParsedPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
+          }}
+        />
+      )}
     </div>
   );
 };
