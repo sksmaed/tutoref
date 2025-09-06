@@ -2,7 +2,6 @@ import { TeachingPlan } from "@/types/api";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Checkbox } from "@/components/ui/Checkbox";
 import { DialogHeader } from "../ui/dialog";
 import { useState, useEffect } from "react";
 
@@ -17,16 +16,10 @@ const EditModal = ({
   onClose: () => void,
   onSave: (updatedPlan: TeachingPlan) => void
 }) => {
-  const [editedPlan, setEditedPlan] = useState<TeachingPlan>({
-    ...plan,
-    is_open: Number(plan.is_open)
-  });
+  const [editedPlan, setEditedPlan] = useState<TeachingPlan>(plan);
 
   useEffect(() => {
-    setEditedPlan({
-      ...plan,
-      is_open: Number(plan.is_open)
-    });
+    setEditedPlan(plan);
   }, [plan]);
 
   const handleChange = (field: keyof TeachingPlan, value: string | number) => {
@@ -46,21 +39,11 @@ const EditModal = ({
         </DialogHeader>
         <div className="grid grid-cols-2 gap-4">
           {Object.keys(plan)
-            .filter(key => key !== 'id')
+            .filter(key => key !== 'id' && key !== 'is_open')
             .map((key) => (
               <div key={key} className="space-y-2">
                 <label className="text-sm font-medium">{key}</label>
-                {key === 'is_open' ? (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={editedPlan.is_open === 1}
-                      onChange={(checked) =>
-                        handleChange('is_open', checked ? 1 : 0)
-                      }
-                      label={editedPlan.is_open === 1 ? '公開' : '不公開'}
-                    />
-                  </div>
-                ) : key === 'objectives' || key === 'outline' ? (
+                {key === 'objectives' || key === 'outline' ? (
                   <textarea
                     className="w-full p-2 border rounded-md"
                     value={editedPlan[key as keyof TeachingPlan] as string}

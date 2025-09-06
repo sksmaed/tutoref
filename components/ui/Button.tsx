@@ -2,7 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 
 interface ButtonProps {
-  variant?: 'large' | 'small';
+  variant?: 'default' | 'large' | 'small';
   children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
@@ -12,17 +12,18 @@ interface ButtonProps {
 }
 
 export const Button: React.FC<ButtonProps> = ({
-  variant = 'large',
+  variant = 'default',
   children, onClick,
   disabled = false,
   className = '',
   type = 'button',
   leftIcon = ''
 }) => {
-  const baseClasses = `py-3 px-12 rounded-lg transition-all duration-200 flex items-center justify-center hover:opacity-90`;
+  const baseClasses = `rounded-lg transition-all duration-200 flex items-center justify-center hover:opacity-90`;
   const variantClasses = {
-    large: 'w-[378px]',
-    small: 'w-[160px]',
+    default: 'py-1.5 px-3',
+    large: 'py-3 px-12 w-[378px]',
+    small: 'py-3 px-12 w-[170px]',
   };
   const iconStyle: React.CSSProperties = {
     width: 20,

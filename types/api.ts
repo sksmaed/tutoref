@@ -32,14 +32,9 @@ export interface TeachingPlan {
     category: string;
     tp_name: string;
     grade: string;
-    duration: number;
-    staffing: string;
-    venue: string;
+    duration: string;
     objectives: string;
     outline: string;
-    sheet_docx: string;
-    sheet_pdf: string;
-    slide_pptx: string;
+    completion_notes?: string;
     slide_pdf: string;
-    is_open: number;
 }
