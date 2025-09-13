@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 
@@ -9,30 +9,35 @@ interface SlideUploadProps {
 }
 
 const SlideUpload: React.FC<SlideUploadProps> = ({
-  initialFileName,
+  initialFileName = '',
   onFileChange,
   onFileRemove
 }) => {
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [currentFileName, setCurrentFileName] = useState<string>(initialFileName);
+
+  // 當 initialFileName 改變時同步
+  useEffect(() => {
+    setCurrentFileName(initialFileName);
+  }, [initialFileName]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setUploadedFile(file);
+      setCurrentFileName(file.name);
       onFileChange(file.name);
     }
+    // 重置 input 的值，以便同一個檔案可以再次被選擇
+    event.target.value = '';
   };
 
   const handleRemoveFile = () => {
-    setUploadedFile(null);
+    setCurrentFileName('');
     onFileRemove();
   };
 
-  const displayFileName = uploadedFile?.name || initialFileName;
-
   return (
     <div className="space-y-3">
-      {displayFileName ? (
+      {currentFileName ? (
         <div className="flex flex-col justify-between p-3 bg-gray-50 rounded gap-3">
           <div className="flex gap-2">
             <Image
@@ -40,9 +45,10 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
               alt="file icon"
               width={20}
               height={20}
+              className="object-contain"
             />
             <span className="text-base text-black-900">
-                {displayFileName}
+                {currentFileName}
             </span>
           </div>
           <div className="flex gap-3">

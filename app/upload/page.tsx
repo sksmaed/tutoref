@@ -9,6 +9,7 @@ import TeachingPlanEditor, { TeachingPlanEditorRef } from '@/components/layout/T
 import TeachingPlanPreview from '@/components/layout/TeachingPlanPreview';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { Modal } from '@/components/ui/Modal';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -31,13 +32,15 @@ const UploadPage = () => {
 
   const [parsedPlans, setParsedPlans] = useState<TeachingPlan[]>([mockTeachingPlan]);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<TeachingPlan | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [showPreview, setShowPreview] = useState(true); // 顯示預覽表格
   const [showEditor, setShowEditor] = useState(false); // 顯示編輯表格
   const [isValid, setIsValid] = useState(true); // 新增驗證狀態
   const [showCancelConfirm, setShowCancelConfirm] = useState(false); // 顯示取消編輯確認對話框
+  const [showErrorModal, setShowErrorModal] = useState(false); // 顯示檔案格式錯誤 modal
+  const [persistentSlideFile, setPersistentSlideFile] = useState<string>(mockTeachingPlan.slide_pdf || ''); // 持久化的slide檔案名稱
+  const [preEditSlideFile, setPreEditSlideFile] = useState<string>(''); // 編輯前的slide檔案狀態，用於取消編輯時恢復
   const editorRef = useRef<TeachingPlanEditorRef>(null);
   const { toast } = useToast();
 
@@ -51,11 +54,24 @@ const UploadPage = () => {
     }
     
     setUploadedFile(file);
+  };
+
+  const handleSubmit = async () => {
+    // 檢查檔案類型
+    if (!uploadedFile) return;
+    
+    // 檢查是否為 PDF 檔案
+    if (uploadedFile.type !== 'application/pdf' && !uploadedFile.name.toLowerCase().endsWith('.pdf')) {
+      setShowErrorModal(true);
+      return;
+    }
+
+    // 如果檔案格式正確，開始上傳並解析
     setIsUploading(true);
 
     try {
       const formData = new FormData();
-      formData.append('files', file);
+      formData.append('files', uploadedFile);
 
       const response = await fetch(`${BACKEND_URL}/api/upload-file`, {
         method: 'POST',
@@ -65,60 +81,87 @@ const UploadPage = () => {
       const data = await response.json();
       setParsedPlans(data);
       
-      // 如果有解析結果，顯示預覽表格
+      // 重置slide檔案狀態為新解析結果的狀態
       if (data && data.length > 0) {
+        setPersistentSlideFile(data[0].slide_pdf || '');
         setShowPreview(true);
         setShowEditor(false);
       }
     } catch (error) {
       console.error('Upload error:', error);
+      toast({
+        title: "❌ 上傳失敗",
+        description: "請稍後再試。",
+        variant: "destructive",
+      });
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(parsedPlans),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to submit teaching plans");
-      }
-
-      toast({
-        title: "✅ 提交成功",
-        description: "教案已成功提交到系統。",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Submit error:", error);
-      toast({
-        title: "❌ 提交失敗",
-        description: "請稍後再試。",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleConfirmUpload = async () => {
     if (!showEditor) {
-      // 如果還沒顯示編輯表格，先上傳並解析檔案
-      if (uploadedFile) {
-        await handleFileUpload(uploadedFile);
+      // 如果還沒顯示編輯表格，先提交教案資料到後端
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(parsedPlans),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit teaching plans");
+        }
+
+        toast({
+          title: "✅ 提交成功",
+          description: "教案已成功提交到系統。",
+          variant: "default",
+        });
+      } catch (error) {
+        console.error("Submit error:", error);
+        toast({
+          title: "❌ 提交失敗",
+          description: "請稍後再試。",
+          variant: "destructive",
+        });
       }
     } else {
       // 如果已經顯示編輯表格，則提交教案資料
-      await handleSubmit();
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(parsedPlans),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit teaching plans");
+        }
+
+        toast({
+          title: "✅ 提交成功",
+          description: "教案已成功提交到系統。",
+          variant: "default",
+        });
+      } catch (error) {
+        console.error("Submit error:", error);
+        toast({
+          title: "❌ 提交失敗",
+          description: "請稍後再試。",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const handleEditorSave = (updatedPlan: TeachingPlan) => {
+    // 保存slide檔案狀態
+    setPersistentSlideFile(updatedPlan.slide_pdf || '');
     setParsedPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
     setShowEditor(false);
     setShowPreview(true);
@@ -129,10 +172,17 @@ const UploadPage = () => {
   };
 
   const handleEditorCancel = () => {
+    console.log('handleEditorCancel - 被調用');
+    console.log('handleEditorCancel - 當前 persistentSlideFile:', persistentSlideFile);
+    console.log('handleEditorCancel - 當前 preEditSlideFile:', preEditSlideFile);
     setShowCancelConfirm(true);
   };
 
   const handleConfirmCancel = () => {
+    // 恢復到編輯前的slide檔案狀態
+    console.log('handleConfirmCancel - 恢復編輯前狀態:', preEditSlideFile);
+    console.log('handleConfirmCancel - 當前狀態:', persistentSlideFile);
+    setPersistentSlideFile(preEditSlideFile);
     setShowEditor(false);
     setShowPreview(true);
     setShowCancelConfirm(false);
@@ -143,6 +193,9 @@ const UploadPage = () => {
   };
 
   const handlePreviewEdit = () => {
+    // 保存編輯前的slide檔案狀態
+    console.log('handlePreviewEdit - 保存編輯前狀態:', persistentSlideFile);
+    setPreEditSlideFile(persistentSlideFile);
     setShowPreview(false);
     setShowEditor(true);
   };
@@ -202,7 +255,7 @@ const UploadPage = () => {
               {/* 確認上傳按鈕*/}
               <div className="flex justify-center">
                 <Button 
-                  onClick={handleConfirmUpload}
+                  onClick={handleSubmit}
                   disabled={!uploadedFile || isUploading}
                   variant="large"
                   className={`
@@ -219,7 +272,9 @@ const UploadPage = () => {
         /* 預覽表格 */
         <>
           {parsedPlans.length > 0 && (
-            <TeachingPlanPreview plan={parsedPlans[0]} />
+            <TeachingPlanPreview 
+              plan={{...parsedPlans[0], slide_pdf: persistentSlideFile}}
+            />
           )}
           
           {/* 預覽頁按鈕 */}
@@ -246,7 +301,7 @@ const UploadPage = () => {
           {parsedPlans.length > 0 && (
             <TeachingPlanEditor
               ref={editorRef}
-              plan={parsedPlans[0]}
+              plan={{...parsedPlans[0], slide_pdf: persistentSlideFile}}
               onSave={handleEditorSave}
               onCancel={handleEditorCancel}
               onValidationChange={handleValidationChange}
@@ -278,18 +333,6 @@ const UploadPage = () => {
         </>
       )}
 
-      {/* 編輯模態框 */}
-      {selectedPlan && (
-        <EditModal
-          plan={selectedPlan}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onSave={(updatedPlan) => {
-            setParsedPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
-          }}
-        />
-      )}
-
       {/* 取消編輯確認對話框 */}
       <ConfirmModal
         open={showCancelConfirm}
@@ -300,6 +343,14 @@ const UploadPage = () => {
         onClose={handleContinueEditing}
         onCancel={handleConfirmCancel}
         onConfirm={handleContinueEditing}
+      />
+
+      {/* 檔案格式錯誤 Modal */}
+      <Modal
+        open={showErrorModal}
+        description="所選檔案格式不符，請重新上傳！"
+        confirmText="我知道了"
+        onClose={() => setShowErrorModal(false)}
       />
     </div>
   );

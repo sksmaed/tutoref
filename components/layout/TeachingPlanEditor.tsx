@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { TeachingPlan } from '@/types/api';
 import { filterOptions } from '@/types/filter';
 import RadioCheckboxGroup from '@/components/ui/RadioCheckboxGroup';
@@ -31,6 +31,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
   const seasons = ['冬', '夏'];
 
   useEffect(() => {
+    console.log('TeachingPlanEditor - plan prop 改變:', plan.slide_pdf);
     setEditedPlan(plan);
   }, [plan]);
 
@@ -51,17 +52,19 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
     }
   }, [editedPlan, onValidationChange]);
 
-  const handleChange = (field: keyof TeachingPlan, value: string | number) => {
+  const handleChange = useCallback((field: keyof TeachingPlan, value: string | number) => {
     setEditedPlan(prev => ({ ...prev, [field]: value }));
-    // 標記欄位為已觸碰
-    setTouchedFields(prev => new Set(prev).add(field));
-  };
+  }, []);
 
-  const handleClearField = (field: keyof TeachingPlan) => {
+  const handleClearField = useCallback((field: keyof TeachingPlan) => {
     setEditedPlan(prev => ({ ...prev, [field]: '' }));
     // 標記欄位為已觸碰
     setTouchedFields(prev => new Set(prev).add(field));
-  };
+  }, []);
+
+  const handleBlur = useCallback((field: string) => {
+    setTouchedFields(prev => new Set(prev).add(field));
+  }, []);
 
   const handleSave = () => {
     onSave(editedPlan);
@@ -81,94 +84,15 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
     handleChange('slide_pdf', '');
   };
 
-  const isFieldEmpty = (field: string) => {
+  const isFieldEmpty = useCallback((field: string) => {
     const value = editedPlan[field as keyof TeachingPlan];
     return !value || value.toString().trim() === '';
-  };
+  }, [editedPlan]);
 
-  const shouldShowEmptyWarning = (field: string) => {
+  const shouldShowEmptyWarning = useCallback((field: string) => {
     const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline', 'team', 'category', 'grade', 'duration', 'semester'];
     return requiredFields.includes(field) && touchedFields.has(field) && isFieldEmpty(field);
-  };
-
-  // 文字編輯欄位組件
-  const TextEditField = ({ 
-    field, 
-    value, 
-    placeholder = "", 
-    multiline = false 
-  }: { 
-    field: keyof TeachingPlan; 
-    value: string; 
-    placeholder?: string;
-    multiline?: boolean;
-  }) => (
-    <div 
-      className="relative group"
-      onMouseEnter={() => setHoveredField(field)}
-      onMouseLeave={() => setHoveredField(null)}
-    >
-      {multiline ? (
-        <textarea
-          className="w-full border-none outline-none resize-none bg-transparent text-base text-black-900 leading-[1.5]"
-          value={value}
-          placeholder={placeholder}
-          onChange={(e) => handleChange(field, e.target.value)}
-          onBlur={() => setTouchedFields(prev => new Set(prev).add(field))}
-          rows={4}
-        />
-      ) : (
-        <input
-          type="text"
-          className="w-full border-none outline-none bg-transparent text-base text-black-900 leading-[1.5]"
-          value={value}
-          placeholder={placeholder}
-          onChange={(e) => handleChange(field, e.target.value)}
-          onBlur={() => setTouchedFields(prev => new Set(prev).add(field))}
-        />
-      )}
-      
-      {hoveredField === field && value && (
-        <button
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600"
-          onClick={() => handleClearField(field)}
-        >
-          ✕
-        </button>
-      )}
-      
-      {shouldShowEmptyWarning(field) && (
-        <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
-      )}
-    </div>
-  );
-
-  // 勾選欄位組件 - 使用新的 RadioCheckboxGroup
-  const CheckboxField = ({ 
-    field,
-    options, 
-    selectedValue, 
-    onChange 
-  }: { 
-    field: keyof TeachingPlan;
-    options: string[]; 
-    selectedValue: string; 
-    onChange: (value: string) => void;
-  }) => (
-    <div>
-      <RadioCheckboxGroup
-        options={options}
-        selectedValue={selectedValue}
-        onChange={(value) => {
-          onChange(value);
-          setTouchedFields(prev => new Set(prev).add(field));
-        }}
-      />
-      {shouldShowEmptyWarning(field) && (
-        <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
-      )}
-    </div>
-  );
+  }, [touchedFields, isFieldEmpty]);
 
   return (
     <div className="w-full max-w-4xl flex flex-col items-center">
@@ -190,11 +114,33 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 課程名稱
               </td>
               <td className="border-t-0 border-r-0 border-b border-l border-black-200 px-10 py-3" colSpan={3}>
-                <TextEditField 
-                  field="tp_name" 
-                  value={editedPlan.tp_name} 
-                  placeholder="請輸入課程名稱"
-                />
+                <div 
+                  className="relative group"
+                  onMouseEnter={() => setHoveredField('tp_name')}
+                  onMouseLeave={() => setHoveredField(null)}
+                >
+                  <input
+                    type="text"
+                    className="w-full border-none outline-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    value={editedPlan.tp_name}
+                    placeholder="請輸入課程名稱"
+                    onChange={(e) => handleChange('tp_name', e.target.value)}
+                    onBlur={() => handleBlur('tp_name')}
+                  />
+                  
+                  {hoveredField === 'tp_name' && editedPlan.tp_name && (
+                    <button
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600"
+                      onClick={() => handleClearField('tp_name')}
+                    >
+                      ✕
+                    </button>
+                  )}
+                  
+                  {shouldShowEmptyWarning('tp_name') && (
+                    <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
+                  )}
+                </div>
               </td>
             </tr>
 
@@ -204,12 +150,19 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 家別
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-                <CheckboxField 
-                  field="team"
-                  options={filterOptions.team}
-                  selectedValue={editedPlan.team}
-                  onChange={(value) => handleChange('team', value)}
-                />
+                <div>
+                  <RadioCheckboxGroup
+                    options={filterOptions.team}
+                    selectedValue={editedPlan.team}
+                    onChange={(value) => {
+                      handleChange('team', value);
+                      handleBlur('team');
+                    }}
+                  />
+                  {shouldShowEmptyWarning('team') && (
+                    <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
+                  )}
+                </div>
               </td>
             </tr>
 
@@ -222,25 +175,25 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 <div className="space-y-3">
                   <div>
                     <div className="text-sm font-medium text-black-700 mb-2">年份</div>
-                    <CheckboxField 
-                      field="semester"
+                    <RadioCheckboxGroup
                       options={years}
                       selectedValue={editedPlan.semester?.substring(0, 2) || ''}
                       onChange={(year) => {
                         const season = editedPlan.semester?.substring(2) || '冬';
                         handleChange('semester', year + season);
+                        handleBlur('semester');
                       }}
                     />
                   </div>
                   <div>
                     <div className="text-sm font-medium text-black-700 mb-2">學期</div>
-                    <CheckboxField 
-                      field="semester"
+                    <RadioCheckboxGroup
                       options={seasons}
                       selectedValue={editedPlan.semester?.substring(2) || ''}
                       onChange={(season) => {
                         const year = editedPlan.semester?.substring(0, 2) || '25';
                         handleChange('semester', year + season);
+                        handleBlur('semester');
                       }}
                     />
                   </div>
@@ -257,11 +210,33 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 撰寫者
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-                <TextEditField 
-                  field="writer_name" 
-                  value={editedPlan.writer_name} 
-                  placeholder="請輸入撰寫者姓名"
-                />
+                <div 
+                  className="relative group"
+                  onMouseEnter={() => setHoveredField('writer_name')}
+                  onMouseLeave={() => setHoveredField(null)}
+                >
+                  <input
+                    type="text"
+                    className="w-full border-none outline-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    value={editedPlan.writer_name}
+                    placeholder="請輸入撰寫者姓名"
+                    onChange={(e) => handleChange('writer_name', e.target.value)}
+                    onBlur={() => handleBlur('writer_name')}
+                  />
+                  
+                  {hoveredField === 'writer_name' && editedPlan.writer_name && (
+                    <button
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600"
+                      onClick={() => handleClearField('writer_name')}
+                    >
+                      ✕
+                    </button>
+                  )}
+                  
+                  {shouldShowEmptyWarning('writer_name') && (
+                    <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
+                  )}
+                </div>
               </td>
             </tr>
 
@@ -271,12 +246,19 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 類別
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-                <CheckboxField 
-                  field="category"
-                  options={filterOptions.category}
-                  selectedValue={editedPlan.category}
-                  onChange={(value) => handleChange('category', value)}
-                />
+                <div>
+                  <RadioCheckboxGroup
+                    options={filterOptions.category}
+                    selectedValue={editedPlan.category}
+                    onChange={(value) => {
+                      handleChange('category', value);
+                      handleBlur('category');
+                    }}
+                  />
+                  {shouldShowEmptyWarning('category') && (
+                    <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
+                  )}
+                </div>
               </td>
             </tr>
 
@@ -286,12 +268,19 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 適用年級
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-                <CheckboxField 
-                  field="grade"
-                  options={filterOptions.grade}
-                  selectedValue={editedPlan.grade}
-                  onChange={(value) => handleChange('grade', value)}
-                />
+                <div>
+                  <RadioCheckboxGroup
+                    options={filterOptions.grade}
+                    selectedValue={editedPlan.grade}
+                    onChange={(value) => {
+                      handleChange('grade', value);
+                      handleBlur('grade');
+                    }}
+                  />
+                  {shouldShowEmptyWarning('grade') && (
+                    <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
+                  )}
+                </div>
               </td>
             </tr>
 
@@ -301,12 +290,19 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 課程時長
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-                <CheckboxField 
-                  field="duration"
-                  options={filterOptions.duration}
-                  selectedValue={editedPlan.duration}
-                  onChange={(value) => handleChange('duration', value)}
-                />
+                <div>
+                  <RadioCheckboxGroup
+                    options={filterOptions.duration}
+                    selectedValue={editedPlan.duration}
+                    onChange={(value) => {
+                      handleChange('duration', value);
+                      handleBlur('duration');
+                    }}
+                  />
+                  {shouldShowEmptyWarning('duration') && (
+                    <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
+                  )}
+                </div>
               </td>
             </tr>
 
@@ -316,12 +312,33 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 課程目標
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-                <TextEditField 
-                  field="objectives" 
-                  value={editedPlan.objectives} 
-                  placeholder="請輸入課程目標"
-                  multiline={true}
-                />
+                <div 
+                  className="relative group"
+                  onMouseEnter={() => setHoveredField('objectives')}
+                  onMouseLeave={() => setHoveredField(null)}
+                >
+                  <textarea
+                    className="w-full border-none outline-none resize-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    value={editedPlan.objectives}
+                    placeholder="請輸入課程目標"
+                    onChange={(e) => handleChange('objectives', e.target.value)}
+                    onBlur={() => handleBlur('objectives')}
+                    rows={4}
+                  />
+                  
+                  {hoveredField === 'objectives' && editedPlan.objectives && (
+                    <button
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      onClick={() => handleClearField('objectives')}
+                    >
+                      ✕
+                    </button>
+                  )}
+                  
+                  {shouldShowEmptyWarning('objectives') && (
+                    <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
+                  )}
+                </div>
               </td>
             </tr>
 
@@ -331,12 +348,33 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 課程大綱
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-                <TextEditField 
-                  field="outline" 
-                  value={editedPlan.outline} 
-                  placeholder="請輸入課程大綱"
-                  multiline={true}
-                />
+                <div 
+                  className="relative group"
+                  onMouseEnter={() => setHoveredField('outline')}
+                  onMouseLeave={() => setHoveredField(null)}
+                >
+                  <textarea
+                    className="w-full border-none outline-none resize-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    value={editedPlan.outline}
+                    placeholder="請輸入課程大綱"
+                    onChange={(e) => handleChange('outline', e.target.value)}
+                    onBlur={() => handleBlur('outline')}
+                    rows={4}
+                  />
+                  
+                  {hoveredField === 'outline' && editedPlan.outline && (
+                    <button
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      onClick={() => handleClearField('outline')}
+                    >
+                      ✕
+                    </button>
+                  )}
+                  
+                  {shouldShowEmptyWarning('outline') && (
+                    <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
+                  )}
+                </div>
               </td>
             </tr>
 
@@ -346,12 +384,29 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 完課筆記
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-                <TextEditField 
-                  field="completion_notes" 
-                  value={editedPlan.completion_notes || ''} 
-                  placeholder="請輸入完課筆記（選填）"
-                  multiline={true}
-                />
+                <div 
+                  className="relative group"
+                  onMouseEnter={() => setHoveredField('completion_notes')}
+                  onMouseLeave={() => setHoveredField(null)}
+                >
+                  <textarea
+                    className="w-full border-none outline-none resize-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    value={editedPlan.completion_notes || ''}
+                    placeholder="請輸入完課筆記（選填）"
+                    onChange={(e) => handleChange('completion_notes', e.target.value)}
+                    onBlur={() => handleBlur('completion_notes')}
+                    rows={4}
+                  />
+                  
+                  {hoveredField === 'completion_notes' && editedPlan.completion_notes && (
+                    <button
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      onClick={() => handleClearField('completion_notes')}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
 

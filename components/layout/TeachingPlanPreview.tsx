@@ -1,6 +1,6 @@
 import React from 'react';
 import { TeachingPlan } from '@/types/api';
-import SlideUpload from '@/components/ui/SlideUpload';
+import Image from 'next/image';
 
 interface TeachingPlanPreviewProps {
   plan: TeachingPlan;
@@ -9,14 +9,6 @@ interface TeachingPlanPreviewProps {
 const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
   plan
 }) => {
-  const handleSlideFileChange = (fileName: string) => {
-    console.log('投影片檔案已選擇:', fileName);
-  };
-
-  const handleSlideFileRemove = () => {
-    console.log('投影片檔案已移除');
-  };
-
   return (
     <div className="w-full max-w-4xl flex flex-col items-center">
       <div>
@@ -103,23 +95,21 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
 
           {/* 課程目標 */}
           <tr>
-            <td className="w-[120px] border-l-0 border-r border-t border-b border-black-200 bg-primary-100 text-base font-bold text-black-900 text-center">
+            <td className="w-[120px] border-l-0 border-r border-t border-b border-black-200 bg-primary-100 text-base font-bold text-black-900 text-center align-top py-3">
               課程目標
             </td>
-            <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
+            <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3 align-top" colSpan={3}>
               <div className="space-y-2">
-                <div className="max-h-32 overflow-y-auto">
-                  <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
-                    {plan.objectives ? (
-                      plan.objectives.split('\n').filter(line => line.trim()).map((line, index) => (
-                        <div key={index} className="mb-1">
-                          {line.trim().match(/^\d+\./) ? line.trim() : `${index + 1}. ${line.trim()}`}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-black-500 italic">暫無課程目標資訊</div>
-                    )}
-                  </div>
+                <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
+                  {plan.objectives ? (
+                    plan.objectives.split('\n').filter(line => line.trim()).map((line, index) => (
+                      <div key={index} className="mb-1">
+                        {line.trim()}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-black-500 italic">暫無課程目標資訊</div>
+                  )}
                 </div>
               </div>
             </td>
@@ -127,23 +117,21 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
 
           {/* 課程大綱 */}
           <tr>
-            <td className="w-[120px] border-l-0 border-r border-t border-b border-black-200 bg-primary-100 text-base font-bold text-black-900 text-center">
+            <td className="w-[120px] border-l-0 border-r border-t border-b border-black-200 bg-primary-100 text-base font-bold text-black-900 text-center align-top py-3">
               課程大綱
             </td>
-            <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
+            <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3 align-top" colSpan={3}>
               <div className="space-y-2">
-                <div className="max-h-32 overflow-y-auto">
-                  <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
-                    {plan.outline ? (
-                      plan.outline.split('\n').filter(line => line.trim()).map((line, index) => (
-                        <div key={index} className="mb-1">
-                          {line.trim().match(/^\d+\./) ? line.trim() : `${index + 1}. ${line.trim()}`}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-black-500 italic">暫無課程大綱資訊</div>
-                    )}
-                  </div>
+                <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
+                  {plan.outline ? (
+                    plan.outline.split('\n').filter(line => line.trim()).map((line, index) => (
+                      <div key={index} className="mb-1">
+                        {line.trim()}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-black-500 italic">暫無課程大綱資訊</div>
+                  )}
                 </div>
               </div>
             </td>
@@ -151,23 +139,21 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
 
           {/* 完課筆記 */}
           <tr>
-            <td className="w-[120px] border-l-0 border-r border-t border-b border-black-200 bg-primary-100 text-base font-bold text-black-900 text-center">
+            <td className="w-[120px] border-l-0 border-r border-t border-b border-black-200 bg-primary-100 text-base font-bold text-black-900 text-center align-top py-3">
               完課筆記
             </td>
-            <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
+            <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3 align-top" colSpan={3}>
               <div className="space-y-2">
-                <div className="max-h-24 overflow-y-auto">
-                  <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
-                    {plan.completion_notes ? (
-                      plan.completion_notes.split('\n').filter(line => line.trim()).map((line, index) => (
-                        <div key={index} className="mb-1">
-                          {line.trim().match(/^\d+\./) ? line.trim() : `${index + 1}. ${line.trim()}`}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-black-500 italic">暫無完課筆記資訊</div>
-                    )}
-                  </div>
+                <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
+                  {plan.completion_notes ? (
+                    plan.completion_notes.split('\n').filter(line => line.trim()).map((line, index) => (
+                      <div key={index} className="mb-1">
+                        {line.trim()}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-black-500 italic">暫無完課筆記資訊</div>
+                  )}
                 </div>
               </div>
             </td>
@@ -179,11 +165,24 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
               投影片
             </td>
             <td className="border border-black-200 pl-6 pr-10 py-4" colSpan={3}>
-              <SlideUpload
-                initialFileName={plan.slide_pdf}
-                onFileChange={handleSlideFileChange}
-                onFileRemove={handleSlideFileRemove}
-              />
+              {plan.slide_pdf ? (
+                <div className="flex gap-2 items-center">
+                  <Image
+                    src="/icons/file-alt.png"
+                    alt="file icon"
+                    width={20}
+                    height={20}
+                    className="object-contain"
+                  />
+                  <span className="text-base text-black-900">
+                    {plan.slide_pdf}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-base text-black-500 italic">
+                  尚未上傳投影片檔案
+                </span>
+              )}
             </td>
           </tr>
         </tbody>
