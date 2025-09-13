@@ -11,6 +11,13 @@ type Props = {
     durations: Set<string>;
     hasAny: boolean;
   }) => void;
+
+  /** ⭐ 新增：一開始渲染時帶入記憶值（陣列即可） */
+  initialCategories?: string[];
+  initialFamilies?: string[];
+  initialIssues?: string[];
+  initialGrades?: string[];
+  initialDurations?: string[];
 };
 
 
@@ -99,8 +106,7 @@ export default function SearchFilters({ onFiltersChange }: Props) {
 
   return (
     <div
-      className="flex items-center gap-3"
-      style={{ marginTop: '20px', marginLeft: '152px' }}
+      className="flex items-center justify-center gap-3 mx-auto mt-4 w-full"
       aria-label="搜尋篩選列"
     >
       <div className="flex items-center gap-3 w-[860px]">
@@ -127,7 +133,7 @@ export default function SearchFilters({ onFiltersChange }: Props) {
         disabled={!hasAny}
         aria-disabled={!hasAny}
         className={`
-          h-[35px] px-6 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] whitespace-nowrap
+          h-[35px] w-[104px] px-6 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] whitespace-nowrap
           ${hasAny ? 'text-primary-900 cursor-pointer' : 'text-black-900 cursor-not-allowed'}
         `}
       >

@@ -100,7 +100,7 @@ function CategoryCard({ label, count, keyName }: { label: string; count: number;
 
 export default function PopularCategories() {
   return (
-    <section aria-label="靈感與熱門課程">
+    <section className="w-[976px] mx-auto" aria-label="靈感與熱門課程">
       {/* (1) 需要來點靈感嗎？ 200×38；25px Bold；置中 */}
       <h2
         className="
@@ -115,14 +115,14 @@ export default function PopularCategories() {
       </h2>
 
       {/* (2) 熱門課程類別（左 152px 對齊；16px Bold） */}
-      <div className="mt-10 ml-[152px]">
+      <div className="mt-10">
         <span className="inline-block w-[96px] h-6 text-[16px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black">
           熱門課程類別
         </span>
       </div>
 
       {/* (3) 容器：976×124；gap:19；兩排五張卡 */}
-      <div className="grid grid-cols-5 gap-[19px] w-[976px] ml-[152px] mt-4">
+      <div className="grid grid-cols-5 gap-[19px] w-[976px] mt-4">
         {items.map((it) => (
           <CategoryCard key={it.key} label={it.label} count={it.count} keyName={it.key} />
         ))}
