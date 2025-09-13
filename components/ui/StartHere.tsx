@@ -63,9 +63,9 @@ function StartHereCard({ label, count, icon }: CardProps) {
 
 export default function StartHere() {
   return (
-    <section aria-label="或是從這裡下手">
+    <section className="w-[976px] mx-auto" aria-label="或是從這裡下手">
       {/* (1) Text：或是從這裡下手... 128×24 / 16px Bold */}
-      <div className="mt-10 ml-[152px]">
+      <div className="mt-10 ">
         <span
           className="
             inline-block w-[128px] h-6
@@ -78,7 +78,7 @@ export default function StartHere() {
       </div>
 
       {/* (2) 容器：976×56 / gap:19px；三欄平均寬 = (976 - 2*19)/3 = 312.666... */}
-        <div className="grid grid-cols-3 gap-[19px] w-[976px] ml-[152px] mt-4 mb-10">
+        <div className="grid grid-cols-3 gap-[19px] w-[976px] mt-4 mb-10">
         {items.map(({ id, ...rest }) => (
             <StartHereCard key={id} {...rest} /> 
         ))}
