@@ -128,7 +128,7 @@ export default function DropdownMulti({
                   src={checked ? '/icons/checked.png' : '/icons/uncheck.png'}
                   alt=""
                   width={20} height={20}
-                  className="w-5 h-5 shrink-0 flex items-center justify-center border"
+                  className="w-5 h-5 shrink-0 flex items-center justify-center"
                 />
                 <span
                   className="

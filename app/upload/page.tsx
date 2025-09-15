@@ -73,7 +73,7 @@ const UploadPage = () => {
       const formData = new FormData();
       formData.append('files', uploadedFile);
 
-      const response = await fetch(`${BACKEND_URL}/api/upload-file`, {
+      const response = await fetch(`${BACKEND_URL}/api/teaching-plan/upload-files`, {
         method: 'POST',
         body: formData
       });
@@ -103,7 +103,7 @@ const UploadPage = () => {
     if (!showEditor) {
       // 如果還沒顯示編輯表格，先提交教案資料到後端
       try {
-        const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
+        const response = await fetch(`${BACKEND_URL}/api/teaching-plan/submit-plans`, {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ const UploadPage = () => {
     } else {
       // 如果已經顯示編輯表格，則提交教案資料
       try {
-        const response = await fetch(`${BACKEND_URL}/api/submit-plans`, {
+        const response = await fetch(`${BACKEND_URL}/api/teaching-plan/submit-plans`, {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
