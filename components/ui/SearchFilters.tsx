@@ -71,8 +71,8 @@ const GRADES: Option[] = [
   { value: '低年級', label: '低年級' },
   { value: '中年級', label: '中年級' },
   { value: '高年級', label: '高年級' },
-  { value: '低、中年級', label: '低、中年級' },
-  { value: '中、高年級', label: '中、高年級' },
+  { value: '低中年級', label: '低中年級' },
+  { value: '中高年級', label: '中高年級' },
   { value: '全年級', label: '全年級' },
 ];
 
@@ -126,7 +126,7 @@ export default function SearchFilters({ onFiltersChange }: Props) {
         />
       </div>
 
-      {/* 清除所有：有條件才啟用、顏色變 primary-900 */}
+      {/* 清除所有：有條件才啟用顏色變 primary-900 */}
       <button
         type="button"
         onClick={hasAny ? clearAll : undefined}

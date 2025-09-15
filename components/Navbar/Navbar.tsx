@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import styles from "./Navbar.module.css";
@@ -15,15 +15,39 @@ const BASE_MENU = [
 ];
 
 export default function Navbar() {
+  
   const [hasNotification] = useState(true); 
   const pathname = usePathname();
   const router = useRouter();
 
   const [elevated, setElevated] = useState(false);
   const [isUserHovered, setIsUserHovered] = useState(false);
+  const hideTimer = useRef<number | null>(null);
 
   // 加入登入狀態
-  const { loading, authenticated, user } = useAuth();
+  const { loading, authenticated, user, logout } = useAuth() as any;
+
+  const openMenu = () => {
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    setIsUserHovered(true);
+  };
+  const scheduleClose = () => {
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => setIsUserHovered(false), 200); // 150~250ms 都可
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (typeof logout === 'function') {
+        await logout();
+      } else {
+        // TODO: 依你的登入機制清理 token/cookie
+        // localStorage.removeItem('token')
+      }
+    } finally {
+      router.replace('/login'); // 登出後導到登入頁（要改首頁也可）
+    }
+  };
 
   const menu = authenticated
   ? [
@@ -78,23 +102,63 @@ export default function Navbar() {
           {/* 使用者區塊 */}
           {!loading && (
             authenticated ? (
-              // ✅ 已登入 → 顯示 user icon
-              <div
-                className={styles.iconWrap}
-                onMouseEnter={() => setIsUserHovered(true)}
-                onMouseLeave={() => setIsUserHovered(false)}
-                onClick={() => router.push("/user")}
-                style={{ cursor: "pointer" }}
-              >
+              // ✅ 已登入：user icon 僅供 hover，不可點
+                <div
+                  className="
+                    relative ml-[20px]
+                    after:content-[''] after:absolute after:top-full after:left-0
+                    after:w-[140px] after:h-[8px]  /* Hover-bridge：8px 的透明橋接 */
+                    after:pointer-events-auto
+                  "
+                  onMouseEnter={openMenu}
+                  onMouseLeave={scheduleClose}
+                  aria-haspopup="menu"
+                  aria-expanded={isUserHovered}
+                  style={{ cursor: "default" }}
+                >
                 <Image
-                  src={isUserHovered ? "/icon/user-hover.png" : "/icon/user.png"}
-                  alt="個人"
+                  src={isUserHovered ? "/icons/user-hover.png" : "/icons/user.png"}
+                  alt="使用者"
                   width={20}
                   height={20}
+                  priority
                 />
+
+                {/* 下拉選單：外框 140×64、圓角 8、上下 padding 12、白底、陰影 */}
+                {isUserHovered && (
+                    <div
+                      className="
+                        absolute right-0 top-full mt-2
+                        w-[140px] h-[64px]
+                        rounded-[8px] bg-white
+                        shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]
+                        py-[12px] z-50
+                      "
+                      onMouseEnter={openMenu}
+                      onMouseLeave={scheduleClose}
+                    >
+                    {/* 單一 item：140×40、px20/py8、gap8；hover=Primary/100 */}
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="
+                        w-[140px] h-[40px]
+                        px-[20px] py-[8px]
+                        flex items-center gap-[8px]
+                        rounded-[8px]
+                        hover:bg-primary-100
+                      "
+                    >
+                      <Image src="/icons/logout.png" alt="" width={20} height={20} /> {/* icons/logout */}
+                      <span className="text-[16px] leading-[150%] font-['Noto_Sans_TC'] font-normal tracking-[0] text-black-900">
+                        登出
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
-              // ✅ 未登入 → 顯示登入/註冊按鈕
+              // ✅ 未登入 → 顯示登入/註冊按鈕（你原本那段保持不變）
               <Link
                 href="/login"
                 className="
@@ -109,18 +173,8 @@ export default function Navbar() {
                 "
                 aria-label="登入 / 註冊"
               >
-                <span
-                  className="
-                    block
-                    w-[68px] h-[21px]
-                    text-[14px] leading-[21px]  /* = 150% of 14px，嚴格對齊 21px 高 */
-                    font-normal font-['Noto_Sans_TC']
-                    text-primary-900 text-center
-                    whitespace-nowrap
-                    tracking-[0]               /* letter-spacing: 0% */
-                  "
-                >
-                  登入/註冊
+                <span className="block w-[68px] h-[21px] text-[14px] leading-[21px] font-normal font-['Noto_Sans_TC'] text-primary-900 text-center whitespace-nowrap tracking-[0]">
+                  登入 / 註冊
                 </span>
               </Link>
             )
