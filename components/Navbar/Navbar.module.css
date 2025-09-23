@@ -46,6 +46,16 @@
   color: #f38920;
 }
 
+.menuItem.disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.menuItem.disabled:hover {
+  color: #9ca3af;
+}
+
 .iconWrap {
   width: 20px;
   height: 20px;
