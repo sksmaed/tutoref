@@ -12,8 +12,7 @@ interface ClientLayoutWrapperProps {
 }
 
 export default function ClientLayoutWrapper({ children }: ClientLayoutWrapperProps) {
-  const [isMaintenance, setIsMaintenance] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isMaintenance, setIsMaintenance] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -22,7 +21,6 @@ export default function ClientLayoutWrapper({ children }: ClientLayoutWrapperPro
     // 檢查維護模式
     const maintenanceMode = isMaintenanceMode(searchParams);
     setIsMaintenance(maintenanceMode);
-    setIsLoading(false);
 
     // 如果是維護模式且不在根路徑，重定向到根路徑
     if (maintenanceMode && pathname !== '/') {
@@ -31,15 +29,6 @@ export default function ClientLayoutWrapper({ children }: ClientLayoutWrapperPro
       router.replace(redirectUrl);
     }
   }, [searchParams, pathname, router]);
-
-  // 顯示載入中
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
 
   // 如果是維護模式，顯示維護頁面
   if (isMaintenance) {
