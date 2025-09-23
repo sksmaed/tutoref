@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children }) {
   return (
     <html lang="zh-Hant">
       <body className="min-h-screen bg-black-100 flex flex-col">
-        <AuthProvider children={undefined}>
+        <AuthProvider>
           <ClientLayoutWrapper children={children} />
         </AuthProvider>
       </body>
