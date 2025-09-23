@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import Image from 'next/image';
 import { Modal } from '@/components/ui/Modal';
