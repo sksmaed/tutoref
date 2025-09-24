@@ -25,7 +25,7 @@ const PackageMediumArticles = () => {
               >
                 <div className="relative flex items-start group">
                   {/* 序號圓圈 */}
-                  <div className="flex-shrink-0 w-16 h-16 rounded-full bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center border-2 border-blue-500 z-10">
+                  <div className="shrink-0 w-16 h-16 rounded-full bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center border-2 border-blue-500 z-10">
                     <span className="text-xl font-bold text-blue-600">
                       {article.number}
                     </span>

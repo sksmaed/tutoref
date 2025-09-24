@@ -76,7 +76,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
         </div>
       ) : (
         <div>
-          <p className="text-base text-black-900 leading-[1.5] mb-3">
+          <p className="text-base text-black-900 leading-normal mb-3">
             如果你願意跟大家分享課程投影片，那就太好了！（僅限 PDF 檔）
           </p>
           <Button

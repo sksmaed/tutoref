@@ -173,7 +173,7 @@ export function AllPlansTable({
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="appearance-none h-[32px] w-full rounded-[8px] pl-[12px] pr-[28px] text-[14px] leading-[32px] bg-transparent font-['Noto_Sans_TC'] font-normal border-0 outline-none"
+              className="appearance-none h-[32px] w-full rounded-[8px] pl-[12px] pr-[28px] text-[14px] leading-[32px] bg-transparent font-['Noto_Sans_TC'] font-normal border-0 outline-hidden"
               aria-label="排序方式"
             >
               {SORTS.map((s) => (

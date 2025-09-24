@@ -622,7 +622,7 @@ const UploadPage = () => {
               variant="small"
               onClick={handlePreviewEdit}
               disabled={isUploading}
-              className="text-base leading-[1.5] bg-white border border-primary-900 text-primary-900"
+              className="text-base leading-normal bg-white border border-primary-900 text-primary-900"
             >
               編輯內容
             </Button>
@@ -630,7 +630,7 @@ const UploadPage = () => {
               variant="small"
               onClick={handlePreviewConfirm}
               disabled={isUploading}
-              className="text-base leading-[1.5] bg-primary-900 text-white font-bold"
+              className="text-base leading-normal bg-primary-900 text-white font-bold"
             >
               確認上傳
             </Button>
@@ -639,7 +639,7 @@ const UploadPage = () => {
       ) : (
         /* 編輯表格 */
         <>
-          <p className="text-xl leading-[1.5] text-black-900 text-center mb-8">
+          <p className="text-xl leading-normal text-black-900 text-center mb-8">
             以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，
             <br />
             現在你可以修改內容囉！
@@ -659,7 +659,7 @@ const UploadPage = () => {
             <Button
               variant="small"
               onClick={handleEditorCancel}
-              className="text-base leading-[1.5] bg-white border border-primary-900 text-primary-900"
+              className="text-base leading-normal bg-white border border-primary-900 text-primary-900"
             >
               取消編輯
             </Button>
@@ -667,7 +667,7 @@ const UploadPage = () => {
               variant="small"
               onClick={() => editorRef.current?.save()}
               disabled={!isValid || isUploading}
-              className={`text-base leading-[1.5] font-bold ${
+              className={`text-base leading-normal font-bold ${
                 isValid && !isUploading
                   ? 'bg-primary-900 text-white' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'

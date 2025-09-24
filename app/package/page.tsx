@@ -47,7 +47,7 @@ const PackagePage = () => {
                           rel="noopener noreferrer"
                           className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
                         >
-                          <ExternalLink size={16} className="mr-2 flex-shrink-0" />
+                          <ExternalLink size={16} className="mr-2 shrink-0" />
                           <span>{link.name}</span>
                         </a>
                       </div>

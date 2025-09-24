@@ -20,7 +20,7 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000]">
+    <div className="fixed inset-0 z-1000">
       {/* 背景反黑：#0D0D0DB2 */}
       <div
         className="absolute inset-0"
@@ -64,7 +64,7 @@ export function Modal({
             className="
               w-[160px] h-[48px] rounded-[8px] px-[48px] py-[12px]
               bg-primary-900 text-white font-semibold hover:opacity-90
-              focus:outline-none focus:ring-2 focus:ring-primary-900/40
+              focus:outline-hidden focus:ring-2 focus:ring-primary-900/40
             "
             style={{ fontFamily: '"Noto Sans TC", sans-serif' }}
           >

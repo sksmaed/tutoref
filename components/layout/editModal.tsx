@@ -43,7 +43,7 @@ const EditModal = ({
             .map((key) => (
               <div key={key} className="space-y-2">
                 <label className="text-sm font-medium">{key}</label>
-                {key === 'objectives' || key === 'outline' ? (
+                {key === 'objectives' || key === 'outline-solid' ? (
                   <textarea
                     className="w-full p-2 border rounded-md"
                     value={editedPlan[key as keyof TeachingPlan] as string}

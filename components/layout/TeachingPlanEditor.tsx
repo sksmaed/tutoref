@@ -71,7 +71,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
 
   // 檢查必填欄位是否完整（除了完課筆記外）
   const checkValidation = (planData: TeachingPlan) => {
-    const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline', 'team', 'category', 'grade', 'duration', 'semester'];
+    const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline-solid', 'team', 'category', 'grade', 'duration', 'semester'];
     return requiredFields.every(field => {
       const value = planData[field as keyof TeachingPlan];
       return value && value.toString().trim() !== '';
@@ -125,7 +125,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
   }, [editedPlan]);
 
   const shouldShowEmptyWarning = useCallback((field: string) => {
-    const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline', 'team', 'category', 'grade', 'duration', 'semester'];
+    const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline-solid', 'team', 'category', 'grade', 'duration', 'semester'];
     return requiredFields.includes(field) && touchedFields.has(field) && isFieldEmpty(field);
   }, [touchedFields, isFieldEmpty]);
 
@@ -147,7 +147,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 >
                   <input
                     type="text"
-                    className="w-full border-none outline-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    className="w-full border-none outline-hidden bg-transparent text-base text-black-900 leading-normal"
                     value={editedPlan.tp_name}
                     placeholder="請輸入課程名稱"
                     onChange={(e) => handleChange('tp_name', e.target.value)}
@@ -210,7 +210,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                             rounded-lg border-[1.5px] border-black-200
                             bg-white text-black-900 text-base
                             pl-[12px] pr-[8px] pt-[5px] pb-[6px]
-                            focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-900
+                            focus:outline-hidden focus:ring-2 focus:ring-primary-200 focus:border-primary-900
                           "
                           value={selectedYear}
                           onChange={(event) => {
@@ -276,7 +276,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                 >
                   <input
                     type="text"
-                    className="w-full border-none outline-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    className="w-full border-none outline-hidden bg-transparent text-base text-black-900 leading-normal"
                     value={editedPlan.writer_name}
                     placeholder="請輸入撰寫者姓名"
                     onChange={(e) => handleChange('writer_name', e.target.value)}
@@ -377,7 +377,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   onMouseLeave={() => setHoveredField(null)}
                 >
                   <textarea
-                    className="w-full border-none outline-none resize-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    className="w-full border-none outline-hidden resize-none bg-transparent text-base text-black-900 leading-normal"
                     value={editedPlan.objectives}
                     placeholder="請輸入課程目標"
                     onChange={(e) => handleChange('objectives', e.target.value)}
@@ -409,28 +409,28 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
                 <div 
                   className="relative group"
-                  onMouseEnter={() => setHoveredField('outline')}
+                  onMouseEnter={() => setHoveredField('outline-solid')}
                   onMouseLeave={() => setHoveredField(null)}
                 >
                   <textarea
-                    className="w-full border-none outline-none resize-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    className="w-full border-none outline-hidden resize-none bg-transparent text-base text-black-900 leading-normal"
                     value={editedPlan.outline}
                     placeholder="請輸入課程大綱"
-                    onChange={(e) => handleChange('outline', e.target.value)}
-                    onBlur={() => handleBlur('outline')}
+                    onChange={(e) => handleChange('outline-solid', e.target.value)}
+                    onBlur={() => handleBlur('outline-solid')}
                     rows={4}
                   />
                   
-                  {hoveredField === 'outline' && editedPlan.outline && (
+                  {hoveredField === 'outline-solid' && editedPlan.outline && (
                     <button
                       className="absolute right-2 top-2 text-black-400 hover:text-black-600"
-                      onClick={() => handleClearField('outline')}
+                      onClick={() => handleClearField('outline-solid')}
                     >
                       ✕
                     </button>
                   )}
                   
-                  {shouldShowEmptyWarning('outline') && (
+                  {shouldShowEmptyWarning('outline-solid') && (
                     <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
                   )}
                 </div>
@@ -449,7 +449,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   onMouseLeave={() => setHoveredField(null)}
                 >
                   <textarea
-                    className="w-full border-none outline-none resize-none bg-transparent text-base text-black-900 leading-[1.5]"
+                    className="w-full border-none outline-hidden resize-none bg-transparent text-base text-black-900 leading-normal"
                     value={editedPlan.completion_notes || ''}
                     placeholder="請輸入完課筆記（選填）"
                     onChange={(e) => handleChange('completion_notes', e.target.value)}

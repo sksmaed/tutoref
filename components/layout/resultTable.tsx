@@ -53,7 +53,7 @@ const ResultTable: React.FC<ResultTableProps> = ({ results }) => {
                 <td className="py-2 px-4 border text-center">{plan.writer_name}</td>
                 <td className="py-2 px-4 border text-center">
                   <button 
-                    className="px-4 py-1 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-700"
+                    className="px-4 py-1 bg-blue-500 text-white rounded-md focus:outline-hidden hover:bg-blue-700"
                     onClick={() => handleViewClick(plan)}
                   >
                     查看

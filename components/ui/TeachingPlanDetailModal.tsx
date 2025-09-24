@@ -33,7 +33,7 @@ const panelClass = [
   'px-[60px] pt-[32px] pb-[44px] text-black-900 shadow-[0_20px_60px_rgba(0,0,0,0.18)]',
 ].join(' ');
 
-type ExpandableKey = 'objectives' | 'outline' | 'notes';
+type ExpandableKey = 'objectives' | 'outline-solid' | 'notes';
 
 export function TeachingPlanDetailModal({
   open,
@@ -174,7 +174,7 @@ export function TeachingPlanDetailModal({
                     <ExpandableField
                       value={display.outline}
                       expanded={expandedFields.outline}
-                      onToggle={() => handleToggleField('outline')}
+                      onToggle={() => handleToggleField('outline-solid')}
                     />
                   </DetailRow>
 
@@ -306,7 +306,7 @@ function ExpandableField({
           {content}
         </p>
         {!expanded && isOverflowing && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-white to-transparent" />
         )}
       </div>
 
