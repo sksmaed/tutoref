@@ -2,7 +2,7 @@ import { DURATION_INVERSE_MAP, DURATION_MAP } from '@/lib/constant';
 import { normalizeCategory } from '@/lib/categories';
 import { SearchParams, SearchResponse, TeachingPlan } from '@/types/api';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
 
 type BackendSearchPayload = {
@@ -103,7 +103,7 @@ const toFrontendTeachingPlan = (plan: BackendTeachingPlan): TeachingPlan => {
 
 export async function searchTeachingPlans(params: SearchParams): Promise<SearchResponse> {
   if (!API_PREFIX) {
-    throw new Error('後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。');
+    throw new Error('後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。');
   }
 
   const payload = toSearchPayload(params);

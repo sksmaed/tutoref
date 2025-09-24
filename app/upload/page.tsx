@@ -15,7 +15,7 @@ import { Modal } from '@/components/ui/Modal';
 import { DURATION_INVERSE_MAP, DURATION_MAP } from '@/lib/constant';
 import { normalizeCategory } from '@/lib/categories';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
 
 const formatDurationLabel = (value: number | string | null | undefined): string => {
@@ -279,10 +279,10 @@ const UploadPage = () => {
     }
 
     if (!API_PREFIX) {
-      console.error('NEXT_PUBLIC_BACKEND_URL 未設定');
+      console.error('NEXT_PUBLIC_API_BASE_URL 未設定');
       toast({
         title: '❌ 設定錯誤',
-        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        description: '後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。',
         variant: 'destructive',
       });
       return;
@@ -373,10 +373,10 @@ const UploadPage = () => {
     }
 
     if (!API_PREFIX) {
-      console.error('NEXT_PUBLIC_BACKEND_URL 未設定');
+      console.error('NEXT_PUBLIC_API_BASE_URL 未設定');
       toast({
         title: '❌ 設定錯誤',
-        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        description: '後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。',
         variant: 'destructive',
       });
       return;
@@ -462,10 +462,10 @@ const UploadPage = () => {
 
   const handlePreviewConfirm = async () => {
     if (!API_PREFIX) {
-      console.error('NEXT_PUBLIC_BACKEND_URL 未設定');
+      console.error('NEXT_PUBLIC_API_BASE_URL 未設定');
       toast({
         title: '❌ 設定錯誤',
-        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        description: '後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。',
         variant: 'destructive',
       });
       return;
