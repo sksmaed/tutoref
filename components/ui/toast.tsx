@@ -89,7 +89,7 @@ export function Toast({
 
           {/* 右側關閉鈕固定在右邊，不縮小 */}
           <button
-            className="text-white/80 hover:text-white transition-opacity shrink-0"
+            className="text-white/80 hover:text-white transition-opacity shrink-0 hover:cursor-pointer"
             onClick={onClose}
             aria-label="關閉提示"
             title="關閉"

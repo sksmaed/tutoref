@@ -129,7 +129,7 @@ export const Input: React.FC<InputProps> = ({
                 type="button"
                 onClick={handlePasswordToggle}
                 disabled={disabled}
-                className={`${getIconColor()} disabled:cursor-not-allowed`}
+                className={`${getIconColor()} disabled:cursor-not-allowed hover:cursor-pointer`}
               >
                 {showPassword ? (
                   <Image
@@ -154,7 +154,7 @@ export const Input: React.FC<InputProps> = ({
                 type="button"
                 onClick={onRightIconClick}
                 disabled={disabled || !onRightIconClick}
-                className={`${getIconColor()} disabled:cursor-not-allowed ${!onRightIconClick ? 'cursor-default' : ''
+                className={`${getIconColor()} disabled:cursor-not-allowed ${!onRightIconClick ? 'cursor-default' : 'hover:cursor-pointer'
                   }`}
               >
                 <Image

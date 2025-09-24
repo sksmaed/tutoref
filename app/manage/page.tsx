@@ -531,7 +531,7 @@ export default function TeachPlanManagePage() {
                       aria-label="編輯"
                       onClick={() => handleEdit(r)}
                       disabled={plansLoading || deletingId === r.id}
-                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'hover:cursor-pointer'}
                     >
                       <Image src="/icons/edit.png" alt="" width={20} height={20} />
                     </button>
@@ -542,7 +542,7 @@ export default function TeachPlanManagePage() {
                       aria-label="刪除"
                       onClick={() => handleDelete(r)}
                       disabled={plansLoading || deletingId === r.id}
-                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'hover:cursor-pointer'}
                     >
                       <Image src="/icons/trash.png" alt="" width={20} height={20} />
                     </button>

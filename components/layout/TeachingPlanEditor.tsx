@@ -156,7 +156,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'tp_name' && editedPlan.tp_name && (
                     <button
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('tp_name')}
                     >
                       ✕
@@ -285,7 +285,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'writer_name' && editedPlan.writer_name && (
                     <button
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('writer_name')}
                     >
                       ✕
@@ -387,7 +387,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'objectives' && editedPlan.objectives && (
                     <button
-                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('objectives')}
                     >
                       ✕
@@ -423,7 +423,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'outline' && editedPlan.outline && (
                     <button
-                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('outline')}
                     >
                       ✕
@@ -459,7 +459,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'completion_notes' && editedPlan.completion_notes && (
                     <button
-                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('completion_notes')}
                     >
                       ✕
