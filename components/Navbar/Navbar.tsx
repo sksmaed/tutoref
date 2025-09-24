@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import styles from "./Navbar.module.css";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth"; // ⬅️ 新增
+import { triggerHomeReset } from "@/lib/homeReset";
 
 const BASE_MENU = [
   { key: "search", label: "教案檢索", to: "/" },
@@ -57,6 +58,10 @@ export default function Navbar() {
     ]
   : BASE_MENU;
 
+  const handleHomeClick = useCallback(() => {
+    triggerHomeReset();
+  }, []);
+
   useEffect(() => {
     const onScroll = () => setElevated(window.scrollY > 2);
     window.addEventListener("scroll", onScroll);
@@ -67,7 +72,7 @@ export default function Navbar() {
     <header className={`${styles.header} ${elevated ? styles.elevated : ""}`}>
       <div className={styles.container}>
         {/* 左側 LOGO */}
-        <Link href="/" className={styles.logoLink}>
+        <Link href="/" className={styles.logoLink} onClick={handleHomeClick}>
           <Image src="/logo.png" alt="Tutoref 教案檢索系統" width={100} height={40} priority />
         </Link>
 
@@ -93,7 +98,12 @@ export default function Navbar() {
               );
             }
             return (
-              <Link key={item.key} href={item.to} className={base}>
+              <Link
+                key={item.key}
+                href={item.to}
+                className={base}
+                onClick={item.to === "/" ? handleHomeClick : undefined}
+              >
                 {item.label}
               </Link>
             );

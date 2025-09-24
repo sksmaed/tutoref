@@ -9,9 +9,11 @@ export const FILTER_TYPE_MAP: Record<string, string> = {
 export const DURATION_MAP: Record<number, string> = {
     90: '大堂課（90分鐘）',
     40: '小堂課（40分鐘）',
+    0: '其他',
 };
 
 export const DURATION_INVERSE_MAP: Record<string, number> = {
     '大堂課（90分鐘）': 90,
     '小堂課（40分鐘）': 40,
+    '其他': 0,
 };
