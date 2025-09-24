@@ -15,7 +15,7 @@ const PreviewPDF: React.FC<PreviewPDFProps> = ({ isOpen, fileUrl, onClose }) => 
               <div className="absolute top-2 right-2">
                 <button
                   onClick={onClose}
-                  className="text-red-600 hover:text-red-800 font-bold text-xl"
+                  className="text-red-600 hover:text-red-800 font-bold text-xl hover:cursor-pointer"
                 >
                   x
                 </button>

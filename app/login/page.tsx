@@ -91,7 +91,7 @@ const LoginPage: React.FC = () => {
       let msg: string = fallback;
       let confirmText: '我知道了' | '前往登入' = '我知道了';
       let onConfirm: (() => void) | undefined = undefined;
-      console.log('signup error code:', e.code);
+      console.log('signup error:', e);
 
       switch (e.code) {
         case 'auth:email_already_exists':

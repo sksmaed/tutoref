@@ -51,7 +51,7 @@ export function ConfirmModal({
             onClick={onClose}
             aria-label="關閉"
             title="關閉"
-            className="absolute right-3 top-3 text-black/60 hover:text-black/90"
+            className="absolute right-3 top-3 text-black/60 hover:text-black/90 hover:cursor-pointer"
           >
             ✕
           </button>

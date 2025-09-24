@@ -107,7 +107,7 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab('signup')}
-                                        className="text-primary-900 underline hover:opacity-90"
+                                        className="text-primary-900 underline hover:opacity-90 hover:cursor-pointer"
                                     >
                                         註冊
                                     </button>
@@ -188,7 +188,7 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                             <button
                                 type="button"
                                 onClick={handleForgotPassword}
-                                className="text-base/normal font-normal text-primary-900 hover:opacity-90"
+                                className="text-base/normal font-normal text-primary-900 hover:opacity-90 hover:cursor-pointer"
                             >
                                 忘記密碼？
                             </button>

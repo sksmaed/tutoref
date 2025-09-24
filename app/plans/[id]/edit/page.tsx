@@ -168,7 +168,7 @@ export default function EditTeachingPlanPage() {
       <div className="mt-6 flex gap-4">
         <button
           type="button"
-          className="w-[160px] h-[48px] rounded-[8px] border border-primary-900 text-primary-900 bg-white"
+          className="w-[160px] h-[48px] rounded-[8px] border border-primary-900 text-primary-900 bg-white hover:cursor-pointer disabled:cursor-not-allowed"
           onClick={() => router.back()}
           disabled={saving}
         >
@@ -176,7 +176,7 @@ export default function EditTeachingPlanPage() {
         </button>
         <button
           type="button"
-          className="w-[160px] h-[48px] rounded-[8px] bg-primary-900 text-white"
+          className="w-[160px] h-[48px] rounded-[8px] bg-primary-900 text-white hover:cursor-pointer disabled:cursor-not-allowed"
           onClick={() => editorRef.current?.save()}
           disabled={saving}
         >

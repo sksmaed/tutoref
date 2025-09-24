@@ -23,7 +23,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <div className="mb-4 relative">
         <button
           onClick={() => setShowAuthorSearch(!showAuthorSearch)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-hidden hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-hidden hover:bg-blue-700 hover:cursor-pointer"
         >
           搜尋撰寫者
         </button>
@@ -64,7 +64,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           onClick={handleSearch}
           disabled={isSearching}
           className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-12 rounded-lg 
-                   shadow-md transition duration-300 ease-in-out
+                   shadow-md transition duration-300 ease-in-out hover:cursor-pointer
                    disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {isSearching ? '搜尋中...' : '搜尋'}

@@ -16,7 +16,7 @@ export default function HeaderMenu() {
     <div className="fixed top-4 left-4 z-10">
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className="p-2 hover:text-blue-700 focus:outline-hidden"
+        className="p-2 hover:text-blue-700 focus:outline-hidden hover:cursor-pointer"
       >
         <Menu size={24} />
       </button>
@@ -25,27 +25,27 @@ export default function HeaderMenu() {
           <a 
             href="#"
             onClick={handleNavigation('/main')}
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
           >
             首頁
           </a>
           <a 
             href="#"
             onClick={handleNavigation('/announcement')}
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
           >
             公告
           </a>
           <a 
             href="#"
             onClick={handleNavigation('/package')}
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
           >
             Package
           </a>
           <a 
             href="https://forms.gle/wsHwLjfar88Tz5yb6"
-            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+            className="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
           >
             錯誤回報
           </a>
