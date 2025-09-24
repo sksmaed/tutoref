@@ -292,7 +292,7 @@ export default function Home() {
         const hasAnyData = sortedCategories.some((item) => item.count > 0);
         setInspirationError(hasAnyData
           ? (hasRejected ? '部分熱門資料載入失敗，已顯示可用資訊。' : '')
-          : '目前無法取得熱門資料，請稍後再試。'
+          : '目前此功能尚未開放😓'
         );
       } catch (error) {
         if (!cancelled) {

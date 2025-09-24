@@ -65,7 +65,7 @@ export default function StartHere({ items, loading = false, error }: StartHerePr
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-[19px] w-[976px] mt-4 mb-10 min-h-[56px]">
+      <div className="grid grid-cols-3 gap-[19px] w-[976px] mt-4 mb-6 min-h-[56px]">
         {loading
           ? Array.from({ length: 3 }).map((_, index) => <StartHereSkeleton key={index} />)
           : hasData
@@ -77,7 +77,7 @@ export default function StartHere({ items, loading = false, error }: StartHerePr
               )}
       </div>
       {!loading && hasData && error && (
-        <p className="mt-2 mb-10 text-center text-[12px] text-destructive">{error}</p>
+        <p className="mb-10 text-center text-[16px] text-destructive">{error}</p>
       )}
     </section>
   );

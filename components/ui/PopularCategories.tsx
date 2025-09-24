@@ -76,7 +76,7 @@ export default function PopularCategories({ items, loading = false, error, onSel
               )}
       </div>
       {!loading && hasData && error && (
-        <p className="mt-3 text-center text-[12px] text-destructive">{error}</p>
+        <p className="mt-6 text-center text-[16px] text-destructive">{error}</p>
       )}
     </section>
   );
