@@ -125,7 +125,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
   }, [editedPlan]);
 
   const shouldShowEmptyWarning = useCallback((field: string) => {
-    const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline-solid', 'team', 'category', 'grade', 'duration', 'semester'];
+    const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline', 'team', 'category', 'grade', 'duration', 'semester'];
     return requiredFields.includes(field) && touchedFields.has(field) && isFieldEmpty(field);
   }, [touchedFields, isFieldEmpty]);
 
@@ -409,22 +409,22 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
                 <div 
                   className="relative group"
-                  onMouseEnter={() => setHoveredField('outline-solid')}
+                  onMouseEnter={() => setHoveredField('outline')}
                   onMouseLeave={() => setHoveredField(null)}
                 >
                   <textarea
                     className="w-full border-none outline-hidden resize-none bg-transparent text-base text-black-900 leading-normal"
                     value={editedPlan.outline}
                     placeholder="請輸入課程大綱"
-                    onChange={(e) => handleChange('outline-solid', e.target.value)}
-                    onBlur={() => handleBlur('outline-solid')}
+                    onChange={(e) => handleChange('outline', e.target.value)}
+                    onBlur={() => handleBlur('outline')}
                     rows={4}
                   />
                   
                   {hoveredField === 'outline-solid' && editedPlan.outline && (
                     <button
                       className="absolute right-2 top-2 text-black-400 hover:text-black-600"
-                      onClick={() => handleClearField('outline-solid')}
+                      onClick={() => handleClearField('outline')}
                     >
                       ✕
                     </button>
