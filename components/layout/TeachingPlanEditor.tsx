@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback, useMemo } from 'react';
+import Image from 'next/image';
 import { TeachingPlan } from '@/types/api';
 import { filterOptions } from '@/types/filter';
 import RadioCheckboxGroup from '@/components/ui/RadioCheckboxGroup';
 import SlideUpload from '@/components/ui/SlideUpload';
+import { generateIssueLabels, getOlderAcademicYearValues } from '@/lib/issues';
+import { normalizeCategory } from '@/lib/categories';
 
 interface TeachingPlanEditorProps {
   plan: TeachingPlan;
   onSave: (updatedPlan: TeachingPlan) => void;
   onCancel: () => void;
   onValidationChange?: (isValid: boolean) => void;
+  onSlideFileSelect?: (file: File | null) => void;
 }
 
 export interface TeachingPlanEditorRef {
@@ -20,20 +24,50 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
   plan,
   onSave,
   onCancel,
-  onValidationChange
+  onValidationChange,
+  onSlideFileSelect,
 }, ref) => {
   const [editedPlan, setEditedPlan] = useState<TeachingPlan>(plan);
   const [hoveredField, setHoveredField] = useState<string | null>(null);
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
 
   // 分離年份和學期的選項
-  const years = ['23', '24', '25', '26'];
   const seasons = ['冬', '夏'];
+  const categoryOptions = useMemo(() => {
+    const set = new Set([...filterOptions.category, '其他']);
+    return Array.from(set);
+  }, []);
+
+  const yearOptions = useMemo(() => {
+    const baseYears = Array.from(new Set(generateIssueLabels().map((label) => label.slice(0, 2))));
+    const olderYears = getOlderAcademicYearValues();
+    const merged = Array.from(new Set([...baseYears, ...olderYears]));
+    const currentYear = plan.semester?.substring(0, 2);
+    if (currentYear && !merged.includes(currentYear)) {
+      return [currentYear, ...merged];
+    }
+    return merged;
+  }, [plan.semester]);
+
+  const selectedYear = editedPlan.semester?.substring(0, 2) || '';
+  const selectedSeason = editedPlan.semester?.substring(2) || '';
 
   useEffect(() => {
-    console.log('TeachingPlanEditor - plan prop 改變:', plan.slide_pdf);
-    setEditedPlan(plan);
-  }, [plan]);
+    const rawCategory = plan.category ?? '';
+    const trimmedCategory = rawCategory.trim();
+    const normalizedCategory = trimmedCategory
+      ? (categoryOptions.includes(trimmedCategory) ? trimmedCategory : normalizeCategory(trimmedCategory))
+      : '';
+    const sanitizedPlan: TeachingPlan = {
+      ...plan,
+      semester: plan.semester ?? '',
+      category: normalizedCategory,
+    };
+
+    setEditedPlan(sanitizedPlan);
+    setTouchedFields(new Set());
+  }, [plan, categoryOptions]);
 
   // 檢查必填欄位是否完整（除了完課筆記外）
   const checkValidation = (planData: TeachingPlan) => {
@@ -82,6 +116,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
 
   const handleSlideFileRemove = () => {
     handleChange('slide_pdf', '');
+    onSlideFileSelect?.(null);
   };
 
   const isFieldEmpty = useCallback((field: string) => {
@@ -96,15 +131,6 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
 
   return (
     <div className="w-full max-w-4xl flex flex-col items-center">
-      <div>
-        <p className="text-xl leading-[1.5] text-black-900 text-center mb-8">
-          以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，
-          <br />    
-          現在你可以修改內容囉！
-        </p>
-      </div>
-
-      {/* 編輯表格 */}
       <div className="w-[777px] bg-white rounded-lg shadow-lg border border-black-200 overflow-hidden">
         <table className="w-full border-collapse">
           <tbody>
@@ -173,29 +199,62 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
               </td>
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
                 <div className="space-y-3">
-                  <div>
-                    <div className="text-sm font-medium text-black-700 mb-2">年份</div>
-                    <RadioCheckboxGroup
-                      options={years}
-                      selectedValue={editedPlan.semester?.substring(0, 2) || ''}
-                      onChange={(year) => {
-                        const season = editedPlan.semester?.substring(2) || '冬';
-                        handleChange('semester', year + season);
-                        handleBlur('semester');
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-black-700 mb-2">學期</div>
-                    <RadioCheckboxGroup
-                      options={seasons}
-                      selectedValue={editedPlan.semester?.substring(2) || ''}
-                      onChange={(season) => {
-                        const year = editedPlan.semester?.substring(0, 2) || '25';
-                        handleChange('semester', year + season);
-                        handleBlur('semester');
-                      }}
-                    />
+                  <div className="flex items-center gap-6">
+                    <div className="flex flex-col gap-1">
+                      {/* <span className="text-sm font-medium text-black-700">年份</span> */}
+                      <div className="relative inline-flex w-[80px] items-center justify-between">
+                        <select
+                          className="
+                            w-full h-[32px]
+                            appearance-none
+                            rounded-lg border-[1.5px] border-black-200
+                            bg-white text-black-900 text-base
+                            pl-[12px] pr-[8px] pt-[5px] pb-[6px]
+                            focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-900
+                          "
+                          value={selectedYear}
+                          onChange={(event) => {
+                            const year = event.target.value;
+                            const season = selectedSeason || '冬';
+                            handleChange('semester', year ? year + season : '');
+                            handleBlur('semester');
+                          }}
+                          onFocus={() => setYearDropdownOpen(true)}
+                          onBlur={() => setYearDropdownOpen(false)}
+                        >
+                          <option value="" disabled>
+                            選擇
+                          </option>
+                          {yearOptions.map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
+                          <Image
+                            src={yearDropdownOpen ? '/icons/angle-up.png' : '/icons/angle-down.png'}
+                            alt="dropdown icon"
+                            width={20}
+                            height={20}
+                          />
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      {/* <span className="text-sm font-medium text-black-700">學期</span> */}
+                      <RadioCheckboxGroup
+                        options={seasons}
+                        selectedValue={selectedSeason}
+                        onChange={(season) => {
+                          const year = selectedYear || yearOptions[0] || '';
+                          handleChange('semester', year ? year + season : '');
+                          handleBlur('semester');
+                        }}
+                        className="flex items-center gap-3"
+                      />
+                    </div>
                   </div>
                 </div>
                 {shouldShowEmptyWarning('semester') && (
@@ -248,7 +307,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
               <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
                 <div>
                   <RadioCheckboxGroup
-                    options={filterOptions.category}
+                    options={categoryOptions}
                     selectedValue={editedPlan.category}
                     onChange={(value) => {
                       handleChange('category', value);
@@ -420,6 +479,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   initialFileName={editedPlan.slide_pdf}
                   onFileChange={handleSlideFileChange}
                   onFileRemove={handleSlideFileRemove}
+                  onFileSelect={onSlideFileSelect}
                 />
               </td>
             </tr>

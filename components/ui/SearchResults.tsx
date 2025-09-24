@@ -1,6 +1,17 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import { DURATION_INVERSE_MAP } from '@/lib/constant';
+import {
+  addFavorite,
+  removeFavorite,
+  fetchFavorites,
+  fetchTeachingPlanDetail,
+  TeachingPlanDetail,
+} from '@/services/teachingPlan';
+import { normalizeCategory } from '@/lib/categories';
+import { OLDER_ISSUE_VALUE, getOlderAcademicYearValues } from '@/lib/issues';
+import { TeachingPlanDetailModal } from '@/components/ui/TeachingPlanDetailModal';
 
 type Filters = {
   categories: Set<string>;
@@ -12,13 +23,29 @@ type Filters = {
 
 type Row = {
   id: string;
-  family: string;   // 家別 → team
-  issue: string;    // e.g. '25冬'（academic_year + semester_period）
-  category: string; // 類別 → category
-  title: string;    // 教案名稱 → tp_name
-  author: string;   // 撰寫者 → writer_name
-  good?: boolean;   // 是否優良 → is_excellent
+  family: string;        // 家別 → team
+  issue: string;         // e.g. '25冬'（academic_year + semester_period）
+  category: string;      // 原始類別名稱 → category
+  categoryGroup: string; // 類別群組（正規化後）
+  title: string;         // 教案名稱 → tp_name
+  author: string;        // 撰寫者 → writer_name
+  good?: boolean;        // 是否優良 → is_excellent
   liked?: boolean;
+  grade?: string;
+  duration?: number;
+};
+
+type SearchPlan = {
+  id?: string;
+  team?: string;
+  academic_year?: string;
+  semester_period?: string;
+  category?: string;
+  tp_name?: string;
+  writer_name?: string;
+  is_excellent?: boolean;
+  grade?: string;
+  duration?: number;
 };
 
 const SORTS = [
@@ -34,57 +61,63 @@ const goodTint = {
 };
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
 
-/** 把 '25冬' 拆成 { year:'25', season:'冬' }；容錯：不符就回空字串 */
-function splitIssueToken(token: string) {
-  const m = token.match(/^(\d{2})\s*([春夏秋冬])$/);
-  if (!m) return { year: '', season: '' };
-  return { year: m[1], season: m[2] };
-}
-
-/** 建 URLSearchParams：把多選 Set 轉成重複 key；issue 會同時 append 到 academic_year 與 semester_period */
-function buildSearchParams(query: string, filters: Filters, onlyGood: boolean) {
+function buildSearchParams(query: string, filters: Filters): URLSearchParams {
   const params = new URLSearchParams();
 
-  // 關鍵字（可多字，用空白切成 search_texts[]=...）
   query
     .trim()
     .split(/\s+/)
     .filter(Boolean)
-    .forEach((t) => params.append('search_texts', t));
+    .forEach((text) => params.append('search_texts', text));
 
-  // 多選篩選：categories→category、families→team、grades→grade、durations→duration
-  filters.categories.forEach((v) => params.append('category', v));
-  filters.families.forEach((v) => params.append('team', v));
-  filters.grades.forEach((v) => params.append('grade', v));
-  filters.durations.forEach((v) => params.append('duration', v));
+  filters.families.forEach((value) => params.append('team', value));
+  filters.categories.forEach((value) => params.append('category', value));
+  filters.grades.forEach((value) => params.append('grade', value));
 
-  // issues：例如 '25冬' 同時 append academic_year=25 與 semester_period=冬
-  // ⚠️ 多個 issue 這樣傳會變成：academic_year IN {25,24} 且 semester_period IN {冬,夏}（「交叉集合」）
-  //    如果你要「(25,冬) OR (24,夏)」的配對邏輯，請看本文最後的後端小補丁。
-  filters.issues.forEach((tok) => {
-    const { year, season } = splitIssueToken(tok);
-    if (year) params.append('academic_year', year);
-    if (season) params.append('semester_period', season);
+  const includeOlderIssues = filters.issues.has(OLDER_ISSUE_VALUE);
+
+  const explicitYears = new Set<string>();
+
+  filters.issues.forEach((value) => {
+    if (value !== OLDER_ISSUE_VALUE) {
+      params.append('academic_year', value);
+      explicitYears.add(value);
+    }
   });
 
-  // 只看優良教案 → is_excellent=true（需要後端 SearchFilters 支援；若無會被忽略）
-  if (onlyGood) params.append('is_excellent', 'true');
+  if (includeOlderIssues) {
+    const olderYears = getOlderAcademicYearValues();
+    olderYears.forEach((year) => {
+      if (!explicitYears.has(year)) {
+        params.append('academic_year', year);
+      }
+    });
+  }
+
+  Array.from(filters.durations)
+    .map((label) => DURATION_INVERSE_MAP[label])
+    .filter((value): value is number => typeof value === 'number')
+    .forEach((value) => params.append('duration', String(value)));
 
   return params;
 }
 
 /** 後端回傳 TeachingPlan → 映射成 Row（符合你表格顯示欄位） */
-function mapPlanToRow(p: any): Row {
+function mapPlanToRow(p: SearchPlan): Row {
   return {
     id: String(p.id ?? crypto.randomUUID()),
     family: p.team ?? '',
     issue: `${p.academic_year ?? ''}${p.semester_period ?? ''}`,
     category: p.category ?? '',
+    categoryGroup: normalizeCategory(p.category),
     title: p.tp_name ?? '',
     author: p.writer_name ?? '',
     good: !!p.is_excellent,
     liked: false,
+    grade: p.grade ?? '',
+    duration: typeof p.duration === 'number' ? p.duration : undefined,
   };
 }
 
@@ -103,31 +136,97 @@ export default function SearchResults({
 }) {
   const [sort, setSort] = useState<string>('issue_desc');
   const [onlyGood, setOnlyGood] = useState<boolean>(false);
-  const [rows, setRows] = useState<Row[]>([]);
+  const [rawRows, setRawRows] = useState<Row[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState<number>(1);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailPlanId, setDetailPlanId] = useState<string | null>(null);
+  const [detailRow, setDetailRow] = useState<Row | null>(null);
+  const [detailPlan, setDetailPlan] = useState<TeachingPlanDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [favoritePendingId, setFavoritePendingId] = useState<string | null>(null);
   const pageSize = 10;
 
   // ---- 真正打 API 的搜尋 ----
-  const qs = useMemo(() => buildSearchParams(query, filters, onlyGood), [query, filters, onlyGood]);
+  const params = useMemo(() => buildSearchParams(query, filters), [query, filters]);
+  const queryString = useMemo(() => params.toString(), [params]);
 
   useEffect(() => {
-    if (trigger === 0) return; // 尚未按搜尋
-    let aborted = false;
+    let mounted = true;
+    (async () => {
+      try {
+        const favorites = await fetchFavorites();
+        if (!mounted) return;
+        setFavoriteIds(new Set(favorites.map((plan) => plan.id)));
+      } catch {
+        if (mounted) setFavoriteIds(new Set());
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!detailModalOpen || !detailPlanId) {
+      setDetailLoading(false);
+      return;
+    }
+
+    if (detailPlan && detailPlan.id === detailPlanId) {
+      setDetailLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setDetailLoading(true);
 
     (async () => {
       try {
-        const url = `${BACKEND_URL}/api/teaching-plan/search?${qs.toString()}`;
-        const res = await fetch(url, { method: 'GET' });
+        const payload = await fetchTeachingPlanDetail(detailPlanId);
+        if (!cancelled) {
+          setDetailPlan(payload);
+        }
+      } catch {
+        if (!cancelled) {
+          setDetailPlan(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setDetailLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [detailModalOpen, detailPlanId, detailPlan]);
+
+  useEffect(() => {
+    if (trigger === 0 || !API_PREFIX) return; // 尚未按搜尋或後端未設定
+    let aborted = false;
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const url = queryString ? `${API_PREFIX}/search?${queryString}` : `${API_PREFIX}/search`;
+        const res = await fetch(url, {
+          method: 'GET',
+          credentials: 'include',
+          signal: controller.signal,
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json(); // { status, data, count, ... }
         const items = Array.isArray(json?.data) ? json.data.map(mapPlanToRow) : [];
         if (!aborted) {
-          setRows(items);
+          setRawRows(items);
           setPage(1);
         }
-      } catch (e) {
+      } catch {
         if (!aborted) {
-          setRows([]);
+          setRawRows([]);
           setPage(1);
         }
       }
@@ -135,13 +234,52 @@ export default function SearchResults({
 
     return () => {
       aborted = true;
+      controller.abort();
     };
-  }, [trigger, qs]);
+  }, [trigger, queryString]);
 
   // ---- 前端排序（保留你原本的互動）----
-  const seasonRank = (s: string) => ({ 春: 1, 夏: 2, 秋: 3, 冬: 4 } as any)[s] ?? 0;
+  const seasonRank = (season: string) => {
+    const mapping: Record<string, number> = { 春: 1, 夏: 2, 秋: 3, 冬: 4 };
+    return mapping[season] ?? 0;
+  };
+  const rowsWithFavorites = useMemo(
+    () =>
+      rawRows.map((row) => ({
+        ...row,
+        liked: favoriteIds.has(row.id),
+      })),
+    [rawRows, favoriteIds],
+  );
+
+  const detailSummary = useMemo(() => {
+    if (!detailRow) return null;
+    const matchPlan = detailPlan && detailPlan.id === detailRow.id ? detailPlan : null;
+    return {
+      id: detailRow.id,
+      title: detailRow.title,
+      team: detailRow.family,
+      issue: detailRow.issue,
+      category: detailRow.category,
+      author: detailRow.author,
+      grade: matchPlan?.grade ?? detailRow.grade ?? '',
+      duration: matchPlan?.duration ?? detailRow.duration ?? null,
+      isExcellent: matchPlan?.is_excellent ?? detailRow.good ?? false,
+    };
+  }, [detailRow, detailPlan]);
+
+  const detailLiked = detailPlanId
+    ? favoriteIds.has(detailPlanId)
+    : detailRow
+      ? favoriteIds.has(detailRow.id)
+      : false;
+
+  const filteredRows = useMemo(
+    () => (onlyGood ? rowsWithFavorites.filter((r) => r.good) : rowsWithFavorites),
+    [rowsWithFavorites, onlyGood],
+  );
   const sortedRows = useMemo(() => {
-    const list = [...rows];
+    const list = [...filteredRows];
     list.sort((a, b) => {
       if (sort === 'title_asc') return a.title.localeCompare(b.title, 'zh-Hant');
       if (sort === 'title_desc') return b.title.localeCompare(a.title, 'zh-Hant');
@@ -154,26 +292,86 @@ export default function SearchResults({
       return sort === 'issue_asc' ? cmp : -cmp;
     });
     return list;
-  }, [rows, sort]);
+  }, [filteredRows, sort]);
 
   // ---- 分頁（沿用你原本做法）----
   const total = sortedRows.length;
   const totalPages = Math.max(0, Math.ceil(total / pageSize));
-  const canPrev = page > 1;
-  const canNext = totalPages > 0 && page < totalPages;
-
+  const displayTotalPages = Math.max(1, totalPages);
   const pageRows = useMemo(() => {
     if (total === 0) return [];
     const start = (page - 1) * pageSize;
     return sortedRows.slice(start, start + pageSize);
   }, [sortedRows, total, page]);
 
-  const toggleLike = (id: string) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, liked: !r.liked } : r)));
+  const updateFavorite = async (id: string, shouldLike: boolean) => {
+    setFavoritePendingId(id);
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (shouldLike) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+
+    try {
+      if (shouldLike) {
+        await addFavorite(id);
+      } else {
+        await removeFavorite(id);
+      }
+    } catch (error) {
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (shouldLike) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+      throw error;
+    } finally {
+      setFavoritePendingId(null);
+    }
+  };
+
+  const toggleLike = async (id: string) => {
+    const shouldLike = !favoriteIds.has(id);
+    try {
+      await updateFavorite(id, shouldLike);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleView = (row: Row) => {
+    setDetailRow(row);
+    setDetailPlanId(row.id);
+    setDetailPlan((prev) => (prev && prev.id === row.id ? prev : null));
+    setDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setDetailModalOpen(false);
+    setDetailPlanId(null);
+    setDetailRow(null);
+    setDetailPlan(null);
+  };
+
+  const handleModalFavoriteToggle = async (planId: string, nextLiked: boolean) => {
+    try {
+      await updateFavorite(planId, nextLiked);
+    } catch {
+      /* ignore */
+    }
   };
 
   return (
-    <section className="mt-10 mx-auto w-[976px]">
+    <>
+      <section className="mt-10 mx-auto w-[976px]">
       {/* 標題 + 右側控制列 */}
       <div className="flex items-end gap-3">
         <h2 className="w-[100px] h-[38px] text-[25px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black-900">
@@ -257,11 +455,24 @@ export default function SearchResults({
                 </BodyCell>
                 <BodyCell w="164">{r.author}</BodyCell>
                 <BodyCell w="92" center>
-                  <Image src="/icons/file-alt.png" alt="查看" width={20} height={20} />
+                  <button
+                    type="button"
+                    onClick={() => handleView(r)}
+                    aria-label="查看"
+                    disabled={detailLoading && detailPlanId === r.id}
+                    className={detailLoading && detailPlanId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                  >
+                    <Image src="/icons/file-alt.png" alt="查看" width={20} height={20} />
+                  </button>
                 </BodyCell>
                 <BodyCell w="92" center>
-                  <button type="button" onClick={() => toggleLike(r.id)}
-                    aria-label={r.liked ? '取消收藏' : '加入收藏'}>
+                  <button
+                    type="button"
+                    onClick={() => toggleLike(r.id)}
+                    aria-label={r.liked ? '取消收藏' : '加入收藏'}
+                    disabled={favoritePendingId === r.id}
+                    className={favoritePendingId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                  >
                     <Image src={r.liked ? '/icons/liked.png' : '/icons/like.png'} alt="" width={20} height={20} />
                   </button>
                 </BodyCell>
@@ -276,12 +487,24 @@ export default function SearchResults({
         <PageBtn icon="/icons/angle-left-double.png" disabled={page <= 1} onClick={() => setPage(1)} />
         <PageBtn icon="/icons/angle-left.png" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} />
         <div className="w-[160px] h-[24px] flex items-center justify-center gap-2 text-[16px] font-['Noto_Sans_TC']">
-          第 {pad2(total === 0 ? 0 : page)} 頁，共 {pad2(Math.max(1, Math.ceil(total / pageSize)))} 頁
+          第 {pad2(total === 0 ? 0 : page)} 頁，共 {pad2(displayTotalPages)} 頁
         </div>
-        <PageBtn icon="/icons/angle-right.png" disabled={page >= Math.ceil(total / pageSize)} onClick={() => setPage((p) => Math.min(Math.ceil(total / pageSize), p + 1))} />
-        <PageBtn icon="/icons/angle-right-double.png" disabled={page >= Math.ceil(total / pageSize)} onClick={() => setPage(Math.ceil(total / pageSize))} />
+        <PageBtn icon="/icons/angle-right.png" disabled={page >= displayTotalPages} onClick={() => setPage((p) => Math.min(displayTotalPages, p + 1))} />
+        <PageBtn icon="/icons/angle-right-double.png" disabled={page >= displayTotalPages} onClick={() => setPage(displayTotalPages)} />
       </div>
-    </section>
+      </section>
+
+      <TeachingPlanDetailModal
+        open={detailModalOpen}
+        loading={detailLoading}
+        plan={detailPlan && detailPlan.id === detailPlanId ? detailPlan : null}
+        summary={detailSummary}
+        liked={detailLiked}
+        favoriteLoading={favoritePendingId === detailPlanId}
+        onClose={handleCloseDetailModal}
+        onToggleFavorite={handleModalFavoriteToggle}
+      />
+    </>
   );
 }
 
