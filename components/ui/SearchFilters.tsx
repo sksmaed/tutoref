@@ -1,6 +1,12 @@
 'use client';
-import {useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DropdownMulti, { Option } from './DropdownMulti';
+import {
+  generateIssueLabels,
+  OLDER_ISSUE_LABEL,
+  OLDER_ISSUE_VALUE,
+  SELECT_ALL_VALUE,
+} from '@/lib/issues';
 
 type Props = {
   onFiltersChange?: (state: {
@@ -41,30 +47,15 @@ const FAMILIES: Option[] = [
   { value: '新武', label: '新武' },
   { value: '霧鹿', label: '霧鹿' },
   { value: '利稻', label: '利稻' },
+  { value: '電光', label: '電光' },
 ];
 
-// 依規則產生期數清單：冬 → (年-1, 夏) → (同年, 冬) → …
-function makeIssues(startYear: number, startSeason: '夏' | '冬', count = 8): Option[] {
-  const out: Option[] = [];
-  let year = startYear;
-  let season: '夏' | '冬' = startSeason;
-
-  for (let i = 0; i < count; i++) {
-    const s = `${year}${season}`;
-    out.push({ value: s, label: s });
-
-    if (season === '冬') {
-      year -= 1;       // 冬 → 前一期是「前年夏」
-      season = '夏';
-    } else {
-      season = '冬';   // 夏 → 前一期是「同年冬」
-    }
-  }
-  return out;
-}
-
-// 從 25冬 開始取 8 個
-const ISSUES: Option[] = makeIssues(25, '冬', 8);
+const ISSUE_LABELS = generateIssueLabels();
+const ISSUES: Option[] = [
+  { value: SELECT_ALL_VALUE, label: SELECT_ALL_VALUE },
+  ...ISSUE_LABELS.map((label) => ({ value: label, label })),
+  { value: OLDER_ISSUE_VALUE, label: OLDER_ISSUE_LABEL },
+];
 
 const GRADES: Option[] = [
   { value: '全選', label: '全選' },
@@ -78,20 +69,60 @@ const GRADES: Option[] = [
 
 const DURATIONS: Option[] = [
   { value: '全選', label: '全選' },
-  { value: '大堂課 (90 分鐘)', label: '大堂課 (90 分鐘)' },
-  { value: '小堂課 (40 分鐘)', label: '小堂課 (40 分鐘)' },
+  { value: '大堂課（90分鐘）', label: '大堂課（90分鐘）' },
+  { value: '小堂課（40分鐘）', label: '小堂課（40分鐘）' },
+  { value: '其他', label: '其他' },
 ];
 
 
-export default function SearchFilters({ onFiltersChange }: Props) {
-  const [cat, setCat]       = useState<Set<string>>(new Set());
-  const [fam, setFam]       = useState<Set<string>>(new Set());
-  const [issue, setIssue]   = useState<Set<string>>(new Set());
-  const [grade, setGrade]   = useState<Set<string>>(new Set());
-  const [duration, setDur]  = useState<Set<string>>(new Set());
+export default function SearchFilters({
+  onFiltersChange,
+  initialCategories = [],
+  initialFamilies = [],
+  initialIssues = [],
+  initialGrades = [],
+  initialDurations = [],
+}: Props) {
+  const [cat, setCat]       = useState<Set<string>>(() => new Set(initialCategories));
+  const [fam, setFam]       = useState<Set<string>>(() => new Set(initialFamilies));
+  const [issue, setIssue]   = useState<Set<string>>(() => new Set(initialIssues));
+  const [grade, setGrade]   = useState<Set<string>>(() => new Set(initialGrades));
+  const [duration, setDur]  = useState<Set<string>>(() => new Set(initialDurations));
+
+  const categoriesKey = useMemo(() => [...initialCategories].sort().join('|'), [initialCategories]);
+  const familiesKey = useMemo(() => [...initialFamilies].sort().join('|'), [initialFamilies]);
+  const issuesKey = useMemo(() => [...initialIssues].sort().join('|'), [initialIssues]);
+  const gradesKey = useMemo(() => [...initialGrades].sort().join('|'), [initialGrades]);
+  const durationsKey = useMemo(() => [...initialDurations].sort().join('|'), [initialDurations]);
+
+  const categoriesPreset = useMemo(() => [...initialCategories], [categoriesKey]);
+  const familiesPreset = useMemo(() => [...initialFamilies], [familiesKey]);
+  const issuesPreset = useMemo(() => [...initialIssues], [issuesKey]);
+  const gradesPreset = useMemo(() => [...initialGrades], [gradesKey]);
+  const durationsPreset = useMemo(() => [...initialDurations], [durationsKey]);
+
+  useEffect(() => {
+    setCat(new Set(categoriesPreset));
+  }, [categoriesPreset]);
+
+  useEffect(() => {
+    setFam(new Set(familiesPreset));
+  }, [familiesPreset]);
+
+  useEffect(() => {
+    setIssue(new Set(issuesPreset));
+  }, [issuesPreset]);
+
+  useEffect(() => {
+    setGrade(new Set(gradesPreset));
+  }, [gradesPreset]);
+
+  useEffect(() => {
+    setDur(new Set(durationsPreset));
+  }, [durationsPreset]);
 
   const hasAny = useMemo(() => {
-    const nz = (s: Set<string>) => [...s].filter(v => v !== '全選').length > 0;
+    const nz = (s: Set<string>) => [...s].filter(v => v !== SELECT_ALL_VALUE).length > 0;
     return nz(cat) || nz(fam) || nz(issue) || nz(grade) || nz(duration);
   }, [cat, fam, issue, grade, duration]);
 

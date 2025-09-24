@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export default function MaintenancePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-linear-to-br from-primary-50 to-primary-100 flex items-center justify-center px-4">
       <div className="max-w-2xl w-full text-center">
         {/* 主要標題 */}
         <h1 className="text-4xl font-bold text-gray-800 mb-4 font-['Noto_Sans_TC']">
@@ -17,7 +17,7 @@ export default function MaintenancePage() {
         </h2>
 
         {/* 說明文字 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-10 shadow-lg mb-8">
+        <div className="bg-white/80 backdrop-blur-xs rounded-lg p-10 shadow-lg mb-8">
           <p className="text-gray-700 text-xl leading-relaxed mb-4 font-['Noto_Sans_TC']">
             為了提供更好的使用體驗，我們正在進行系統改版測試。
           </p>

@@ -23,7 +23,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <div className="mb-4 relative">
         <button
           onClick={() => setShowAuthorSearch(!showAuthorSearch)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-hidden hover:bg-blue-700"
         >
           搜尋撰寫者
         </button>
@@ -31,7 +31,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           type="text"
           placeholder="輸入關鍵字"
           value={keyword}
-          className="w-full px-4 py-2 mt-8 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 mt-8 border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           onChange={(e) => setKeyword(e.target.value)}
         />
         {showAuthorSearch && (
@@ -39,7 +39,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             type="text"
             placeholder="輸入教案撰寫者"
             value={author}
-            className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             onChange={(e) => setAuthor(e.target.value)}
           />
         )}

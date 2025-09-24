@@ -1,48 +1,144 @@
 'use client'
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { TeachingPlan } from '@/types/api';
-import EditModal from '@/components/layout/editModal';
+import { filterOptions } from '@/types/filter';
 import TeachingPlanEditor, { TeachingPlanEditorRef } from '@/components/layout/TeachingPlanEditor';
 import TeachingPlanPreview from '@/components/layout/TeachingPlanPreview';
 import { useToast } from '@/hooks/use-toast';
+import { setFlash } from '@/utils/flash';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Modal } from '@/components/ui/Modal';
+import { DURATION_INVERSE_MAP, DURATION_MAP } from '@/lib/constant';
+import { normalizeCategory } from '@/lib/categories';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+
+const formatDurationLabel = (value: number | string | null | undefined): string => {
+  if (typeof value === 'number') {
+    return DURATION_MAP[value] ?? `${value}分鐘`;
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  return '';
+};
+
+const splitSemester = (value: string) => {
+  const trimmed = (value ?? '').trim();
+  if (trimmed.length < 3) {
+    return { academicYear: '', semesterPeriod: '' };
+  }
+  return {
+    academicYear: trimmed.slice(0, 2),
+    semesterPeriod: trimmed.slice(2),
+  };
+};
+
+const normalizeTeachingPlan = (plan: any): TeachingPlan => {
+  const semester = plan?.semester ?? `${plan?.academic_year ?? ''}${plan?.semester_period ?? ''}`;
+  const rawCategory = plan?.category ?? '';
+  const trimmedCategory = rawCategory.trim();
+  const normalizedCategory = trimmedCategory ? normalizeCategory(trimmedCategory) : '';
+  const category = trimmedCategory
+    ? (filterOptions.category.includes(trimmedCategory) ? trimmedCategory : normalizedCategory)
+    : '';
+
+  return {
+    id: String(plan?.id ?? ''),
+    team: plan?.team ?? '',
+    semester: semester ?? '',
+    writer_name: plan?.writer_name ?? '',
+    category,
+    category_group: normalizedCategory,
+    tp_name: plan?.tp_name ?? '',
+    grade: plan?.grade ?? '',
+    duration: formatDurationLabel(plan?.duration),
+    objectives: plan?.objectives ?? '',
+    outline: plan?.outline ?? '',
+    completion_notes: plan?.post_class_notes ?? plan?.completion_notes ?? '',
+    slide_pdf: plan?.slide_pdf ?? '',
+    content: plan?.content ?? '',
+  };
+};
+
+const inferDurationValue = (label: string): number | undefined => {
+  if (!label) return undefined;
+  if (Object.prototype.hasOwnProperty.call(DURATION_INVERSE_MAP, label)) {
+    return DURATION_INVERSE_MAP[label];
+  }
+  const match = label.match(/(\d+)/);
+  return match ? Number(match[1]) : undefined;
+};
+
+const toUpdatePayload = (plan: TeachingPlan) => {
+  const { academicYear, semesterPeriod } = splitSemester(plan.semester ?? '');
+  const duration = inferDurationValue(plan.duration);
+
+  return {
+    tp_name: plan.tp_name,
+    writer_name: plan.writer_name,
+    team: plan.team,
+    category: plan.category,
+    grade: plan.grade,
+    objectives: plan.objectives,
+    outline: plan.outline,
+    post_class_notes: plan.completion_notes ?? '',
+    slide_pdf: plan.slide_pdf,
+    ...(plan.content ? { content: plan.content } : {}),
+    ...(academicYear ? { academic_year: academicYear } : {}),
+    ...(semesterPeriod ? { semester_period: semesterPeriod } : {}),
+    ...(typeof duration === 'number' ? { duration } : {}),
+  };
+};
+
+const toCreatePayload = (plan: TeachingPlan) => {
+  const { academicYear, semesterPeriod } = splitSemester(plan.semester ?? '');
+  const duration = inferDurationValue(plan.duration) ?? 0;
+
+  return {
+    tp_name: plan.tp_name ?? '',
+    writer_name: plan.writer_name ?? '',
+    team: plan.team ?? '',
+    academic_year: academicYear ?? '',
+    semester_period: semesterPeriod ?? '',
+    category: plan.category ?? '',
+    grade: plan.grade ?? '',
+    duration,
+    objectives: plan.objectives ?? '',
+    outline: plan.outline ?? '',
+    content: plan.content ?? '',
+    post_class_notes: plan.completion_notes ?? '',
+  };
+};
 
 const UploadPage = () => {
-  // 模擬教案資料
-  const mockTeachingPlan: TeachingPlan = {
-    id: 1,
-    team: "霧鹿",
-    semester: "25冬",
-    writer_name: "林玉芝、對民宇",
-    category: "社會",
-    tp_name: "「免」「象」已見-認識台灣原住民的故事",
-    grade: "中高年級",
-    duration: "大堂課 (90 分鐘)",
-    objectives: "1. 引起：學會語言與知識的心態、教師民主化，以促其建構課程經法師者的能力。\n2. 發展：學會語言表達原的表達規定言，並運用和智慧且常用的法法國書法。\n3. 技能：幫習習語言表達原的的法法規範、並請持練出並會的高學的活，觀評估持續性的觀測及反思。",
-    outline: "1. 蘇活語詞彙的詞義系用好：介純電的表作詞的的方詞，以及此確果對現對想蘇語蘇詞的的規配。\n2. 口語表達：演以及詞的演技用詞中後想分分和蘇法師蘇想不現語義錄詞的詞。\n3. 分析和增上者上這語的分想：以及語民詞的高常和發系和的分想配配想一些少話組少會選擇些。\n4. 蘇作等語言民平：先學好蘇語的表法，表法法性評法的原法法和發及經次語法法的滿意。",
-    completion_notes: "1. 學生對於原住民文化展現出濃厚興趣，課堂參與度很高。\n2. 建議下次可以增加更多互動環節，讓學生更深入理解原住民的生活方式。\n3. 需要加強對台灣原住民族群分布的地理位置教學，學生對此概念較模糊。",
-    slide_pdf: "",
-  };
-
-  const [parsedPlans, setParsedPlans] = useState<TeachingPlan[]>([mockTeachingPlan]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [parsedPlans, setParsedPlans] = useState<TeachingPlan[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [showPreview, setShowPreview] = useState(true); // 顯示預覽表格
+  const [showPreview, setShowPreview] = useState(false); // 顯示預覽表格
   const [showEditor, setShowEditor] = useState(false); // 顯示編輯表格
   const [isValid, setIsValid] = useState(true); // 新增驗證狀態
   const [showCancelConfirm, setShowCancelConfirm] = useState(false); // 顯示取消編輯確認對話框
   const [showErrorModal, setShowErrorModal] = useState(false); // 顯示檔案格式錯誤 modal
-  const [persistentSlideFile, setPersistentSlideFile] = useState<string>(mockTeachingPlan.slide_pdf || ''); // 持久化的slide檔案名稱
+  const [persistentSlideFile, setPersistentSlideFile] = useState<string>(''); // 持久化的slide檔案名稱
   const [preEditSlideFile, setPreEditSlideFile] = useState<string>(''); // 編輯前的slide檔案狀態，用於取消編輯時恢復
+  const [tempFileId, setTempFileId] = useState<string>('');
   const editorRef = useRef<TeachingPlanEditorRef>(null);
+  const loadedPlanIdRef = useRef<string | null>(null);
   const { toast } = useToast();
+
+  const currentPlan = useMemo(() => {
+    if (!parsedPlans.length) return null;
+    const [firstPlan] = parsedPlans;
+    return { ...firstPlan, slide_pdf: persistentSlideFile } as TeachingPlan;
+  }, [parsedPlans, persistentSlideFile]);
 
   const handleFileUpload = async (file: File | null) => {
     if (!file) {
@@ -50,121 +146,282 @@ const UploadPage = () => {
       setParsedPlans([]);
       setShowPreview(false);
       setShowEditor(false);
+      setPersistentSlideFile('');
+      setPreEditSlideFile('');
+      setTempFileId('');
+      loadedPlanIdRef.current = null;
       return;
     }
-    
+
+    loadedPlanIdRef.current = null;
     setUploadedFile(file);
+    setParsedPlans([]);
+    setShowPreview(false);
+    setShowEditor(false);
+    setPersistentSlideFile('');
+    setPreEditSlideFile('');
+    setTempFileId('');
   };
 
-  const handleSubmit = async () => {
-    // 檢查檔案類型
-    if (!uploadedFile) return;
+  const planIdFromQuery = searchParams?.get('planId');
+
+  useEffect(() => {
+    if (!API_PREFIX || !planIdFromQuery) {
+      return;
+    }
+
+    if (loadedPlanIdRef.current === planIdFromQuery) {
+      return;
+    }
+
+    loadedPlanIdRef.current = planIdFromQuery;
+
+    const fetchExistingPlan = async () => {
+      setIsUploading(true);
+      try {
+        const res = await fetch(`${API_PREFIX}/detail/${planIdFromQuery}`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        const contentType = res.headers.get('content-type') || '';
+        const raw = await res.text();
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
+        }
+
+        if (!contentType.includes('application/json')) {
+          throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
+        }
+
+        const detail = JSON.parse(raw);
+        const normalizedPlan = normalizeTeachingPlan(detail);
+        setParsedPlans([normalizedPlan]);
+        setTempFileId('');
+        setUploadedFile(null);
+        const slide = normalizedPlan.slide_pdf ?? '';
+        setPersistentSlideFile(slide);
+        setPreEditSlideFile(slide);
+        setShowPreview(true);
+        setShowEditor(false);
+        setIsValid(true);
+
+        toast({
+          title: '已載入教案',
+          description: '可直接編輯內容或更新資料。',
+        });
+      } catch (error: any) {
+        console.error('Load plan error:', error);
+        toast({
+          title: '❌ 載入失敗',
+          description: String(error?.message || '無法載入教案，請稍後再試。'),
+          variant: 'destructive',
+        });
+        loadedPlanIdRef.current = null;
+      } finally {
+        setIsUploading(false);
+      }
+    };
+
+    fetchExistingPlan();
+  }, [API_PREFIX, planIdFromQuery, toast]);
+
+  // const handleSubmit = async () => {
+  //   // 檢查檔案類型
+  //   if (!uploadedFile) return;
     
-    // 檢查是否為 PDF 檔案
+  //   // 檢查是否為 PDF 檔案
+  //   if (uploadedFile.type !== 'application/pdf' && !uploadedFile.name.toLowerCase().endsWith('.pdf')) {
+  //     setShowErrorModal(true);
+  //     return;
+  //   }
+
+  //   // 如果檔案格式正確，開始上傳並解析
+  //   setIsUploading(true);
+
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('files', uploadedFile);
+
+  //     const response = await fetch(`${BACKEND_URL}/api/teaching-plan/upload-files`, {
+  //       method: 'POST',
+  //       body: formData
+  //     });
+
+  //     const data = await response.json();
+  //     setParsedPlans(data);
+      
+  //     // 重置slide檔案狀態為新解析結果的狀態
+  //     if (data && data.length > 0) {
+  //       setPersistentSlideFile(data[0].slide_pdf || '');
+  //       setShowPreview(true);
+  //       setShowEditor(false);
+  //     }
+  //   } catch (error) {
+  //     console.error('Upload error:', error);
+  //     toast({
+  //       title: "❌ 上傳失敗",
+  //       description: "請稍後再試。",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
+
+  const handleSubmit = async () => {
+    if (!uploadedFile) return;
+
     if (uploadedFile.type !== 'application/pdf' && !uploadedFile.name.toLowerCase().endsWith('.pdf')) {
       setShowErrorModal(true);
       return;
     }
 
-    // 如果檔案格式正確，開始上傳並解析
-    setIsUploading(true);
+    if (!API_PREFIX) {
+      console.error('NEXT_PUBLIC_BACKEND_URL 未設定');
+      toast({
+        title: '❌ 設定錯誤',
+        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        variant: 'destructive',
+      });
+      return;
+    }
 
+    setIsUploading(true);
     try {
       const formData = new FormData();
-      formData.append('files', uploadedFile);
+      formData.append('file', uploadedFile);
 
-      const response = await fetch(`${BACKEND_URL}/api/teaching-plan/upload-files`, {
+      const res = await fetch(`${API_PREFIX}/extract`, {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'include',
       });
 
-      const data = await response.json();
-      setParsedPlans(data);
-      
-      // 重置slide檔案狀態為新解析結果的狀態
-      if (data && data.length > 0) {
-        setPersistentSlideFile(data[0].slide_pdf || '');
-        setShowPreview(true);
-        setShowEditor(false);
+      const contentType = res.headers.get('content-type') || '';
+      const raw = await res.text();
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
       }
-    } catch (error) {
+
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
+      }
+
+      const data = JSON.parse(raw);
+      if (!data?.temp_file_id) {
+        throw new Error('解析成功但未取得暫存檔 ID');
+      }
+
+      const normalizedPlan = normalizeTeachingPlan(data);
+      setParsedPlans([normalizedPlan]);
+      setTempFileId(data.temp_file_id);
+
+      const firstSlide = normalizedPlan?.slide_pdf ?? '';
+      setPersistentSlideFile(firstSlide);
+      setPreEditSlideFile(firstSlide);
+      setShowPreview(true);
+      setShowEditor(false);
+
+      toast({
+        title: '✅ 解析成功',
+        description: '教案內容已擷取，請確認或編輯後再上傳。',
+      });
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast({
-        title: "❌ 上傳失敗",
-        description: "請稍後再試。",
-        variant: "destructive",
+        title: '❌ 上傳失敗',
+        description: String(error?.message || '請稍後再試。'),
+        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
     }
   };
+  const handleEditorSave = async (updatedPlan: TeachingPlan) => {
+    const applyLocalUpdate = (planData: any) => {
+      const normalized = normalizeTeachingPlan(planData);
+      const slide = normalized.slide_pdf ?? '';
 
-  const handleConfirmUpload = async () => {
-    if (!showEditor) {
-      // 如果還沒顯示編輯表格，先提交教案資料到後端
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/teaching-plan/submit-plans`, {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(parsedPlans),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to submit teaching plans");
+      setParsedPlans(prev => {
+        if (!prev || prev.length === 0) {
+          return [normalized];
         }
-
-        toast({
-          title: "✅ 提交成功",
-          description: "教案已成功提交到系統。",
-          variant: "default",
-        });
-      } catch (error) {
-        console.error("Submit error:", error);
-        toast({
-          title: "❌ 提交失敗",
-          description: "請稍後再試。",
-          variant: "destructive",
-        });
-      }
-    } else {
-      // 如果已經顯示編輯表格，則提交教案資料
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/teaching-plan/submit-plans`, {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(parsedPlans),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to submit teaching plans");
+        const exists = prev.some(plan => plan.id === normalized.id);
+        if (!exists) {
+          return [normalized, ...prev];
         }
+        return prev.map(plan => (plan.id === normalized.id ? normalized : plan));
+      });
 
-        toast({
-          title: "✅ 提交成功",
-          description: "教案已成功提交到系統。",
-          variant: "default",
-        });
-      } catch (error) {
-        console.error("Submit error:", error);
-        toast({
-          title: "❌ 提交失敗",
-          description: "請稍後再試。",
-          variant: "destructive",
-        });
-      }
+      setPersistentSlideFile(slide);
+      setPreEditSlideFile(slide);
+      setShowEditor(false);
+      setShowPreview(true);
+      setShowCancelConfirm(false);
+    };
+
+    if (!updatedPlan?.id) {
+      applyLocalUpdate(updatedPlan);
+      toast({
+        title: '✅ 編輯完成',
+        description: '內容已更新，請確認後完成上傳。',
+      });
+      return;
     }
-  };
 
-  const handleEditorSave = (updatedPlan: TeachingPlan) => {
-    // 保存slide檔案狀態
-    setPersistentSlideFile(updatedPlan.slide_pdf || '');
-    setParsedPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
-    setShowEditor(false);
-    setShowPreview(true);
+    if (!API_PREFIX) {
+      console.error('NEXT_PUBLIC_BACKEND_URL 未設定');
+      toast({
+        title: '❌ 設定錯誤',
+        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const payload = toUpdatePayload(updatedPlan);
+      const res = await fetch(`${API_PREFIX}/detail/${updatedPlan.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      const contentType = res.headers.get('content-type') || '';
+      const raw = await res.text();
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
+      }
+
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
+      }
+
+      const detail = JSON.parse(raw);
+      applyLocalUpdate(detail);
+
+      toast({
+        title: '✅ 編輯成功',
+        description: '教案內容已更新。',
+      });
+    } catch (error: any) {
+      console.error('Update error:', error);
+      toast({
+        title: '❌ 編輯失敗',
+        description: String(error?.message || '請稍後再試。'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleValidationChange = (valid: boolean) => {
@@ -172,16 +429,10 @@ const UploadPage = () => {
   };
 
   const handleEditorCancel = () => {
-    console.log('handleEditorCancel - 被調用');
-    console.log('handleEditorCancel - 當前 persistentSlideFile:', persistentSlideFile);
-    console.log('handleEditorCancel - 當前 preEditSlideFile:', preEditSlideFile);
     setShowCancelConfirm(true);
   };
 
   const handleConfirmCancel = () => {
-    // 恢復到編輯前的slide檔案狀態
-    console.log('handleConfirmCancel - 恢復編輯前狀態:', preEditSlideFile);
-    console.log('handleConfirmCancel - 當前狀態:', persistentSlideFile);
     setPersistentSlideFile(preEditSlideFile);
     setShowEditor(false);
     setShowPreview(true);
@@ -193,8 +444,6 @@ const UploadPage = () => {
   };
 
   const handlePreviewEdit = () => {
-    // 保存編輯前的slide檔案狀態
-    console.log('handlePreviewEdit - 保存編輯前狀態:', persistentSlideFile);
     setPreEditSlideFile(persistentSlideFile);
     setShowPreview(false);
     setShowEditor(true);
@@ -205,10 +454,100 @@ const UploadPage = () => {
     setShowEditor(false);
     setUploadedFile(null);
     setParsedPlans([]);
+    setPersistentSlideFile('');
+    setPreEditSlideFile('');
+    setTempFileId('');
+    loadedPlanIdRef.current = null;
   };
 
   const handlePreviewConfirm = async () => {
-    await handleSubmit();
+    if (!API_PREFIX) {
+      console.error('NEXT_PUBLIC_BACKEND_URL 未設定');
+      toast({
+        title: '❌ 設定錯誤',
+        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!parsedPlans.length || !currentPlan) {
+      toast({
+        title: '❌ 缺少資料',
+        description: '尚未取得教案內容，請重新上傳檔案。',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const plan = currentPlan;
+
+    if (!tempFileId) {
+      if (plan?.id) {
+        toast({
+          title: '✅ 教案已更新',
+          description: '教案內容已儲存，如需更多變更請持續編輯。',
+        });
+        return;
+      }
+
+      toast({
+        title: '❌ 缺少資料',
+        description: '找不到暫存檔 ID，請重新上傳教案。',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const payload = toCreatePayload(plan);
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('teaching_plan_temp_file_id', tempFileId);
+      Object.entries(payload).forEach(([key, value]) => {
+        formData.append(key, value != null ? String(value) : '');
+      });
+
+      const res = await fetch(`${API_PREFIX}/upload-file`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      const contentType = res.headers.get('content-type') || '';
+      const raw = await res.text();
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
+      }
+
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
+      }
+
+      const result = JSON.parse(raw);
+
+      setFlash({
+        type: 'success',
+        title: '教案上傳成功！',
+        message: '感謝你願意跟大家分享教案～',
+        timeout: 5000,
+      });
+
+      handlePreviewReset();
+      loadedPlanIdRef.current = null;
+      router.push('/plans/mine');
+    } catch (error: any) {
+      console.error('Create error:', error);
+      toast({
+        title: '❌ 上傳失敗',
+        description: String(error?.message || '請稍後再試。'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -271,9 +610,9 @@ const UploadPage = () => {
       ) : showPreview ? (
         /* 預覽表格 */
         <>
-          {parsedPlans.length > 0 && (
+          {currentPlan && (
             <TeachingPlanPreview 
-              plan={{...parsedPlans[0], slide_pdf: persistentSlideFile}}
+              plan={currentPlan}
             />
           )}
           
@@ -282,14 +621,16 @@ const UploadPage = () => {
             <Button
               variant="small"
               onClick={handlePreviewEdit}
-              className="text-base leading-[1.5] bg-white border border-primary-900 text-primary-900"
+              disabled={isUploading}
+              className="text-base leading-normal bg-white border border-primary-900 text-primary-900"
             >
               編輯內容
             </Button>
             <Button
               variant="small"
               onClick={handlePreviewConfirm}
-              className="text-base leading-[1.5] bg-primary-900 text-white font-bold"
+              disabled={isUploading}
+              className="text-base leading-normal bg-primary-900 text-white font-bold"
             >
               確認上傳
             </Button>
@@ -298,10 +639,15 @@ const UploadPage = () => {
       ) : (
         /* 編輯表格 */
         <>
-          {parsedPlans.length > 0 && (
+          <p className="text-xl leading-normal text-black-900 text-center mb-8">
+            以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，
+            <br />
+            現在你可以修改內容囉！
+          </p>
+          {currentPlan && (
             <TeachingPlanEditor
               ref={editorRef}
-              plan={{...parsedPlans[0], slide_pdf: persistentSlideFile}}
+              plan={currentPlan}
               onSave={handleEditorSave}
               onCancel={handleEditorCancel}
               onValidationChange={handleValidationChange}
@@ -313,16 +659,16 @@ const UploadPage = () => {
             <Button
               variant="small"
               onClick={handleEditorCancel}
-              className="text-base leading-[1.5] bg-white border border-primary-900 text-primary-900"
+              className="text-base leading-normal bg-white border border-primary-900 text-primary-900"
             >
               取消編輯
             </Button>
             <Button
               variant="small"
               onClick={() => editorRef.current?.save()}
-              disabled={!isValid}
-              className={`text-base leading-[1.5] font-bold ${
-                isValid 
+              disabled={!isValid || isUploading}
+              className={`text-base leading-normal font-bold ${
+                isValid && !isUploading
                   ? 'bg-primary-900 text-white' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}

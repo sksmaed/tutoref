@@ -12,7 +12,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
   return (
     <div className="w-full max-w-4xl flex flex-col items-center">
       <div>
-        <p className="text-xl leading-[1.5] text-black-900 text-center mb-8">
+        <p className="text-xl leading-normal text-black-900 text-center mb-8">
           以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，
           <br />    
           對內容有疑可點擊「編輯內容」進行修改！
@@ -29,7 +29,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
               課程名稱
             </td>
             <td className="border-t-0 border-r-0 border-b border-l border-black-200 px-10 py-3" colSpan={3}>
-              <span className="text-black-900 text-base leading-[1.5]">{plan.tp_name}</span>
+              <span className="text-black-900 text-base leading-normal">{plan.tp_name}</span>
             </td>
           </tr>
 
@@ -39,7 +39,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
               家別
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3">
-              <span className="text-black-900 text-base leading-[1.5]">{plan.team}</span>
+              <span className="text-black-900 text-base leading-normal">{plan.team}</span>
             </td>
           </tr>
 
@@ -49,7 +49,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
               期數
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-              <span className="text-black-900 text-base leading-[1.5]">{plan.semester}</span>
+              <span className="text-black-900 text-base leading-normal">{plan.semester}</span>
             </td>
           </tr>
 
@@ -59,7 +59,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
               撰寫者
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-              <span className="text-black-900 text-base leading-[1.5]">{plan.writer_name}</span>
+              <span className="text-black-900 text-base leading-normal">{plan.writer_name}</span>
             </td>
           </tr>
 
@@ -69,7 +69,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
               類別
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-              <span className="text-black-900 text-base leading-[1.5]">{plan.category}</span>
+              <span className="text-black-900 text-base leading-normal">{plan.category}</span>
             </td>
           </tr>
 
@@ -79,7 +79,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
               適用年級
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-              <span className="text-black-900 text-base leading-[1.5]">{plan.grade}</span>
+              <span className="text-black-900 text-base leading-normal">{plan.grade}</span>
             </td>
           </tr>
 
@@ -89,7 +89,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
               課程時長
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3" colSpan={3}>
-              <span className="text-black-900 text-base leading-[1.5]">{plan.duration}</span>
+              <span className="text-black-900 text-base leading-normal">{plan.duration}</span>
             </td>
           </tr>
 
@@ -100,7 +100,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3 align-top" colSpan={3}>
               <div className="space-y-2">
-                <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
+                <div className="text-base text-black-900 leading-normal whitespace-pre-line">
                   {plan.objectives ? (
                     plan.objectives.split('\n').filter(line => line.trim()).map((line, index) => (
                       <div key={index} className="mb-1">
@@ -122,7 +122,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3 align-top" colSpan={3}>
               <div className="space-y-2">
-                <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
+                <div className="text-base text-black-900 leading-normal whitespace-pre-line">
                   {plan.outline ? (
                     plan.outline.split('\n').filter(line => line.trim()).map((line, index) => (
                       <div key={index} className="mb-1">
@@ -144,7 +144,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
             </td>
             <td className="border-r-0 border-l border-t border-b border-black-200 px-10 py-3 align-top" colSpan={3}>
               <div className="space-y-2">
-                <div className="text-base text-black-900 leading-[1.5] whitespace-pre-line">
+                <div className="text-base text-black-900 leading-normal whitespace-pre-line">
                   {plan.completion_notes ? (
                     plan.completion_notes.split('\n').filter(line => line.trim()).map((line, index) => (
                       <div key={index} className="mb-1">

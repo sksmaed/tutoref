@@ -13,6 +13,8 @@ export type Row = {
   author: string;
   good?: boolean;
   liked?: boolean;
+  grade?: string;
+  duration?: number;
 };
 
 const SORTS = [
@@ -32,23 +34,60 @@ function pad2(n: number) {
 }
 
 export function AllPlansTable({
-  title,       // '我的教案' | '我的收藏'
+  title,
   rowsInput,
-  mode,        // 'mine' | 'likes'
+  mode,
+  onToggleFavorite,
+  onEdit,
+  onDelete,
+  onView,
 }: {
   title: string;
   rowsInput: Row[];
   mode: 'mine' | 'likes';
+  onToggleFavorite?: (row: Row, nextLiked: boolean) => Promise<void>;
+  onEdit?: (row: Row) => void;
+  onDelete?: (row: Row) => Promise<void>;
+  onView?: (row: Row) => void;
 }) {
   const [sort, setSort] = useState<string>('issue_desc');
   const [onlyGood, setOnlyGood] = useState<boolean>(false);
+  const [baseRows, setBaseRows] = useState<Row[]>(rowsInput);
   const [rows, setRows] = useState<Row[]>(rowsInput);
   const [page, setPage] = useState<number>(1);
   const pageSize = 8;
   const router = useRouter();
 
+  const handleToggleLike = async (row: Row) => {
+    const nextLiked = !(row.liked ?? false);
+    const previous = baseRows.map((r) => ({ ...r }));
+
+    let optimistic: Row[];
+    if (mode === 'likes' && !nextLiked) {
+      optimistic = baseRows.filter((r) => r.id !== row.id);
+    } else {
+      optimistic = baseRows.map((r) => (r.id === row.id ? { ...r, liked: nextLiked } : r));
+    }
+    setBaseRows(optimistic);
+
+    if (!onToggleFavorite) {
+      setBaseRows(previous);
+      return;
+    }
+
+    try {
+      await onToggleFavorite(row, nextLiked);
+    } catch (error) {
+      setBaseRows(previous);
+    }
+  };
+
   useEffect(() => {
-    let dataset = [...rowsInput];
+    setBaseRows(rowsInput);
+  }, [rowsInput]);
+
+  useEffect(() => {
+    let dataset = [...baseRows];
 
     // 收藏頁預設只看 liked；開啟「優良教案」則 liked && good
     if (mode === 'likes') {
@@ -68,7 +107,7 @@ export function AllPlansTable({
 
     setRows(dataset);
     setPage(1);
-  }, [rowsInput, sort, onlyGood, mode]);
+  }, [baseRows, sort, onlyGood, mode]);
 
   const total = rows.length;
   const totalPages = Math.max(0, Math.ceil(total / pageSize));
@@ -99,7 +138,7 @@ export function AllPlansTable({
       <div className="mt-6 flex items-end gap-3">
         <p className="font-['Noto_Sans_TC'] font-bold text-[25px] leading-[150%] text-black-900">
           你已{mode === 'mine' ? '上傳' : '收藏'}{' '}
-          <span className="text-primary-900">{rowsInput.length}</span>{' '}
+          <span className="text-primary-900">{mode === 'likes' ? baseRows.length : rowsInput.length}</span>{' '}
           份教案！
         </p>
 
@@ -134,7 +173,7 @@ export function AllPlansTable({
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="appearance-none h-[32px] w-full rounded-[8px] pl-[12px] pr-[28px] text-[14px] leading-[32px] bg-transparent font-['Noto_Sans_TC'] font-normal border-0 outline-none"
+              className="appearance-none h-[32px] w-full rounded-[8px] pl-[12px] pr-[28px] text-[14px] leading-[32px] bg-transparent font-['Noto_Sans_TC'] font-normal border-0 outline-hidden"
               aria-label="排序方式"
             >
               {SORTS.map((s) => (
@@ -192,8 +231,7 @@ export function AllPlansTable({
                 <BodyCell w="92">{r.category}</BodyCell>
                 <BodyCell w="352">
                   <div className="flex items-center justify-center gap-2">
-                    {/* 只有在開啟「優良教案」時顯示徽章（對齊 SearchResults） */}
-                    {onlyGood && r.good && (
+                    {r.good && (
                       <Image src="/icons/good.png" alt="" width={16} height={16} style={goodTint} />
                     )}
                     <span className="truncate">{r.title}</span>
@@ -203,21 +241,51 @@ export function AllPlansTable({
 
                 {mode === 'mine' ? (
                   <>
-                    <BodyCell w="92" center>
-                      <Image src="/icons/edit.png" alt="編輯" width={20} height={20} />
-                    </BodyCell>
-                    <BodyCell w="92" center>
-                      <Image src="/icons/trash.png" alt="刪除" width={20} height={20} />
-                    </BodyCell>
+                <BodyCell w="92" center>
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(r)}
+                    aria-label="編輯"
+                    disabled={!onEdit}
+                    className={!onEdit ? 'cursor-not-allowed opacity-60' : ''}
+                  >
+                    <Image src="/icons/edit.png" alt="編輯" width={20} height={20} />
+                  </button>
+                </BodyCell>
+                <BodyCell w="92" center>
+                  <button
+                    type="button"
+                    onClick={() => onDelete?.(r)}
+                    aria-label="刪除"
+                    disabled={!onDelete}
+                    className={!onDelete ? 'cursor-not-allowed opacity-60' : ''}
+                  >
+                    <Image src="/icons/trash.png" alt="刪除" width={20} height={20} />
+                  </button>
+                </BodyCell>
                   </>
                 ) : (
                   <>
-                    <BodyCell w="92" center>
-                      <Image src="/icons/file-alt.png" alt="查看" width={20} height={20} />
-                    </BodyCell>
-                    <BodyCell w="92" center>
-                      <Image src={r.liked ? '/icons/liked.png' : '/icons/like.png'} alt="收藏" width={20} height={20} />
-                    </BodyCell>
+                <BodyCell w="92" center>
+                  <button
+                    type="button"
+                    onClick={() => onView?.(r)}
+                    aria-label="查看"
+                    disabled={!onView}
+                    className={!onView ? 'cursor-not-allowed opacity-60' : ''}
+                  >
+                    <Image src="/icons/file-alt.png" alt="查看" width={20} height={20} />
+                  </button>
+                </BodyCell>
+                <BodyCell w="92" center>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleLike(r)}
+                    aria-label={r.liked ? '取消收藏' : '加入收藏'}
+                  >
+                    <Image src={r.liked ? '/icons/liked.png' : '/icons/like.png'} alt="收藏" width={20} height={20} />
+                  </button>
+                </BodyCell>
                   </>
                 )}
               </div>

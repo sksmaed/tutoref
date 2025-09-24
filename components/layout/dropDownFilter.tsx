@@ -15,7 +15,7 @@ export default function DropdownFilter({
     <div ref={dropdownRef} className="relative w-full">
       <button
         onClick={toggleDropdown}
-        className="w-full px-4 py-2 bg-gray-100 rounded-md border text-gray-700 focus:outline-none hover:bg-gray-200"
+        className="w-full px-4 py-2 bg-gray-100 rounded-md border text-gray-700 focus:outline-hidden hover:bg-gray-200"
       >
         選擇{FILTER_TYPE_MAP[filterType] || filterType} {selectedOptions.length > 0 && <span>({selectedOptions.length}個)</span>}
       </button>

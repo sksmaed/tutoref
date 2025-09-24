@@ -27,7 +27,7 @@ export function ConfirmModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000]">
+    <div className="fixed inset-0 z-1000">
       {/* 背景反黑：#0D0D0DB2 */}
       <div
         className="absolute inset-0"

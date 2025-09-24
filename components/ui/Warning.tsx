@@ -14,7 +14,7 @@ export const Warning: React.FC<WarningProps> = ({ message, className = '' }) => 
                 alt="Warning icon"
                 width={20}
                 height={20}
-                className="flex-shrink-0"
+                className="shrink-0"
             />
             <span className="text-sm/normal font-normal">{message}</span>
         </div>

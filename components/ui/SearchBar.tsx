@@ -24,12 +24,18 @@ export default function SearchBar({ query, onQueryChange, canSearch, onSearch }:
         <input
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && canSearch) {
+              event.preventDefault();
+              onSearch();
+            }
+          }}
           type="text"
           placeholder="輸入教案關鍵字 / 撰寫者姓名"
           className="
             w-[257px] h-[30px]
             text-[20px] leading-[150%] font-['Noto_Sans_TC']
-            text-gray-500 focus:outline-none
+            text-gray-500 focus:outline-hidden
             flex-1 mr-3
           "
         />

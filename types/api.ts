@@ -25,11 +25,12 @@ export interface SearchResponse {
 }
 
 export interface TeachingPlan {
-    id: number;
+    id: string;
     team: string;
     semester: string;
     writer_name: string;
-    category: string;
+    category: string;          // 原始類別名稱，例如「傳播」
+    category_group?: string;   // 正規化後的群組標籤（自然、社會、…、其他）
     tp_name: string;
     grade: string;
     duration: string;
@@ -37,4 +38,15 @@ export interface TeachingPlan {
     outline: string;
     completion_notes?: string;
     slide_pdf: string;
+    content?: string;
+}
+
+export interface VersionResponse {
+    version: string;
+    major: number;
+    minor: number;
+    patch: number;
+    pre_release?: string | null;
+    api_version: string;
+    environment: string;
 }

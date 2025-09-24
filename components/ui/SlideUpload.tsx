@@ -6,12 +6,14 @@ interface SlideUploadProps {
   initialFileName?: string;
   onFileChange: (fileName: string) => void;
   onFileRemove: () => void;
+  onFileSelect?: (file: File | null) => void;
 }
 
 const SlideUpload: React.FC<SlideUploadProps> = ({
   initialFileName = '',
   onFileChange,
-  onFileRemove
+  onFileRemove,
+  onFileSelect,
 }) => {
   const [currentFileName, setCurrentFileName] = useState<string>(initialFileName);
 
@@ -25,6 +27,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
     if (file) {
       setCurrentFileName(file.name);
       onFileChange(file.name);
+      onFileSelect?.(file);
     }
     // 重置 input 的值，以便同一個檔案可以再次被選擇
     event.target.value = '';
@@ -33,6 +36,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
   const handleRemoveFile = () => {
     setCurrentFileName('');
     onFileRemove();
+    onFileSelect?.(null);
   };
 
   return (
@@ -72,7 +76,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
         </div>
       ) : (
         <div>
-          <p className="text-base text-black-900 leading-[1.5] mb-3">
+          <p className="text-base text-black-900 leading-normal mb-3">
             如果你願意跟大家分享課程投影片，那就太好了！（僅限 PDF 檔）
           </p>
           <Button
