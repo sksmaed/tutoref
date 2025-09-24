@@ -71,7 +71,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
 
   // 檢查必填欄位是否完整（除了完課筆記外）
   const checkValidation = (planData: TeachingPlan) => {
-    const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline-solid', 'team', 'category', 'grade', 'duration', 'semester'];
+    const requiredFields = ['tp_name', 'writer_name', 'objectives', 'outline', 'team', 'category', 'grade', 'duration', 'semester'];
     return requiredFields.every(field => {
       const value = planData[field as keyof TeachingPlan];
       return value && value.toString().trim() !== '';
@@ -421,7 +421,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                     rows={4}
                   />
                   
-                  {hoveredField === 'outline-solid' && editedPlan.outline && (
+                  {hoveredField === 'outline' && editedPlan.outline && (
                     <button
                       className="absolute right-2 top-2 text-black-400 hover:text-black-600"
                       onClick={() => handleClearField('outline')}
@@ -430,7 +430,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                     </button>
                   )}
                   
-                  {shouldShowEmptyWarning('outline-solid') && (
+                  {shouldShowEmptyWarning('outline') && (
                     <div className="text-red-500 text-sm mt-1">此欄位不可為空白唷！</div>
                   )}
                 </div>

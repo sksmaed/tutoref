@@ -1,4 +1,5 @@
 import axios from "axios";
+import { VersionResponse } from "@/types/api";
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v2",
@@ -25,4 +26,10 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// 版本 API
+export const getVersion = async (): Promise<VersionResponse> => {
+  const response = await api.get<VersionResponse>("/version");
+  return response.data;
+};
 
