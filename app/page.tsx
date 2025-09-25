@@ -38,8 +38,8 @@ function cloneFilters(source: FilterState): FilterState {
   };
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 const CATEGORY_CONFIG: Array<{ key: string; label: string; color: string; icon: string }> = [
   { key: 'nature', label: '自然', color: '#728A47', icon: '/icons/lightening.png' },

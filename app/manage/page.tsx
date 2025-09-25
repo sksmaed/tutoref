@@ -56,8 +56,8 @@ type FavoritesResponse = {
   data?: FavoriteItem[];
 };
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 const formatIssue = (academicYear?: string | null, semesterPeriod?: string | null) => {
   const year = academicYear ?? '';

@@ -60,8 +60,8 @@ const goodTint = {
     'brightness(0) saturate(100%) invert(49%) sepia(12%) saturate(1148%) hue-rotate(47deg) brightness(88%) contrast(87%)',
 };
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 function buildSearchParams(query: string, filters: Filters): URLSearchParams {
   const params = new URLSearchParams();

@@ -15,8 +15,8 @@ import { Modal } from '@/components/ui/Modal';
 import { DURATION_INVERSE_MAP, DURATION_MAP } from '@/lib/constant';
 import { normalizeCategory } from '@/lib/categories';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 const formatDurationLabel = (value: number | string | null | undefined): string => {
   if (typeof value === 'number') {
