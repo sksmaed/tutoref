@@ -38,6 +38,7 @@ export interface TeachingPlan {
     outline: string;
     completion_notes?: string;
     slide_pdf: string;
+    slide_pdf_file?: File;     // 新增：儲存實際的PDF檔案對象
     content?: string;
 }
 
