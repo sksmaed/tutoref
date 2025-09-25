@@ -61,7 +61,7 @@ const goodTint = {
 };
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 function buildSearchParams(query: string, filters: Filters): URLSearchParams {
   const params = new URLSearchParams();
