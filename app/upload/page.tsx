@@ -113,6 +113,7 @@ const toCreatePayload = (plan: TeachingPlan) => {
     outline: plan.outline ?? '',
     content: plan.content ?? '',
     post_class_notes: plan.completion_notes ?? '',
+    slide_pdf: plan.slide_pdf ?? '',
   };
 };
 
