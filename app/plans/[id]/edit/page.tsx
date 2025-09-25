@@ -22,6 +22,7 @@ const normalizePlan = (detail: any): TeachingPlan => {
     objectives: detail?.objectives ?? '',
     outline: detail?.outline ?? '',
     completion_notes: detail?.post_class_notes ?? '',
+    sheet_pdf: detail?.sheet_pdf ?? '',
     slide_pdf: detail?.slide_pdf ?? '',
     content: detail?.content ?? '',
   };

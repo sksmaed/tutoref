@@ -4,28 +4,33 @@ import Image from 'next/image';
 
 interface SlideUploadProps {
   initialFileName?: string;
-  onFileChange: (fileName: string) => void;
+  selectedFileName?: string;
+  // 允許傳入 null 表示移除檔案
+  onFileChange: (fileName: string | null) => void;
   onFileRemove: () => void;
   onFileSelect?: (file: File | null) => void;
 }
 
 const SlideUpload: React.FC<SlideUploadProps> = ({
   initialFileName = '',
+  selectedFileName,
   onFileChange,
   onFileRemove,
   onFileSelect,
 }) => {
-  const [currentFileName, setCurrentFileName] = useState<string>(initialFileName);
+  const [currentFileName, setCurrentFileName] = useState<string>(selectedFileName || initialFileName || '');
 
   // 當 initialFileName 改變時同步
   useEffect(() => {
-    setCurrentFileName(initialFileName);
-  }, [initialFileName]);
+    setCurrentFileName(selectedFileName || initialFileName || '');
+  }, [initialFileName, selectedFileName]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // 立即更新本地狀態以提供即時反饋
       setCurrentFileName(file.name);
+      // 同時通知父組件
       onFileChange(file.name);
       onFileSelect?.(file);
     }
@@ -34,7 +39,9 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
   };
 
   const handleRemoveFile = () => {
+    // 立即更新本地狀態以提供即時反饋
     setCurrentFileName('');
+    onFileChange(null);
     onFileRemove();
     onFileSelect?.(null);
   };

@@ -14,6 +14,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Modal } from '@/components/ui/Modal';
 import { DURATION_INVERSE_MAP, DURATION_MAP } from '@/lib/constant';
 import { normalizeCategory } from '@/lib/categories';
+import { log } from 'console';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
@@ -48,6 +49,9 @@ const normalizeTeachingPlan = (plan: any): TeachingPlan => {
     ? (filterOptions.category.includes(trimmedCategory) ? trimmedCategory : normalizedCategory)
     : '';
 
+  // 後端有時可能不回傳 slide_pdf（例如只回傳更新欄位），這裡保持原值由呼叫端決定；若有 slide_pdf_file 名稱也可帶入
+  const slidePdfName = plan?.slide_pdf || '';
+
   return {
     id: String(plan?.id ?? ''),
     team: plan?.team ?? '',
@@ -61,7 +65,7 @@ const normalizeTeachingPlan = (plan: any): TeachingPlan => {
     objectives: plan?.objectives ?? '',
     outline: plan?.outline ?? '',
     completion_notes: plan?.post_class_notes ?? plan?.completion_notes ?? '',
-    slide_pdf: plan?.slide_pdf ?? '',
+    slide_pdf: slidePdfName,
     content: plan?.content ?? '',
   };
 };
@@ -353,7 +357,11 @@ const UploadPage = () => {
   const handleEditorSave = async (updatedPlan: TeachingPlan) => {
     const applyLocalUpdate = (planData: any) => {
       const normalized = normalizeTeachingPlan(planData);
-      const slide = normalized.slide_pdf ?? '';
+
+      // 若後端未回傳 slide_pdf 但本地有已選檔案名稱，保持本地名稱
+      const finalSlidePdf = normalized.slide_pdf || updatedPlan.slide_pdf || persistentSlideFile || '';
+      normalized.slide_pdf = finalSlidePdf;
+      console.log('Slide PDF updated:', finalSlidePdf);
 
       setParsedPlans(prev => {
         if (!prev || prev.length === 0) {
@@ -366,14 +374,20 @@ const UploadPage = () => {
         return prev.map(plan => (plan.id === normalized.id ? normalized : plan));
       });
 
-      setPersistentSlideFile(slide);
-      setPreEditSlideFile(slide);
+      setPersistentSlideFile(finalSlidePdf);
+      setPreEditSlideFile(finalSlidePdf);
+      // 保持使用者剛選擇的檔案物件（未確認前不清掉）
+      if (updatedPlan.slide_pdf_file) {
+        setSlidePdfFile(updatedPlan.slide_pdf_file);
+      }
+
       setShowEditor(false);
       setShowPreview(true);
       setShowCancelConfirm(false);
     };
 
     if (!updatedPlan?.id) {
+      // 尚未建立於後端，純本地更新
       applyLocalUpdate(updatedPlan);
       toast({
         title: '✅ 編輯完成',
@@ -394,29 +408,64 @@ const UploadPage = () => {
 
     setIsUploading(true);
     try {
-      const payload = toUpdatePayload(updatedPlan);
-      const res = await fetch(`${API_PREFIX}/detail/${updatedPlan.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
+      // 如果有新的投影片檔案，使用 FormData 上傳
+      if (updatedPlan.slide_pdf_file) {
+        const formData = new FormData();
+        const payload = toUpdatePayload(updatedPlan);
+        
+        // 添加所有教案資料到 FormData
+        Object.entries(payload).forEach(([key, value]) => {
+          formData.append(key, value != null ? String(value) : '');
+        });
+        
+        // 添加投影片檔案
+        formData.append('slide_pdf_file', updatedPlan.slide_pdf_file);
 
-      const contentType = res.headers.get('content-type') || '';
-      const raw = await res.text();
+        const res = await fetch(`${API_PREFIX}/detail/${updatedPlan.id}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          body: formData,
+        });
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
+        const contentType = res.headers.get('content-type') || '';
+        const raw = await res.text();
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
+        }
+
+        if (!contentType.includes('application/json')) {
+          throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
+        }
+
+        const detail = JSON.parse(raw);
+        applyLocalUpdate(detail);
+      } else {
+        // 沒有新檔案時，使用 JSON 更新
+        const payload = toUpdatePayload(updatedPlan);
+        const res = await fetch(`${API_PREFIX}/detail/${updatedPlan.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+
+        const contentType = res.headers.get('content-type') || '';
+        const raw = await res.text();
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
+        }
+
+        if (!contentType.includes('application/json')) {
+          throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
+        }
+
+        const detail = JSON.parse(raw);
+        applyLocalUpdate(detail);
       }
-
-      if (!contentType.includes('application/json')) {
-        throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
-      }
-
-      const detail = JSON.parse(raw);
-      applyLocalUpdate(detail);
 
       toast({
         title: '✅ 編輯成功',
