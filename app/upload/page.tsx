@@ -113,7 +113,7 @@ const toCreatePayload = (plan: TeachingPlan) => {
     outline: plan.outline ?? '',
     content: plan.content ?? '',
     post_class_notes: plan.completion_notes ?? '',
-    slide_pdf: plan.slide_pdf ?? '',
+    // slide_pdf 改為透過 FormData 中的 slide_pdf_file 處理
   };
 };
 
@@ -130,6 +130,7 @@ const UploadPage = () => {
   const [showErrorModal, setShowErrorModal] = useState(false); // 顯示檔案格式錯誤 modal
   const [persistentSlideFile, setPersistentSlideFile] = useState<string>(''); // 持久化的slide檔案名稱
   const [preEditSlideFile, setPreEditSlideFile] = useState<string>(''); // 編輯前的slide檔案狀態，用於取消編輯時恢復
+  const [slidePdfFile, setSlidePdfFile] = useState<File | null>(null); // 新增：儲存選中的PDF檔案對象
   const [tempFileId, setTempFileId] = useState<string>('');
   const editorRef = useRef<TeachingPlanEditorRef>(null);
   const loadedPlanIdRef = useRef<string | null>(null);
@@ -138,8 +139,12 @@ const UploadPage = () => {
   const currentPlan = useMemo(() => {
     if (!parsedPlans.length) return null;
     const [firstPlan] = parsedPlans;
-    return { ...firstPlan, slide_pdf: persistentSlideFile } as TeachingPlan;
-  }, [parsedPlans, persistentSlideFile]);
+    return { 
+      ...firstPlan, 
+      slide_pdf: persistentSlideFile,
+      slide_pdf_file: slidePdfFile
+    } as TeachingPlan;
+  }, [parsedPlans, persistentSlideFile, slidePdfFile]);
 
   const handleFileUpload = async (file: File | null) => {
     if (!file) {
@@ -149,6 +154,7 @@ const UploadPage = () => {
       setShowEditor(false);
       setPersistentSlideFile('');
       setPreEditSlideFile('');
+      setSlidePdfFile(null);
       setTempFileId('');
       loadedPlanIdRef.current = null;
       return;
@@ -161,6 +167,7 @@ const UploadPage = () => {
     setShowEditor(false);
     setPersistentSlideFile('');
     setPreEditSlideFile('');
+    setSlidePdfFile(null);
     setTempFileId('');
   };
 
@@ -204,6 +211,7 @@ const UploadPage = () => {
         const slide = normalizedPlan.slide_pdf ?? '';
         setPersistentSlideFile(slide);
         setPreEditSlideFile(slide);
+        setSlidePdfFile(null); // 現有教案沒有檔案對象
         setShowPreview(true);
         setShowEditor(false);
         setIsValid(true);
@@ -323,6 +331,7 @@ const UploadPage = () => {
       const firstSlide = normalizedPlan?.slide_pdf ?? '';
       setPersistentSlideFile(firstSlide);
       setPreEditSlideFile(firstSlide);
+      setSlidePdfFile(null); // 初始解析時沒有額外的PDF檔案
       setShowPreview(true);
       setShowEditor(false);
 
@@ -435,6 +444,7 @@ const UploadPage = () => {
 
   const handleConfirmCancel = () => {
     setPersistentSlideFile(preEditSlideFile);
+    setSlidePdfFile(null); // 取消編輯時重置檔案選擇
     setShowEditor(false);
     setShowPreview(true);
     setShowCancelConfirm(false);
@@ -450,6 +460,10 @@ const UploadPage = () => {
     setShowEditor(true);
   };
 
+  const handleSlideFileSelect = (file: File | null) => {
+    setSlidePdfFile(file);
+  };
+
   const handlePreviewReset = () => {
     setShowPreview(false);
     setShowEditor(false);
@@ -457,6 +471,7 @@ const UploadPage = () => {
     setParsedPlans([]);
     setPersistentSlideFile('');
     setPreEditSlideFile('');
+    setSlidePdfFile(null);
     setTempFileId('');
     loadedPlanIdRef.current = null;
   };
@@ -509,6 +524,11 @@ const UploadPage = () => {
       Object.entries(payload).forEach(([key, value]) => {
         formData.append(key, value != null ? String(value) : '');
       });
+      
+      // 添加 slide PDF 檔案到 FormData
+      if (plan.slide_pdf_file) {
+        formData.append('slide_pdf_file', plan.slide_pdf_file);
+      }
 
       const res = await fetch(`${API_PREFIX}/upload-file`, {
         method: 'POST',
@@ -652,6 +672,7 @@ const UploadPage = () => {
               onSave={handleEditorSave}
               onCancel={handleEditorCancel}
               onValidationChange={handleValidationChange}
+              onSlideFileSelect={handleSlideFileSelect}
             />
           )}
           
