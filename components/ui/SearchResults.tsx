@@ -34,6 +34,9 @@ type Row = {
   liked?: boolean;
   grade?: string;
   duration?: number;
+  viewCount?: number;
+  searchScore?: number;
+  createdAt?: number;
 };
 
 type SearchPlan = {
@@ -47,6 +50,9 @@ type SearchPlan = {
   is_excellent?: boolean;
   grade?: string;
   duration?: number;
+  view_count?: number;
+  search_score?: number;
+  created_at?: string;
 };
 
 const goodTint = {
@@ -100,6 +106,7 @@ function buildSearchParams(query: string, filters: Filters): URLSearchParams {
 
 /** 後端回傳 TeachingPlan → 映射成 Row（符合你表格顯示欄位） */
 function mapPlanToRow(p: SearchPlan): Row {
+  const createdAtMs = p.created_at ? Date.parse(p.created_at) : Number.NaN;
   return {
     id: String(p.id ?? crypto.randomUUID()),
     family: p.team ?? '',
@@ -112,6 +119,9 @@ function mapPlanToRow(p: SearchPlan): Row {
     liked: false,
     grade: p.grade ?? '',
     duration: typeof p.duration === 'number' ? p.duration : undefined,
+    viewCount: typeof p.view_count === 'number' ? p.view_count : undefined,
+    searchScore: typeof p.search_score === 'number' ? p.search_score : undefined,
+    createdAt: Number.isFinite(createdAtMs) ? createdAtMs : undefined,
   };
 }
 
@@ -272,9 +282,21 @@ export default function SearchResults({
   );
   const sortedRows = useMemo(() => {
     const list = [...filteredRows];
-    list.sort((a, b) => (sort === 'issue_asc'
-      ? compareIssues(a.issue, b.issue)
-      : compareIssues(b.issue, a.issue)));
+    list.sort((a, b) => {
+      switch (sort) {
+        case 'issue_asc':
+          return compareIssues(a.issue, b.issue);
+        case 'views_desc':
+          return (b.viewCount ?? 0) - (a.viewCount ?? 0);
+        case 'relevance_desc':
+          return (b.searchScore ?? 0) - (a.searchScore ?? 0);
+        case 'uploaded_desc':
+          return (b.createdAt ?? 0) - (a.createdAt ?? 0);
+        case 'issue_desc':
+        default:
+          return compareIssues(b.issue, a.issue);
+      }
+    });
     return list;
   }, [filteredRows, sort]);
 

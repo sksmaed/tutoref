@@ -6,6 +6,9 @@ import Image from 'next/image';
 export const ISSUE_SORT_OPTIONS = [
   { value: 'issue_desc', label: '期數由新到舊' },
   { value: 'issue_asc', label: '期數由舊到新' },
+  { value: 'views_desc', label: '瀏覽數由高到低' },
+  { value: 'relevance_desc', label: '符合度由高到低' },
+  { value: 'uploaded_desc', label: '上傳時間由新到舊' },
 ] as const;
 
 type IssueSortOption = typeof ISSUE_SORT_OPTIONS[number];

@@ -13,6 +13,7 @@ export interface TeachingPlanSummary {
   grade: string;
   duration: number;
   is_excellent: boolean;
+  view_count?: number;
 }
 
 export interface TeachingPlanDetail extends TeachingPlanSummary {

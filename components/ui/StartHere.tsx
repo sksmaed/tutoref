@@ -17,11 +17,12 @@ interface StartHereProps {
 }
 
 function StartHereCard({ label, count, icon, helperText }: StartHereItem) {
+  const formattedCount = Number.isFinite(count) ? count.toLocaleString('zh-TW') : String(count);
   return (
     <button
       type="button"
       className="h-[56px] flex items-center justify-between rounded-lg px-5 py-4 bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] hover:-translate-y-px active:translate-y-0 transition-transform hover:cursor-pointer"
-      aria-label={`${label}，共 ${count} 筆`}
+      aria-label={`${label}，共 ${formattedCount} 筆`}
     >
       <span className="flex flex-col justify-center">
         <span className="flex items-center gap-3 w-[112px] h-6">
@@ -34,7 +35,7 @@ function StartHereCard({ label, count, icon, helperText }: StartHereItem) {
           <span className="mt-1 text-[12px] leading-[150%] text-black-500">{helperText}</span>
         ) : null}
       </span>
-      <span className="text-[14px] leading-[150%] font-normal text-black-500">{count}</span>
+      <span className="text-[14px] leading-[150%] font-normal text-black-500">{formattedCount}</span>
     </button>
   );
 }

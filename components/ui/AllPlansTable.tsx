@@ -17,6 +17,9 @@ export type Row = {
   liked?: boolean;
   grade?: string;
   duration?: number;
+  viewCount?: number;
+  searchScore?: number;
+  createdAt?: number;
 };
 
 const goodTint = {
@@ -94,11 +97,21 @@ export function AllPlansTable({
       if (onlyGood) dataset = dataset.filter((r) => r.good);
     }
 
-    dataset.sort((a, b) => (
-      sort === 'issue_asc'
-        ? compareIssues(a.issue, b.issue)
-        : compareIssues(b.issue, a.issue)
-    ));
+    dataset.sort((a, b) => {
+      switch (sort) {
+        case 'issue_asc':
+          return compareIssues(a.issue, b.issue);
+        case 'views_desc':
+          return (b.viewCount ?? 0) - (a.viewCount ?? 0);
+        case 'relevance_desc':
+          return (b.searchScore ?? 0) - (a.searchScore ?? 0);
+        case 'uploaded_desc':
+          return (b.createdAt ?? 0) - (a.createdAt ?? 0);
+        case 'issue_desc':
+        default:
+          return compareIssues(b.issue, a.issue);
+      }
+    });
 
     setRows(dataset);
     setPage(1);
