@@ -8,11 +8,13 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth"; // ⬅️ 新增
 import { triggerHomeReset } from "@/lib/homeReset";
 
+const REPORT_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd-HbyD2VIXggG_6_YxHAxliwC4ZF0EtvfgZPy7WjwS-0RhLg/viewform?usp=sharing";
+
 const BASE_MENU = [
   { key: "search", label: "教案檢索", to: "/" },
-  { key: "resources", label: "學習資源", to: "/resources" },
-  { key: "report", label: "錯誤回報", to: "/report" },
-  { key: "notification", label: "訊息公告", to: "/notification" },
+  // { key: "resources", label: "學習資源", to: "/resources" },
+  { key: "report", label: "錯誤回報", to: REPORT_URL, external: true },
+  // { key: "notification", label: "訊息公告", to: "/notification" },
 ];
 
 export default function Navbar() {
@@ -94,6 +96,19 @@ export default function Navbar() {
                       />
                     )}
                   </span>
+                </Link>
+              );
+            }
+            if (item.external) {
+              return (
+                <Link
+                  key={item.key}
+                  href={item.to}
+                  className={base}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {item.label}
                 </Link>
               );
             }

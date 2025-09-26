@@ -8,7 +8,6 @@ import PopularCategories, { PopularCategoryItem } from '@/components/ui/PopularC
 import StartHere, { StartHereItem } from '@/components/ui/StartHere';
 import SearchResults from '@/components/ui/SearchResults';
 import { consumeHomeResetFlag, HOME_RESET_EVENT } from '@/lib/homeReset';
-import { OTHER_CATEGORY_LABEL } from '@/lib/categories';
 
 type FilterState = {
   categories: Set<string>;
@@ -159,9 +158,7 @@ export default function Home() {
     const load = async () => {
       setInspirationLoading(true);
       try {
-        const primaryCategories = CATEGORY_CONFIG.filter((category) => category.label !== OTHER_CATEGORY_LABEL);
-
-        const primaryRequests = primaryCategories.map(async (category) => {
+        const categoryRequests = CATEGORY_CONFIG.map(async (category) => {
           const url = new URL(`${API_PREFIX}/search`);
           url.searchParams.append('category', category.label);
 
@@ -185,38 +182,19 @@ export default function Home() {
           };
         });
 
-        const totalRequest = (async () => {
-          const url = new URL(`${API_PREFIX}/search`);
-          const res = await fetch(url.toString(), {
-            method: 'GET',
-            credentials: 'include',
-          });
-
-          if (!res.ok) {
-            throw new Error(`HTTP ${res.status} ${res.statusText}`);
-          }
-
-          const payload = await res.json();
-          const data: any[] = Array.isArray(payload?.data) ? payload.data : [];
-          const count = typeof payload?.count === 'number' ? payload.count : data.length;
-          return { plans: data, count };
-        })();
-
-        const responses = await Promise.allSettled([...primaryRequests, totalRequest]);
+        const responses = await Promise.allSettled(categoryRequests);
 
         if (cancelled) return;
 
-        const primaryFulfilled = responses.slice(0, primaryCategories.length).filter(
-          (result): result is { status: 'fulfilled'; value: { category: (typeof primaryCategories)[number]; count: number; plans: any[] } } =>
+        const fulfilled = responses.filter(
+          (result): result is { status: 'fulfilled'; value: { category: (typeof CATEGORY_CONFIG)[number]; count: number; plans: any[] } } =>
             result.status === 'fulfilled',
         );
-
-        const totalResult = responses[primaryCategories.length];
 
         const aggregatedPlans = new Map<string, any>();
         const categoryCountMap = new Map<string, number>();
 
-        primaryFulfilled.forEach(({ value }) => {
+        fulfilled.forEach(({ value }) => {
           categoryCountMap.set(value.category.label, value.count);
           value.plans.forEach((plan: any) => {
             if (plan?.id) {
@@ -225,24 +203,9 @@ export default function Home() {
           });
         });
 
-        let totalCount = 0;
-        if (totalResult?.status === 'fulfilled') {
-          totalCount = totalResult.value.count;
-          totalResult.value.plans.forEach((plan: any) => {
-            if (plan?.id) {
-              aggregatedPlans.set(plan.id, plan);
-            }
-          });
-        }
-
-        const primaryTotal = Array.from(categoryCountMap.values()).reduce((sum, count) => sum + count, 0);
-        const otherCount = Math.max(totalCount - primaryTotal, 0);
-
         const sortedCategories = CATEGORY_CONFIG
           .map((category) => {
-            const count = category.label === OTHER_CATEGORY_LABEL
-              ? otherCount
-              : categoryCountMap.get(category.label) ?? 0;
+            const count = categoryCountMap.get(category.label) ?? 0;
             return {
               key: category.key,
               label: category.label,

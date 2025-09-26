@@ -28,6 +28,7 @@ type Props = {
 
 
 const CATEGORIES: Option[] = [
+  { value: SELECT_ALL_VALUE, label: SELECT_ALL_VALUE },
   { value: '自然', label: '自然' },
   { value: '社會', label: '社會' },
   { value: '綜合', label: '綜合' },

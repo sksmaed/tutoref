@@ -15,8 +15,8 @@ import { Modal } from '@/components/ui/Modal';
 import { DURATION_INVERSE_MAP, DURATION_MAP } from '@/lib/constant';
 import { normalizeCategory } from '@/lib/categories';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 const formatDurationLabel = (value: number | string | null | undefined): string => {
   if (typeof value === 'number') {
@@ -226,49 +226,6 @@ const UploadPage = () => {
 
     fetchExistingPlan();
   }, [API_PREFIX, planIdFromQuery, toast]);
-
-  // const handleSubmit = async () => {
-  //   // 檢查檔案類型
-  //   if (!uploadedFile) return;
-    
-  //   // 檢查是否為 PDF 檔案
-  //   if (uploadedFile.type !== 'application/pdf' && !uploadedFile.name.toLowerCase().endsWith('.pdf')) {
-  //     setShowErrorModal(true);
-  //     return;
-  //   }
-
-  //   // 如果檔案格式正確，開始上傳並解析
-  //   setIsUploading(true);
-
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append('files', uploadedFile);
-
-  //     const response = await fetch(`${BACKEND_URL}/api/teaching-plan/upload-files`, {
-  //       method: 'POST',
-  //       body: formData
-  //     });
-
-  //     const data = await response.json();
-  //     setParsedPlans(data);
-      
-  //     // 重置slide檔案狀態為新解析結果的狀態
-  //     if (data && data.length > 0) {
-  //       setPersistentSlideFile(data[0].slide_pdf || '');
-  //       setShowPreview(true);
-  //       setShowEditor(false);
-  //     }
-  //   } catch (error) {
-  //     console.error('Upload error:', error);
-  //     toast({
-  //       title: "❌ 上傳失敗",
-  //       description: "請稍後再試。",
-  //       variant: "destructive",
-  //     });
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
 
   const handleSubmit = async () => {
     if (!uploadedFile) return;
@@ -622,7 +579,7 @@ const UploadPage = () => {
               variant="small"
               onClick={handlePreviewEdit}
               disabled={isUploading}
-              className="text-base leading-[1.5] bg-white border border-primary-900 text-primary-900"
+              className="text-base leading-normal bg-white border border-primary-900 text-primary-900"
             >
               編輯內容
             </Button>
@@ -630,7 +587,7 @@ const UploadPage = () => {
               variant="small"
               onClick={handlePreviewConfirm}
               disabled={isUploading}
-              className="text-base leading-[1.5] bg-primary-900 text-white font-bold"
+              className="text-base leading-normal bg-primary-900 text-white font-bold"
             >
               確認上傳
             </Button>
@@ -639,7 +596,7 @@ const UploadPage = () => {
       ) : (
         /* 編輯表格 */
         <>
-          <p className="text-xl leading-[1.5] text-black-900 text-center mb-8">
+          <p className="text-xl leading-normal text-black-900 text-center mb-8">
             以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，
             <br />
             現在你可以修改內容囉！
@@ -659,7 +616,7 @@ const UploadPage = () => {
             <Button
               variant="small"
               onClick={handleEditorCancel}
-              className="text-base leading-[1.5] bg-white border border-primary-900 text-primary-900"
+              className="text-base leading-normal bg-white border border-primary-900 text-primary-900"
             >
               取消編輯
             </Button>
@@ -667,7 +624,7 @@ const UploadPage = () => {
               variant="small"
               onClick={() => editorRef.current?.save()}
               disabled={!isValid || isUploading}
-              className={`text-base leading-[1.5] font-bold ${
+              className={`text-base leading-normal font-bold ${
                 isValid && !isUploading
                   ? 'bg-primary-900 text-white' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
