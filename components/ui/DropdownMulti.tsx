@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 
 export type Option = { value: string; label: string };
@@ -84,6 +83,7 @@ export default function DropdownMulti({
           bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]
           text-[16px] font-normal font-['Noto_Sans_TC'] text-black-900
           flex-none
+          cursor-pointer
         "
         style={{ width: triggerWidth, height: triggerHeight }}
         aria-haspopup="listbox"
@@ -91,7 +91,14 @@ export default function DropdownMulti({
         aria-label={label}
       >
         <span className="truncate whitespace-nowrap">{displayText}</span>
-        <ChevronDown className="w-5 h-5 shrink-0" aria-hidden />
+        <Image
+          src={open ? '/icons/angle-up.png' : '/icons/angle-down.png'}
+          alt=""
+          width={20}
+          height={20}
+          className="w-5 h-5 shrink-0"
+          aria-hidden
+        />
       </button>
 
       {/* 面板 */}
@@ -118,6 +125,7 @@ export default function DropdownMulti({
                 className={`
                   w-full h-[40px] flex items-center gap-2 px-2 py-2 rounded-md
                   ${checked ? 'bg-primary-100' : 'hover:bg-black-100/50'}
+                  cursor-pointer
                 `}
                 role="option"
                 aria-selected={checked}

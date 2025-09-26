@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoginSignupBoard from '@/components/layout/LoginSignupBoard';
 import { setFlash } from '@/utils/flash';
@@ -21,9 +21,17 @@ const LoginPage: React.FC = () => {
   const [signupOnConfirm, setSignupOnConfirm] = useState<(() => void) | undefined>(undefined);
   const [forceTab, setForceTab] = useState<'login' | 'signup' | undefined>(undefined);
 
-  const { refresh } = useAuth();
+  const { refresh, authenticated } = useAuth();
 
-  const handleLogin = async (email: string, password: string, rememberMe: boolean) => {
+  useEffect(() => {
+    if (!authenticated) {
+      try {
+        sessionStorage.removeItem('oauthPostLoginFlash');
+      } catch {}
+    }
+  }, [authenticated]);
+
+  const handleLogin = async (email: string, password: string, _rememberMe: boolean) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -40,22 +48,19 @@ const LoginPage: React.FC = () => {
       router.push('/'); // 與你原本行為一致
     } catch (e: any) {
       setSubmitting(false);
-      let msg = e.message || '登入失敗，請重試';
-      switch (e.code) {
+      const errorCode: string | undefined = e?.code;
+      let msg: string;
+
+      switch (errorCode) {
         case 'auth:incorrect_password':
           msg = '密碼錯誤，請重新輸入';
           break;
         case 'auth:email_not_registered':
-          msg = (
-            <>
-              此電子信箱尚未被註冊，<br />
-              請重新輸入！
-            </>
-          );
+          msg = '此電子信箱尚未被註冊，\n請重新輸入！';
           break;
         default:
           // 保留原始錯誤訊息，避免吃掉其他情況（ex. server error）
-          msg = e.message || '登入失敗，請稍後再試';
+          msg = e?.message || '登入失敗，請稍後再試';
       }
 
       setFailText(msg);

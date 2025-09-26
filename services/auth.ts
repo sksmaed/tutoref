@@ -1,6 +1,5 @@
 // src/services/auth.ts
 import { api } from "@/lib/api";
-import { setFlash } from '@/utils/flash';
 
 // ---- Types (依你後端的 Pydantic Schema / SessionInfoResponse 調整) ----
 export type UUID = string;
@@ -118,14 +117,21 @@ export async function initiateGoogleLogin(opts?: { provider?: "google"; process?
     process: "login",
     ...(opts || {}),
   };
-  try {
-    setFlash({
-      type: "success",
-      title: "登入成功！",
-      message: "可以開始檢索教案囉～",
-      timeout: 5000,
-    });
-  } catch {}
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.setItem(
+        'oauthPostLoginFlash',
+        JSON.stringify({
+          type: 'success',
+          title: '登入成功！',
+          message: '可以開始檢索教案囉～',
+          timeout: 5000,
+        }),
+      );
+    } catch {
+      sessionStorage.removeItem('oauthPostLoginFlash');
+    }
+  }
 
   const { data } = await api.post<GoogleLoginResponse>("/auth/google/initiate/", payload);
   if (data?.success && data?.redirect_url) {

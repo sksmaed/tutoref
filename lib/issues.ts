@@ -6,6 +6,41 @@ export const SELECT_ALL_VALUE = '全選';
 export const OLDER_ISSUE_VALUE = '__OLDER__';
 export const OLDER_ISSUE_LABEL = '更久以前';
 
+const SEASON_ORDER_ASC: ReadonlyArray<string> = ['冬', '春', '夏', '秋'];
+
+function normalizeIssue(input: string): { year: number; seasonRank: number } {
+  const trimmed = input?.trim() ?? '';
+  if (!trimmed) {
+    return { year: Number.NEGATIVE_INFINITY, seasonRank: -1 };
+  }
+
+  const match = trimmed.match(/^(\d{1,3})(\D*)$/);
+  const year = match?.[1] ? Number(match[1]) : Number.NaN;
+  const season = match?.[2]?.charAt(0) ?? '';
+
+  const seasonRank = SEASON_ORDER_ASC.indexOf(season);
+
+  if (!Number.isFinite(year)) {
+    return { year: Number.NEGATIVE_INFINITY, seasonRank };
+  }
+
+  return {
+    year,
+    seasonRank: seasonRank >= 0 ? seasonRank : -1,
+  };
+}
+
+export function compareIssues(a: string, b: string): number {
+  const first = normalizeIssue(a);
+  const second = normalizeIssue(b);
+
+  if (first.year !== second.year) {
+    return first.year - second.year;
+  }
+
+  return first.seasonRank - second.seasonRank;
+}
+
 export function generateIssueLabels(
   startYear: number = ISSUE_START_YEAR,
   startSeason: '夏' | '冬' = ISSUE_START_SEASON,

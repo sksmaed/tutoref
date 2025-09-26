@@ -11,19 +11,56 @@ api.interceptors.response.use(
   r => r,
   err => {
     const data = err?.response?.data;
-    const errors = data?.errors || [];
-    const firstError = errors[0];
+
+    const normalizeErrors = (value: unknown): unknown[] => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      if (typeof value === "object") {
+        const valueObj = value as { errors?: unknown } & Record<string, unknown>;
+        if (Array.isArray(valueObj.errors)) {
+          return valueObj.errors;
+        }
+        return Object.values(valueObj).flatMap(entry =>
+          Array.isArray(entry)
+            ? entry
+            : typeof entry === "object" && entry !== null
+              ? [entry]
+              : entry != null
+                ? [entry]
+                : []
+        );
+      }
+      return [value];
+    };
+
+    const errorsArray = normalizeErrors(data?.errors);
+    const firstEntry = errorsArray[0];
+
+    type ApiErrorEntry = {
+      error_code?: string;
+      message?: string;
+      extra_data?: { message?: string } & Record<string, unknown>;
+    };
+
+    const isApiErrorEntry = (entry: unknown): entry is ApiErrorEntry =>
+      typeof entry === "object" && entry !== null;
+
+    const errorObject = isApiErrorEntry(firstEntry) ? firstEntry : undefined;
+    const errorString = typeof firstEntry === "string" ? firstEntry : undefined;
     const msg =
-      firstError?.extra_data?.message ||
+      errorString ||
+      (typeof errorObject?.extra_data?.message === "string" ? errorObject.extra_data.message : undefined) ||
+      errorObject?.message ||
       data?.detail ||
       data?.message ||
       err.message ||
       "Request failed";
-    const error = new Error(msg) as any;
-    error.code = firstError?.error_code || "UNKNOWN";
-    error.errors = errors;
-    error.status = err?.response?.status;
-    return Promise.reject(error);
+    type AugmentedError = Error & { code?: string; errors?: unknown[]; status?: number };
+    const augmentedError = new Error(msg) as AugmentedError;
+    augmentedError.code = errorObject?.error_code || "UNKNOWN";
+    augmentedError.errors = errorsArray;
+    augmentedError.status = err?.response?.status;
+    return Promise.reject(augmentedError);
   }
 );
 
@@ -32,4 +69,3 @@ export const getVersion = async (): Promise<VersionResponse> => {
   const response = await api.get<VersionResponse>("/version");
   return response.data;
 };
-

@@ -141,7 +141,7 @@ export default function SearchFilters({
       className="flex items-center justify-center gap-3 mx-auto mt-4 w-full"
       aria-label="搜尋篩選列"
     >
-      <div className="flex items-center gap-3 w-[860px]">
+      <div className="flex items-center gap-3 w-[860px] hover:cursor-pointer">
         <DropdownMulti label="類別" options={CATEGORIES} value={cat} onChange={setCat} />
         <DropdownMulti label="家別" options={FAMILIES} value={fam} onChange={setFam} />
         <DropdownMulti label="期數" options={ISSUES} value={issue} onChange={setIssue} />
@@ -154,7 +154,7 @@ export default function SearchFilters({
           triggerWidth={204}
           triggerHeight={40}
           panelWidth={204}
-          panelHeight={256}
+          panelHeight={176}
         />
       </div>
 

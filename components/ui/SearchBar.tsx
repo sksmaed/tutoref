@@ -49,7 +49,10 @@ export default function SearchBar({ query, onQueryChange, canSearch, onSearch }:
           `}
           aria-label="搜尋"
         >
-          <Search className="w-6 h-6" aria-hidden />
+          <Search
+            className={`w-6 h-6 ${canSearch ? 'cursor-pointer' : 'cursor-default'}`}
+            aria-hidden
+          />
         </button>
       </div>
     </div>

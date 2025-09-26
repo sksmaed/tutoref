@@ -63,11 +63,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const raw = sessionStorage.getItem("oauthPostLoginFlash");
       if (raw) {
-        const payload = JSON.parse(raw);
-        setFlash(payload);
-        console.log('oauthPostLoginFlash:', payload);
+        try {
+          const payload = JSON.parse(raw);
+          setFlash(payload);
+          console.log('oauthPostLoginFlash:', payload);
+        } catch (error) {
+          console.warn('Failed to parse oauthPostLoginFlash payload.', error);
+        }
+        sessionStorage.removeItem("oauthPostLoginFlash");
       }
-    } catch {}
+    } catch {
+      sessionStorage.removeItem("oauthPostLoginFlash");
+    }
   }, [loading, authenticated]);
 
   const login = async (email: string, password: string) => {

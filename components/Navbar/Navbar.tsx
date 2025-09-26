@@ -140,16 +140,15 @@ export default function Navbar() {
                 <div
                   className={`
                     relative ml-[20px]
-                    after:content-[''] after:absolute after:top-full after:left-0
+                    after:content-[''] after:absolute after:top-full after:right-0
                     after:w-[140px] after:h-[8px]  /* Hover-bridge：8px 的透明橋接 */
                     after:pointer-events-auto
-                    ${maintenanceMode ? 'opacity-50 cursor-not-allowed' : ''}
+                    ${maintenanceMode ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                   `}
                   onMouseEnter={maintenanceMode ? undefined : openMenu}
                   onMouseLeave={maintenanceMode ? undefined : scheduleClose}
                   aria-haspopup="menu"
                   aria-expanded={maintenanceMode ? false : isUserHovered}
-                  style={{ cursor: maintenanceMode ? "not-allowed" : "default" }}
                 >
                 <Image
                   src={!maintenanceMode && isUserHovered ? "/icons/user-hover.png" : "/icons/user.png"}
@@ -182,6 +181,7 @@ export default function Navbar() {
                         flex items-center gap-[8px]
                         rounded-[8px]
                         hover:bg-primary-100
+                        cursor-pointer
                       "
                     >
                       <Image src="/icons/logout.png" alt="" width={20} height={20} /> {/* icons/logout */}

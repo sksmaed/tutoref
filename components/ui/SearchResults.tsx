@@ -10,7 +10,8 @@ import {
   TeachingPlanDetail,
 } from '@/services/teachingPlan';
 import { normalizeCategory } from '@/lib/categories';
-import { OLDER_ISSUE_VALUE, getOlderAcademicYearValues } from '@/lib/issues';
+import { OLDER_ISSUE_VALUE, compareIssues, getOlderAcademicYearValues } from '@/lib/issues';
+import IssueSortDropdown, { ISSUE_SORT_OPTIONS } from '@/components/ui/IssueSortDropdown';
 import { TeachingPlanDetailModal } from '@/components/ui/TeachingPlanDetailModal';
 
 type Filters = {
@@ -47,13 +48,6 @@ type SearchPlan = {
   grade?: string;
   duration?: number;
 };
-
-const SORTS = [
-  { value: 'issue_desc', label: '期數由新到舊' },
-  { value: 'issue_asc',  label: '期數由舊到新' },
-  { value: 'title_asc',  label: '名稱 A → Z' },
-  { value: 'title_desc', label: '名稱 Z → A' },
-] as const;
 
 const goodTint = {
   filter:
@@ -125,6 +119,8 @@ function pad2(n: number) {
   return n.toString().padStart(2, '0');
 }
 
+type IssueSortValue = (typeof ISSUE_SORT_OPTIONS)[number]['value'];
+
 export default function SearchResults({
   query,
   filters,
@@ -134,7 +130,7 @@ export default function SearchResults({
   filters: Filters;
   trigger: number;
 }) {
-  const [sort, setSort] = useState<string>('issue_desc');
+  const [sort, setSort] = useState<IssueSortValue>('issue_desc');
   const [onlyGood, setOnlyGood] = useState<boolean>(false);
   const [rawRows, setRawRows] = useState<Row[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -239,10 +235,6 @@ export default function SearchResults({
   }, [trigger, queryString]);
 
   // ---- 前端排序（保留你原本的互動）----
-  const seasonRank = (season: string) => {
-    const mapping: Record<string, number> = { 春: 1, 夏: 2, 秋: 3, 冬: 4 };
-    return mapping[season] ?? 0;
-  };
   const rowsWithFavorites = useMemo(
     () =>
       rawRows.map((row) => ({
@@ -280,17 +272,9 @@ export default function SearchResults({
   );
   const sortedRows = useMemo(() => {
     const list = [...filteredRows];
-    list.sort((a, b) => {
-      if (sort === 'title_asc') return a.title.localeCompare(b.title, 'zh-Hant');
-      if (sort === 'title_desc') return b.title.localeCompare(a.title, 'zh-Hant');
-      // issue 排序：academic_year（數字） + semester_period（春<夏<秋<冬）
-      const ayA = parseInt(a.issue.slice(0, 2) || '0', 10);
-      const ayB = parseInt(b.issue.slice(0, 2) || '0', 10);
-      const spA = seasonRank(a.issue.slice(2));
-      const spB = seasonRank(b.issue.slice(2));
-      const cmp = ayA === ayB ? spA - spB : ayA - ayB;
-      return sort === 'issue_asc' ? cmp : -cmp;
-    });
+    list.sort((a, b) => (sort === 'issue_asc'
+      ? compareIssues(a.issue, b.issue)
+      : compareIssues(b.issue, a.issue)));
     return list;
   }, [filteredRows, sort]);
 
@@ -402,19 +386,7 @@ export default function SearchResults({
           </button>
 
           {/* 排序 */}
-          <div className="relative h-[32px] w-[140px] rounded-[8px] bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="appearance-none h-[32px] w-full rounded-[8px] pl-[12px] pr-[28px] text-[14px] leading-[32px] bg-transparent font-['Noto_Sans_TC'] font-normal border-0 outline-hidden"
-              aria-label="排序方式"
-            >
-              {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
-            <Image src="/icons/angle-down.png" alt="" width={20} height={20}
-              className="pointer-events-none absolute right-[8px] top-1/2 -translate-y-1/2"
-            />
-          </div>
+          <IssueSortDropdown value={sort} onChange={setSort} />
         </div>
       </div>
 
