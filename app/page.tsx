@@ -231,14 +231,37 @@ export default function Home() {
 
         const topCategory = sortedCategories.find((category) => category.count > 0) ?? sortedCategories[0];
 
+        const topViewedPlan = allPlans.reduce<null | any>((best, plan) => {
+          const views = typeof plan?.view_count === 'number' ? plan.view_count : 0;
+          if (!best) return plan ?? null;
+          const bestViews = typeof best.view_count === 'number' ? best.view_count : 0;
+          return views > bestViews ? plan : best;
+        }, null);
+
+        const hasViewMetric = topViewedPlan && typeof topViewedPlan.view_count === 'number' && topViewedPlan.view_count > 0;
+        const topViewedCount = hasViewMetric
+          ? topViewedPlan!.view_count
+          : topCategory?.count ?? allPlans.length;
+
+        const topViewedHelper = (() => {
+          if (hasViewMetric && topViewedPlan) {
+            const name = topViewedPlan.tp_name?.trim() || topViewedPlan.category?.trim();
+            return name ? `人氣教案：「${name}」` : undefined;
+          }
+          if (topCategory && topCategory.count > 0) {
+            return `目前以「${topCategory.label}」最受歡迎`;
+          }
+          return undefined;
+        })();
+
         const startItems: StartHereItem[] = [
           { id: 'good', label: '優良教案', count: excellentCount, icon: '/icons/good.png' },
           {
             id: 'most',
             label: '最多人參考',
-            count: topCategory?.count ?? allPlans.length,
+            count: topViewedCount,
             icon: '/icons/eye-open.png',
-            helperText: topCategory && topCategory.count > 0 ? `目前以「${topCategory.label}」最受歡迎` : undefined,
+            helperText: topViewedHelper,
           },
           {
             id: 'latest',
