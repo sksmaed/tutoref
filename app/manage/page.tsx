@@ -176,13 +176,13 @@ export default function TeachPlanManagePage() {
 
   const detailLiked = detailPlanId ? Boolean(likes[detailPlanId]) : Boolean(detailRow?.liked);
 
-  const viewAllBtnClass = (disabled: boolean) =>
-    [
-      'w-[160px] h-[48px] rounded-[8px] px-[47px] py-[12px] text-[16px] leading-[150%] font-["Noto_Sans_TC"] shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
-      disabled
+const viewAllBtnClass = (disabled: boolean) =>
+  [
+    'w-[160px] h-[48px] rounded-[8px] px-[47px] py-[12px] text-[16px] leading-[150%] font-["Noto_Sans_TC"] shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
+    disabled
         ? 'bg-white border border-black-300 text-black-300 cursor-not-allowed'
-        : 'bg-white border border-primary-900 text-primary-900',
-    ].join(' ');
+        : 'bg-white border border-primary-900 text-primary-900 cursor-pointer hover:bg-primary-50',
+  ].join(' ');
 
   useEffect(() => {
     if (!API_PREFIX) {
@@ -531,7 +531,11 @@ export default function TeachPlanManagePage() {
                       aria-label="編輯"
                       onClick={() => handleEdit(r)}
                       disabled={plansLoading || deletingId === r.id}
-                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'hover:cursor-pointer'}
+                      className={
+                        plansLoading || deletingId === r.id
+                          ? 'cursor-not-allowed opacity-60'
+                          : 'cursor-pointer hover:opacity-80'
+                      }
                     >
                       <Image src="/icons/edit.png" alt="" width={20} height={20} />
                     </button>
@@ -542,7 +546,11 @@ export default function TeachPlanManagePage() {
                       aria-label="刪除"
                       onClick={() => handleDelete(r)}
                       disabled={plansLoading || deletingId === r.id}
-                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'hover:cursor-pointer'}
+                      className={
+                        plansLoading || deletingId === r.id
+                          ? 'cursor-not-allowed opacity-60'
+                          : 'cursor-pointer hover:opacity-80'
+                      }
                     >
                       <Image src="/icons/trash.png" alt="" width={20} height={20} />
                     </button>
@@ -574,7 +582,7 @@ export default function TeachPlanManagePage() {
               w-[160px] h-[48px] rounded-[8px] bg-primary-900
               px-[47px] py-[12px]
               text-[16px] leading-[150%] font-['Noto_Sans_TC'] font-bold text-white
-              shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]
+              shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] cursor-pointer hover:opacity-90
             "
           >
             上傳教案
@@ -613,7 +621,11 @@ export default function TeachPlanManagePage() {
                         aria-label="查看"
                         onClick={() => handleView(r)}
                         disabled={detailLoading && detailPlanId === r.id}
-                        className={detailLoading && detailPlanId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                        className={
+                          detailLoading && detailPlanId === r.id
+                            ? 'cursor-not-allowed opacity-60'
+                            : 'cursor-pointer hover:opacity-80'
+                        }
                       >
                         <Image src="/icons/file-alt.png" alt="" width={20} height={20} />
                       </button>
@@ -624,6 +636,11 @@ export default function TeachPlanManagePage() {
                         onClick={() => handleFavoriteToggle(r)}
                         disabled={favoriteUpdatingId === r.id || likesLoading}
                         aria-label={liked ? '取消收藏' : '加入收藏'}
+                        className={
+                          favoriteUpdatingId === r.id || likesLoading
+                            ? 'cursor-not-allowed opacity-60'
+                            : 'cursor-pointer hover:opacity-80'
+                        }
                       >
                         <Image
                           src={liked ? '/icons/liked.png' : '/icons/like.png'}

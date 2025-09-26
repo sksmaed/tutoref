@@ -171,13 +171,20 @@
 }
 
 
-.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar { width: 6px; }
 .custom-scroll::-webkit-scrollbar-track {
-  background: #F1F1F1;      /* black-100 */
+  background: #EDEDED;      /* light grey */
   border-radius: 9999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-  background: #D4D4D4;      /* black-200 */
+  background: linear-gradient(180deg, #BFBFBF 0%, #9C9C9C 100%);
   border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
-.custom-scroll { scrollbar-width: thin; scrollbar-color: #D4D4D4 #F1F1F1; } /* Firefox */
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #B0B0B0 0%, #878787 100%);
+}
+.custom-scroll { scrollbar-width: thin; scrollbar-color: #9C9C9C #EDEDED; } /* Firefox */
+
+

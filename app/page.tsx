@@ -331,11 +331,11 @@ export default function Home() {
               error={inspirationError}
               onSelect={handlePopularCategorySelect}
             />
-            <StartHere
+            {/* <StartHere
               items={startHereItems}
               loading={inspirationLoading}
               error={inspirationError}
-            />
+            /> */}
           </>
 )}
       </main>

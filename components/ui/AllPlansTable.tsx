@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { compareIssues } from '@/lib/issues';
+import IssueSortDropdown, { ISSUE_SORT_OPTIONS } from '@/components/ui/IssueSortDropdown';
 
 export type Row = {
   id: string;
@@ -17,13 +19,6 @@ export type Row = {
   duration?: number;
 };
 
-const SORTS = [
-  { value: 'issue_desc', label: '期數由新到舊' }, // default
-  { value: 'issue_asc',  label: '期數由舊到新' },
-  { value: 'title_asc',  label: '名稱 A → Z' },
-  { value: 'title_desc', label: '名稱 Z → A' },
-] as const;
-
 const goodTint = {
   filter:
     'brightness(0) saturate(100%) invert(49%) sepia(12%) saturate(1148%) hue-rotate(47deg) brightness(88%) contrast(87%)',
@@ -32,6 +27,8 @@ const goodTint = {
 function pad2(n: number) {
   return n.toString().padStart(2, '0');
 }
+
+type IssueSortValue = (typeof ISSUE_SORT_OPTIONS)[number]['value'];
 
 export function AllPlansTable({
   title,
@@ -50,7 +47,7 @@ export function AllPlansTable({
   onDelete?: (row: Row) => Promise<void>;
   onView?: (row: Row) => void;
 }) {
-  const [sort, setSort] = useState<string>('issue_desc');
+  const [sort, setSort] = useState<IssueSortValue>('issue_desc');
   const [onlyGood, setOnlyGood] = useState<boolean>(false);
   const [baseRows, setBaseRows] = useState<Row[]>(rowsInput);
   const [rows, setRows] = useState<Row[]>(rowsInput);
@@ -97,13 +94,11 @@ export function AllPlansTable({
       if (onlyGood) dataset = dataset.filter((r) => r.good);
     }
 
-    dataset.sort((a, b) => {
-      if (sort === 'issue_desc') return b.issue.localeCompare(a.issue, 'zh-Hant');
-      if (sort === 'issue_asc')  return a.issue.localeCompare(b.issue, 'zh-Hant');
-      if (sort === 'title_asc')  return a.title.localeCompare(b.title, 'zh-Hant');
-      if (sort === 'title_desc') return b.title.localeCompare(a.title, 'zh-Hant');
-      return 0;
-    });
+    dataset.sort((a, b) => (
+      sort === 'issue_asc'
+        ? compareIssues(a.issue, b.issue)
+        : compareIssues(b.issue, a.issue)
+    ));
 
     setRows(dataset);
     setPage(1);
@@ -151,8 +146,10 @@ export function AllPlansTable({
             className={[
               'h-[32px] w-[102px] inline-flex items-center justify-center gap-[3px]',
               'rounded-[8px] px-[12px] py-[5px] bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
-              'border',
-              onlyGood ? 'border-primary-900 text-primary-900' : 'border-transparent text-black-900',
+              'border cursor-pointer',
+              onlyGood
+                ? 'border-primary-900 text-primary-900'
+                : 'border-transparent text-black-900 hover:bg-black-100/60',
             ].join(' ')}
             title="只看優良教案"
           >
@@ -169,27 +166,7 @@ export function AllPlansTable({
           </button>
 
           {/* 排序下拉（Default：期數由新到舊） */}
-          <div className="relative h-[32px] w-[140px] rounded-[8px] bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="appearance-none h-[32px] w-full rounded-[8px] pl-[12px] pr-[28px] text-[14px] leading-[32px] bg-transparent font-['Noto_Sans_TC'] font-normal border-0 outline-hidden"
-              aria-label="排序方式"
-            >
-              {SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-            <Image
-              src="/icons/angle-down.png"
-              alt=""
-              width={20}
-              height={20}
-              className="pointer-events-none absolute right-[8px] top-1/2 -translate-y-1/2"
-            />
-          </div>
+          <IssueSortDropdown value={sort} onChange={setSort} />
         </div>
       </div>
 
@@ -247,7 +224,7 @@ export function AllPlansTable({
                     onClick={() => onEdit?.(r)}
                     aria-label="編輯"
                     disabled={!onEdit}
-                    className={!onEdit ? 'cursor-not-allowed opacity-60' : ''}
+                    className={!onEdit ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}
                   >
                     <Image src="/icons/edit.png" alt="編輯" width={20} height={20} />
                   </button>
@@ -258,7 +235,7 @@ export function AllPlansTable({
                     onClick={() => onDelete?.(r)}
                     aria-label="刪除"
                     disabled={!onDelete}
-                    className={!onDelete ? 'cursor-not-allowed opacity-60' : ''}
+                    className={!onDelete ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}
                   >
                     <Image src="/icons/trash.png" alt="刪除" width={20} height={20} />
                   </button>
@@ -272,7 +249,7 @@ export function AllPlansTable({
                     onClick={() => onView?.(r)}
                     aria-label="查看"
                     disabled={!onView}
-                    className={!onView ? 'cursor-not-allowed opacity-60' : ''}
+                    className={!onView ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}
                   >
                     <Image src="/icons/file-alt.png" alt="查看" width={20} height={20} />
                   </button>
@@ -282,6 +259,7 @@ export function AllPlansTable({
                     type="button"
                     onClick={() => handleToggleLike(r)}
                     aria-label={r.liked ? '取消收藏' : '加入收藏'}
+                    className="cursor-pointer hover:opacity-80"
                   >
                     <Image src={r.liked ? '/icons/liked.png' : '/icons/like.png'} alt="收藏" width={20} height={20} />
                   </button>
@@ -308,7 +286,7 @@ export function AllPlansTable({
                 w-[160px] h-[48px] rounded-[8px] bg-primary-900
                 px-[48px] py-[12px]
                 text-[16px] leading-[150%] font-['Noto_Sans_TC'] font-bold text-white
-                shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]
+                shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] cursor-pointer hover:opacity-90
               "
             >
               上傳教案
@@ -354,7 +332,7 @@ function PageBtn({ icon, disabled, onClick }: { icon: string; disabled?: boolean
       className={`
         w-[32px] h-[36px] inline-flex items-center justify-center
         rounded-[4px] px-[10px] py-[4px] border border-black-200 bg-white
-        ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-black-100'}
+        ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-black-100'}
       `}
     >
       <Image src={icon} alt="" width={20} height={20} />
