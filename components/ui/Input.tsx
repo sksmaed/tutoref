@@ -52,7 +52,7 @@ export const Input: React.FC<InputProps> = ({
   const inputType = type === 'password' && showPassword ? 'text' : type;
 
   const getInputStyles = () => {
-    const baseStyles = 'w-full border-none outline-none bg-transparent';
+    const baseStyles = 'w-full border-none outline-hidden bg-transparent';
 
     const stateStyles = {
       default: 'text-black-500 placeholder:text-black-300',

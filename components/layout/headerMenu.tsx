@@ -16,7 +16,7 @@ export default function HeaderMenu() {
     <div className="fixed top-4 left-4 z-10">
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className="p-2 hover:text-blue-700 focus:outline-none"
+        className="p-2 hover:text-blue-700 focus:outline-hidden"
       >
         <Menu size={24} />
       </button>

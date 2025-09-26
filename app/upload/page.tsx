@@ -15,8 +15,8 @@ import { Modal } from '@/components/ui/Modal';
 import { DURATION_INVERSE_MAP, DURATION_MAP } from '@/lib/constant';
 import { normalizeCategory } from '@/lib/categories';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
 
 const formatDurationLabel = (value: number | string | null | undefined): string => {
   if (typeof value === 'number') {
@@ -226,6 +226,49 @@ const UploadPage = () => {
 
     fetchExistingPlan();
   }, [API_PREFIX, planIdFromQuery, toast]);
+
+  // const handleSubmit = async () => {
+  //   // 檢查檔案類型
+  //   if (!uploadedFile) return;
+    
+  //   // 檢查是否為 PDF 檔案
+  //   if (uploadedFile.type !== 'application/pdf' && !uploadedFile.name.toLowerCase().endsWith('.pdf')) {
+  //     setShowErrorModal(true);
+  //     return;
+  //   }
+
+  //   // 如果檔案格式正確，開始上傳並解析
+  //   setIsUploading(true);
+
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('files', uploadedFile);
+
+  //     const response = await fetch(`${BACKEND_URL}/api/teaching-plan/upload-files`, {
+  //       method: 'POST',
+  //       body: formData
+  //     });
+
+  //     const data = await response.json();
+  //     setParsedPlans(data);
+      
+  //     // 重置slide檔案狀態為新解析結果的狀態
+  //     if (data && data.length > 0) {
+  //       setPersistentSlideFile(data[0].slide_pdf || '');
+  //       setShowPreview(true);
+  //       setShowEditor(false);
+  //     }
+  //   } catch (error) {
+  //     console.error('Upload error:', error);
+  //     toast({
+  //       title: "❌ 上傳失敗",
+  //       description: "請稍後再試。",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   const handleSubmit = async () => {
     if (!uploadedFile) return;

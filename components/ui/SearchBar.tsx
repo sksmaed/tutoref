@@ -35,7 +35,7 @@ export default function SearchBar({ query, onQueryChange, canSearch, onSearch }:
           className="
             w-[257px] h-[30px]
             text-[20px] leading-[150%] font-['Noto_Sans_TC']
-            text-gray-500 focus:outline-none
+            text-gray-500 focus:outline-hidden
             flex-1 mr-3
           "
         />

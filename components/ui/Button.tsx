@@ -44,7 +44,7 @@ export const Button: React.FC<ButtonProps> = ({
             width={20}
             height={20}
             style={iconStyle}
-            className="flex-shrink-0"
+            className="shrink-0"
           />
         )}
         <span>{children}</span>

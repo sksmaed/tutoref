@@ -40,3 +40,13 @@ export interface TeachingPlan {
     slide_pdf: string;
     content?: string;
 }
+
+export interface VersionResponse {
+    version: string;
+    major: number;
+    minor: number;
+    patch: number;
+    pre_release?: string | null;
+    api_version: string;
+    environment: string;
+}
