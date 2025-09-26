@@ -7,7 +7,23 @@ import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
 
 export const metadata: Metadata = {
   title: "Tutoref 教案檢索系統",
-  description: "教案檢索 / 管理 / 資源 / 回報",
+  description: "教案檢索 / 管理 / 學習資源",
+  keywords: "tutoref, 教案, 檢索, 管理, 台大山服",
+  authors: [{ name: "Tutoref 團隊" }],
+  creator: "Tutoref",
+  publisher: "Tutoref",
+  robots: "index, follow",
+  openGraph: {
+    type: "website",
+    locale: "zh_TW",
+    url: "https://www.tutoref.tw",
+    title: "Tutoref 教案檢索系統",
+    description: "教案檢索 / 管理 / 學習資源",
+    siteName: "Tutoref",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 function LoadingFallback() {
