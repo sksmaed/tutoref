@@ -9,7 +9,7 @@ import HeaderMenu from '../../components/layout/headerMenu';
 const PackagePage = () => {
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <HeaderMenu />
       
       <div className="max-w-7xl mx-auto">
@@ -45,9 +45,9 @@ const PackagePage = () => {
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                          className="inline-flex items-center text-primary-900 hover:text-primary-700 transition-colors duration-200"
                         >
-                          <ExternalLink size={16} className="mr-2 shrink-0" />
+                          <ExternalLink size={16} className="mr-2 shrink-0 text-primary-900" />
                           <span>{link.name}</span>
                         </a>
                       </div>

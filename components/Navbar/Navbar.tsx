@@ -11,9 +11,12 @@ import { triggerHomeReset } from "@/lib/homeReset";
 
 const REPORT_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd-HbyD2VIXggG_6_YxHAxliwC4ZF0EtvfgZPy7WjwS-0RhLg/viewform?usp=sharing";
 
+const MANUAL_URL = "https://lyrical-coaster-81e.notion.site/Tutoref-276e617dd21080c5b104f242f460a861";
+
 const BASE_MENU = [
   { key: "search", label: "教案檢索", to: "/" },
-  // { key: "resources", label: "學習資源", to: "/resources" },
+  { key: "resources", label: "學習資源", to: "/package" },
+  { key: "manual", label: "使用手冊", to: MANUAL_URL, external: true },
   { key: "report", label: "錯誤回報", to: REPORT_URL, external: true },
   // { key: "notification", label: "訊息公告", to: "/notification" },
 ];

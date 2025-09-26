@@ -22,7 +22,6 @@ export const packages = [
     title: "教學技巧 Package",
     description: "教學技巧與教案製作同等重要",
     links: [
-      { name: "教學技巧投影片", url: "https://docs.google.com/presentation/d/1olHX8Z4QLTqF3nFy1IeAncujpA-NLL9c/edit?usp=sharing&ouid=100063972288401618129&rtpof=true&sd=true" },
       { name: "教學情境短劇", url: "https://youtube.com/playlist?list=PLP8IR4NXTibvKlSY3ALNfzYceVNz9_7OK&feature=shared" },
     ]
   }

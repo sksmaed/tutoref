@@ -18,6 +18,10 @@ const mapMyPlanToRow = (plan: TeachingPlanDetail): Row => ({
   author: plan.writer_name ?? '',
   good: plan.is_excellent,
   liked: false,
+  grade: plan.grade ?? '',
+  duration: typeof plan.duration === 'number' ? plan.duration : undefined,
+  viewCount: typeof plan.view_count === 'number' ? plan.view_count : undefined,
+  createdAt: plan.created_at ? Date.parse(plan.created_at) : undefined,
 });
 
 export default function MineAllPage() {
