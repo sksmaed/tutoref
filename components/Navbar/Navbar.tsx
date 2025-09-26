@@ -41,6 +41,13 @@ export default function Navbar() {
     setMaintenanceMode(isCurrentlyInMaintenanceMode());
   }, [searchParams]);
 
+  // 當認證狀態載入完成時重置 hover 狀態
+  useEffect(() => {
+    if (!loading) {
+      setIsUserHovered(false);
+    }
+  }, [loading]);
+
   const openMenu = () => {
     if (hideTimer.current) window.clearTimeout(hideTimer.current);
     setIsUserHovered(true);
@@ -91,7 +98,7 @@ export default function Navbar() {
 
         {/* 右側 Menu + User */}
         <div className={styles.menuGroup}>
-          {menu.map((item) => {
+          {!loading && menu.map((item) => {
             const isActive = pathname === item.to;
             const base = `${styles.menuItem} ${isActive ? styles.active : ""} ${maintenanceMode ? styles.disabled : ""}`;
             
