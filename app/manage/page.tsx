@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { DeleteTeachPlanModal } from '@/components/ui/DeleteTeachPlanModal';
 import { TeachingPlanDetailModal } from '@/components/ui/TeachingPlanDetailModal';
 import { fetchTeachingPlanDetail, TeachingPlanDetail } from '@/services/teachingPlan';
@@ -134,6 +135,7 @@ const debugLog = (...args: unknown[]) => {
 export default function TeachPlanManagePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { loading: authLoading, authenticated } = useAuth();
 
   const [myPlansAll, setMyPlansAll] = useState<Row[]>([]);
   const [myLikesAll, setMyLikesAll] = useState<Row[]>([]);
@@ -184,7 +186,27 @@ const viewAllBtnClass = (disabled: boolean) =>
         : 'bg-white border border-primary-900 text-primary-900 cursor-pointer hover:bg-primary-50',
   ].join(' ');
 
+  // 檢查登入狀態
   useEffect(() => {
+    if (authLoading) return; // 等待驗證完成
+
+    if (!authenticated) {
+      toast({
+        title: '❌ 需要登入',
+        description: '請先登入才能使用教案管理功能。',
+        variant: 'destructive',
+      });
+      router.push('/login');
+      return;
+    }
+  }, [authLoading, authenticated, router, toast]);
+
+  useEffect(() => {
+    if (authLoading || !authenticated) {
+      // 等待登入驗證完成，或者已經跳轉到登入頁面
+      return;
+    }
+
     if (!API_PREFIX) {
       const message = '後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。';
       setPlansError(message);
@@ -245,7 +267,7 @@ const viewAllBtnClass = (disabled: boolean) =>
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [authLoading, authenticated]);
 
   useEffect(() => {
     if (!detailModalOpen || !detailPlanId) {
@@ -492,6 +514,23 @@ const viewAllBtnClass = (disabled: boolean) =>
     setDeleteModalOpen(false);
     setDeleteTarget(null);
   };
+
+  // 如果正在驗證登入狀態，顯示載入畫面
+  if (authLoading) {
+    return (
+      <main className="min-h-screen bg-black-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-[16px] font-['Noto_Sans_TC'] text-black-700">驗證登入狀態中...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // 如果未登入，不顯示內容（將跳轉到登入頁面）
+  if (!authenticated) {
+    return null;
+  }
 
   return (
     <>
