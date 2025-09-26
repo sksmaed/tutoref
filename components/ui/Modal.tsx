@@ -44,7 +44,7 @@ export function Modal({
             onClick={onClose}
             aria-label="關閉"
             title="關閉"
-            className="absolute right-3 top-3 text-black/60 hover:text-black/90"
+            className="absolute right-3 top-3 text-black/60 hover:text-black/90 hover:cursor-pointer"
           >
             ✕
           </button>
@@ -63,7 +63,7 @@ export function Modal({
             onClick={onConfirm ?? onClose}
             className="
               w-[160px] h-[48px] rounded-[8px] px-[48px] py-[12px]
-              bg-primary-900 text-white font-semibold hover:opacity-90
+              bg-primary-900 text-white font-semibold hover:opacity-90 hover:cursor-pointer
               focus:outline-hidden focus:ring-2 focus:ring-primary-900/40
             "
             style={{ fontFamily: '"Noto Sans TC", sans-serif' }}

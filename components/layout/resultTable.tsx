@@ -53,7 +53,7 @@ const ResultTable: React.FC<ResultTableProps> = ({ results }) => {
                 <td className="py-2 px-4 border text-center">{plan.writer_name}</td>
                 <td className="py-2 px-4 border text-center">
                   <button 
-                    className="px-4 py-1 bg-blue-500 text-white rounded-md focus:outline-hidden hover:bg-blue-700"
+                    className="px-4 py-1 bg-blue-500 text-white rounded-md focus:outline-hidden hover:bg-blue-700 hover:cursor-pointer"
                     onClick={() => handleViewClick(plan)}
                   >
                     查看
@@ -74,7 +74,7 @@ const ResultTable: React.FC<ResultTableProps> = ({ results }) => {
       {/* 分頁控制按鈕 */}
       <div className="flex justify-center items-center mt-4 space-x-4">
         <button 
-          className={`px-4 py-2 rounded-md ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
+          className={`px-4 py-2 rounded-md ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700 hover:cursor-pointer'}`}
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
         >
@@ -82,7 +82,7 @@ const ResultTable: React.FC<ResultTableProps> = ({ results }) => {
         </button>
         <span className="text-lg font-semibold">{currentPage} / {totalPages}</span>
         <button 
-          className={`px-4 py-2 rounded-md ${currentPage === totalPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
+          className={`px-4 py-2 rounded-md ${currentPage === totalPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700 hover:cursor-pointer'}`}
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
         >

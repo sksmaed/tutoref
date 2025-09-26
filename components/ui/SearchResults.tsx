@@ -60,8 +60,8 @@ const goodTint = {
     'brightness(0) saturate(100%) invert(49%) sepia(12%) saturate(1148%) hue-rotate(47deg) brightness(88%) contrast(87%)',
 };
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 function buildSearchParams(query: string, filters: Filters): URLSearchParams {
   const params = new URLSearchParams();
@@ -390,7 +390,7 @@ export default function SearchResults({
             className={[
               'h-[32px] w-[102px] inline-flex items-center justify-center gap-[3px]',
               'rounded-[8px] px-[12px] py-[5px] bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
-              'border',
+              'border hover:cursor-pointer',
               onlyGood ? 'border-primary-900 text-primary-900' : 'border-transparent text-black-900',
             ].join(' ')}
             title="只看優良教案"
@@ -460,7 +460,7 @@ export default function SearchResults({
                     onClick={() => handleView(r)}
                     aria-label="查看"
                     disabled={detailLoading && detailPlanId === r.id}
-                    className={detailLoading && detailPlanId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                    className={detailLoading && detailPlanId === r.id ? 'cursor-not-allowed opacity-60' : 'hover:cursor-pointer'}
                   >
                     <Image src="/icons/file-alt.png" alt="查看" width={20} height={20} />
                   </button>
@@ -471,7 +471,7 @@ export default function SearchResults({
                     onClick={() => toggleLike(r.id)}
                     aria-label={r.liked ? '取消收藏' : '加入收藏'}
                     disabled={favoritePendingId === r.id}
-                    className={favoritePendingId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                    className={favoritePendingId === r.id ? 'cursor-not-allowed opacity-60' : 'hover:cursor-pointer'}
                   >
                     <Image src={r.liked ? '/icons/liked.png' : '/icons/like.png'} alt="" width={20} height={20} />
                   </button>
@@ -512,7 +512,7 @@ export default function SearchResults({
 function PageBtn({ icon, disabled, onClick }: { icon: string; disabled?: boolean; onClick?: () => void; }) {
   return (
     <button type="button" disabled={disabled} onClick={onClick}
-      className={`w-[32px] h-[36px] inline-flex items-center justify-center rounded-[4px] px-[10px] py-[4px] border border-black-200 bg-white ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-black-100'}`}>
+      className={`w-[32px] h-[36px] inline-flex items-center justify-center rounded-[4px] px-[10px] py-[4px] border border-black-200 bg-white ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-black-100 hover:cursor-pointer'}`}>
       <Image src={icon} alt="" width={20} height={20} />
     </button>
   );

@@ -53,21 +53,38 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
   const selectedYear = editedPlan.semester?.substring(0, 2) || '';
   const selectedSeason = editedPlan.semester?.substring(2) || '';
 
+  // 初始化 / 同步 plan -> editedPlan：
+  // 1. 若 plan.id 改變，視為切換到另一份教案，完整載入（但仍保留使用者已上傳、仍相同檔名的 slide_pdf_file? 通常換ID就重置，可直接覆蓋）。
+  // 2. 若是同一份 plan（id 不變），只同步會從後端改變且需要正規化的欄位：semester, category。
+  //    避免覆寫使用者在前端剛選取但尚未送出的 slide_pdf / slide_pdf_file。
+  const [prevPlanId, setPrevPlanId] = useState<string>(plan.id);
   useEffect(() => {
     const rawCategory = plan.category ?? '';
     const trimmedCategory = rawCategory.trim();
     const normalizedCategory = trimmedCategory
       ? (categoryOptions.includes(trimmedCategory) ? trimmedCategory : normalizeCategory(trimmedCategory))
       : '';
-    const sanitizedPlan: TeachingPlan = {
-      ...plan,
-      semester: plan.semester ?? '',
-      category: normalizedCategory,
-    };
 
-    setEditedPlan(sanitizedPlan);
-    setTouchedFields(new Set());
-  }, [plan, categoryOptions]);
+    if (plan.id !== prevPlanId) {
+      const sanitizedPlan: TeachingPlan = {
+        ...plan,
+        semester: plan.semester ?? '',
+        category: normalizedCategory,
+      };
+      setEditedPlan(sanitizedPlan);
+      setTouchedFields(new Set());
+      setPrevPlanId(plan.id);
+      console.log('[Plan switch] sanitizedPlan (full load):', sanitizedPlan);
+    } else {
+      // 同一筆：僅更新需要正規化的欄位
+      setEditedPlan(prev => ({
+        ...prev,
+        semester: plan.semester ?? prev.semester ?? '',
+        category: normalizedCategory || prev.category || '',
+      }));
+      console.log('[Plan sync] partial fields updated (semester/category).');
+    }
+  }, [plan, categoryOptions, prevPlanId]);
 
   // 檢查必填欄位是否完整（除了完課筆記外）
   const checkValidation = (planData: TeachingPlan) => {
@@ -84,6 +101,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
     if (onValidationChange) {
       onValidationChange(isValid);
     }
+    console.log("valid: ", editedPlan);
   }, [editedPlan, onValidationChange]);
 
   const handleChange = useCallback((field: keyof TeachingPlan, value: string | number) => {
@@ -110,13 +128,20 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
     getCurrentPlan: () => editedPlan
   }));
 
-  const handleSlideFileChange = (fileName: string) => {
-    handleChange('slide_pdf', fileName);
-  };
+  const handleSlideFileChange = (_fileName: string | null) => { /* no-op: 合併更新改在 handleSlideFileSelect */ };
 
   const handleSlideFileRemove = () => {
-    handleChange('slide_pdf', '');
+    setEditedPlan(prev => ({ ...prev, slide_pdf: '', slide_pdf_file: null }));
     onSlideFileSelect?.(null);
+  };
+
+  const handleSlideFileSelect = (file: File | null) => {
+    setEditedPlan(prev => ({
+      ...prev,
+      slide_pdf: file ? file.name : '',
+      slide_pdf_file: file || null
+    }));
+    onSlideFileSelect?.(file);
   };
 
   const isFieldEmpty = useCallback((field: string) => {
@@ -156,7 +181,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'tp_name' && editedPlan.tp_name && (
                     <button
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('tp_name')}
                     >
                       ✕
@@ -285,7 +310,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'writer_name' && editedPlan.writer_name && (
                     <button
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('writer_name')}
                     >
                       ✕
@@ -387,7 +412,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'objectives' && editedPlan.objectives && (
                     <button
-                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('objectives')}
                     >
                       ✕
@@ -423,7 +448,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'outline' && editedPlan.outline && (
                     <button
-                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('outline')}
                     >
                       ✕
@@ -459,7 +484,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                   
                   {hoveredField === 'completion_notes' && editedPlan.completion_notes && (
                     <button
-                      className="absolute right-2 top-2 text-black-400 hover:text-black-600"
+                      className="absolute right-2 top-2 text-black-400 hover:text-black-600 hover:cursor-pointer"
                       onClick={() => handleClearField('completion_notes')}
                     >
                       ✕
@@ -476,10 +501,11 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
               </td>
               <td className="border border-black-200 pl-6 pr-10 py-4" colSpan={3}>
                 <SlideUpload
-                  initialFileName={editedPlan.slide_pdf}
+                  initialFileName={plan.slide_pdf}
+                  selectedFileName={editedPlan.slide_pdf}
                   onFileChange={handleSlideFileChange}
                   onFileRemove={handleSlideFileRemove}
-                  onFileSelect={onSlideFileSelect}
+                  onFileSelect={handleSlideFileSelect}
                 />
               </td>
             </tr>

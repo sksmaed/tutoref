@@ -27,7 +27,7 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.inner}>
         Copyright © 2025 Tutoref 製作團隊 版權所有
-        <span className={styles.version}>v{version}</span>
+        <span className={styles.version}>{version}</span>
       </div>
     </footer>
   );

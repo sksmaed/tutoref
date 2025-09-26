@@ -104,7 +104,7 @@ export function TeachingPlanDetailModal({
             onClose();
           }}
           aria-label="關閉"
-          className="absolute right-[24px] top-[24px] inline-flex h-8 w-8 items-center justify-center rounded-full bg-black-100"
+          className="absolute right-[24px] top-[24px] inline-flex h-8 w-8 items-center justify-center rounded-full bg-black-100 hover:cursor-pointer"
         >
           <Image src="/icons/close.png" alt="close" width={18} height={18} />
         </button>
@@ -360,7 +360,7 @@ function FavoriteButton({
         'inline-flex h-[32px] w-[102px] items-center justify-center gap-[4px]',
         'rounded-[8px] border border-primary-900 px-[12px] py-[5px] text-[14px] ',
         liked ? 'bg-primary-100 text-primary-900' : 'bg-white text-primary-900',
-        disabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-primary-100/60',
+        disabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-primary-100/60 hover:cursor-pointer',
       ].join(' ')}
     >
       <Image

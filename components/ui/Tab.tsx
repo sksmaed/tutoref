@@ -11,7 +11,7 @@ export const Tab: React.FC<TabProps> = ({ activeTab, onTabChange }) => {
             <div className="flex flex-col w-1/2 items-center">
                 <button
                     onClick={() => onTabChange('login')}
-                    className={`flex-1 w-full text-center text-xl/normal font-medium hover:opacity-90 ${activeTab === 'login'
+                    className={`flex-1 w-full text-center text-xl/normal font-medium hover:opacity-90 hover:cursor-pointer ${activeTab === 'login'
                         ? 'text-primary-900'
                         : 'text-black-900'
                         }`}
@@ -29,7 +29,7 @@ export const Tab: React.FC<TabProps> = ({ activeTab, onTabChange }) => {
             <div className="flex flex-col w-1/2 items-center">
                 <button
                     onClick={() => onTabChange('signup')}
-                    className={`flex-1 w-full text-center text-xl/normal font-medium hover:opacity-90 ${activeTab === 'signup'
+                    className={`flex-1 w-full text-center text-xl/normal font-medium hover:opacity-90 hover:cursor-pointer ${activeTab === 'signup'
                         ? 'text-primary-900'
                         : 'text-black-900'
                         }`}

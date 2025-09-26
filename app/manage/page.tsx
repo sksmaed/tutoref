@@ -56,8 +56,8 @@ type FavoritesResponse = {
   data?: FavoriteItem[];
 };
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/api/v2/teaching-plan` : '';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 const formatIssue = (academicYear?: string | null, semesterPeriod?: string | null) => {
   const year = academicYear ?? '';
@@ -186,7 +186,7 @@ export default function TeachPlanManagePage() {
 
   useEffect(() => {
     if (!API_PREFIX) {
-      const message = '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。';
+      const message = '後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。';
       setPlansError(message);
       setLikesError(message);
       return;
@@ -292,7 +292,7 @@ export default function TeachPlanManagePage() {
     if (!API_PREFIX) {
       toast({
         title: '❌ 設定錯誤',
-        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        description: '後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。',
         variant: 'destructive',
       });
       return;
@@ -407,7 +407,7 @@ export default function TeachPlanManagePage() {
     if (!API_PREFIX) {
       toast({
         title: '❌ 設定錯誤',
-        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        description: '後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。',
         variant: 'destructive',
       });
       return;
@@ -430,7 +430,7 @@ export default function TeachPlanManagePage() {
     if (!API_PREFIX) {
       toast({
         title: '❌ 設定錯誤',
-        description: '後端網址未設定（NEXT_PUBLIC_BACKEND_URL）。',
+        description: '後端網址未設定（NEXT_PUBLIC_API_BASE_URL）。',
         variant: 'destructive',
       });
       setDeleteModalOpen(false);
@@ -531,7 +531,7 @@ export default function TeachPlanManagePage() {
                       aria-label="編輯"
                       onClick={() => handleEdit(r)}
                       disabled={plansLoading || deletingId === r.id}
-                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'hover:cursor-pointer'}
                     >
                       <Image src="/icons/edit.png" alt="" width={20} height={20} />
                     </button>
@@ -542,7 +542,7 @@ export default function TeachPlanManagePage() {
                       aria-label="刪除"
                       onClick={() => handleDelete(r)}
                       disabled={plansLoading || deletingId === r.id}
-                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : ''}
+                      className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'hover:cursor-pointer'}
                     >
                       <Image src="/icons/trash.png" alt="" width={20} height={20} />
                     </button>

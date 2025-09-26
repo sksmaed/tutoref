@@ -19,7 +19,7 @@ export const Button: React.FC<ButtonProps> = ({
   type = 'button',
   leftIcon = ''
 }) => {
-  const baseClasses = `rounded-lg transition-all duration-200 flex items-center justify-center hover:opacity-90`;
+  const baseClasses = `rounded-lg transition-all duration-200 flex items-center justify-center hover:opacity-90 hover:cursor-pointer`;
   const variantClasses = {
     default: 'py-1.5 px-3',
     large: 'py-3 px-12 w-[378px]',

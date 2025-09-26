@@ -22,7 +22,7 @@ function CategoryCard({ item, onSelect }: { item: PopularCategoryItem; onSelect?
   return (
     <button
       type="button"
-      className="w-[180px] h-[56px] flex items-center justify-between rounded-lg px-5 py-4 bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] transition-transform hover:translate-y-[-1px] active:translate-y-0"
+      className="w-[180px] h-[56px] flex items-center justify-between rounded-lg px-5 py-4 bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] transition-transform hover:-translate-y-px active:translate-y-0 hover:cursor-pointer"
       aria-label={`${label} 類別，共 ${count} 筆`}
       onClick={() => onSelect?.(item)}
     >
