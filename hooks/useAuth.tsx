@@ -60,21 +60,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (loading || !authenticated) return; // ✅ 未登入先別動旗標
-    try {
-      const raw = sessionStorage.getItem("oauthPostLoginFlash");
-      if (raw) {
-        try {
-          const payload = JSON.parse(raw);
-          setFlash(payload);
-          console.log('oauthPostLoginFlash:', payload);
-        } catch (error) {
-          console.warn('Failed to parse oauthPostLoginFlash payload.', error);
+    
+    // 使用 setTimeout 來確保在下一個事件循環中處理，避免競爭條件
+    const timeoutId = setTimeout(() => {
+      try {
+        const raw = sessionStorage.getItem("oauthPostLoginFlash");
+        if (raw) {
+          try {
+            const payload = JSON.parse(raw);
+            setFlash(payload);
+            console.log('oauthPostLoginFlash:', payload);
+          } catch (error) {
+            console.warn('Failed to parse oauthPostLoginFlash payload.', error);
+          }
+          sessionStorage.removeItem("oauthPostLoginFlash");
         }
+      } catch {
         sessionStorage.removeItem("oauthPostLoginFlash");
       }
-    } catch {
-      sessionStorage.removeItem("oauthPostLoginFlash");
-    }
+    }, 50);
+
+    return () => clearTimeout(timeoutId);
   }, [loading, authenticated]);
 
   const login = async (email: string, password: string) => {

@@ -8,6 +8,7 @@ import PopularCategories, { PopularCategoryItem } from '@/components/ui/PopularC
 import StartHere, { StartHereItem } from '@/components/ui/StartHere';
 import SearchResults from '@/components/ui/SearchResults';
 import { consumeHomeResetFlag, HOME_RESET_EVENT } from '@/lib/homeReset';
+import { useAuth } from '@/hooks/useAuth';
 
 type FilterState = {
   categories: Set<string>;
@@ -54,6 +55,7 @@ const CATEGORY_CONFIG: Array<{ key: string; label: string; color: string; icon: 
 ];
 
 export default function Home() {
+  const { loading, authenticated } = useAuth();
   const [toast, setToast] = useState<Flash | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -139,13 +141,28 @@ export default function Home() {
     setSearchTrigger(0);
   }, []);
 
-  useEffect(() => {
+  // 檢查 flash 訊息的函數
+  const checkForFlash = useCallback(() => {
     const f = popFlash();
     if (f) {
       setToast(f);
       setOpen(true);
     }
   }, []);
+
+  // 初始檢查 flash 訊息
+  useEffect(() => {
+    checkForFlash();
+  }, [checkForFlash]);
+
+  // 監聽認證狀態變化，當用戶登入後重新檢查 flash 訊息
+  useEffect(() => {
+    if (!loading && authenticated) {
+      // 稍微延遲一下，確保 useAuth 中的 flash 設置已完成
+      const timeoutId = setTimeout(checkForFlash, 200);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loading, authenticated, checkForFlash]);
 
   useEffect(() => {
     if (!API_PREFIX) {
