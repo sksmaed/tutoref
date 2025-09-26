@@ -72,7 +72,7 @@ export default function MineAllPage() {
     window.location.href = `/plans/${row.id}/edit`;
   };
 
-  const handleDelete = (row: Row) => {
+  const handleDelete = async (row: Row): Promise<void> => {
     if (!row?.id) {
       toast({
         title: '❌ 找不到教案',
