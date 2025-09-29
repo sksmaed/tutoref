@@ -43,8 +43,8 @@ export function Toast({
         {/* 上下等高：py-6 (= 24px / 24px)，左右仍為 pl-7(28px) / pr-6(24px) */}
         {/* 用 items-center + justify-between，讓左區與關閉鈕撐開且垂直置中 */}
         <div className="w-full h-full flex items-start justify-between py-6 pl-7 pr-6">
-          {/* 左區：固定寬 260（照稿），不再固定高度，gap 15 */}
-          <div className="flex items-start w-[260px] gap-[15px] text-white">
+          {/* 左區：使用 flex-1 讓文字區域佔據可用空間，不再固定寬度 */}
+          <div className="flex items-start flex-1 gap-[15px] text-white pr-4">
             {/* icon：24×28（不再加 padding-top，避免把內容往下推） */}
             <div className="pt-1 shrink-0">
               <Image
@@ -57,8 +57,8 @@ export function Toast({
               />
             </div>
 
-            {/* 文字：拿掉 h-[58px]，避免「留一格」；有第二行才給 gap */}
-            <div className={`flex flex-col ${message ? 'gap-[4px]' : ''} overflow-hidden`}>
+            {/* 文字：使用 flex-1 讓文字佔據剩餘空間 */}
+            <div className={`flex flex-col ${message ? 'gap-[4px]' : ''} overflow-hidden flex-1`}>
               {/* 「登入成功」— Noto Sans TC / 500 / 20px / 150% / #FFFFFF */}
               <div
                 className="
