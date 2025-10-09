@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Tutoref 教案檢索系統",
