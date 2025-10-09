@@ -43,6 +43,7 @@ export default function RootLayout({ children }: { children }) {
           <Suspense fallback={<LoadingFallback />}>
             <ClientLayoutWrapper children={children} />
           </Suspense>
+          <Analytics />
         </AuthProvider>
       </body>
     </html>
