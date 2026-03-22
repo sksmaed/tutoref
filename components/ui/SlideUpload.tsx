@@ -33,7 +33,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
     const file = event.target.files?.[0];
     if (file) {
       // 檢查檔案大小是否超過 50MB
-      const maxSize = 50 * 1024 * 1024;
+      const maxSize = 200 * 1024 * 1024;
       if (file.size > maxSize) {
         setToast({
           type: 'error',
