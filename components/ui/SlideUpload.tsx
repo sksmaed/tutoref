@@ -32,13 +32,13 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // 檢查檔案大小是否超過 50MB
-      const maxSize = 200 * 1024 * 1024;
+      // 檢查檔案大小是否超過 500MB
+      const maxSize = 500 * 1024 * 1024;
       if (file.size > maxSize) {
         setToast({
           type: 'error',
           title: '檔案大小超過限制',
-          message: '檔案大小超過 50MB 限制，請選擇較小的檔案。',
+          message: '檔案大小超過 500MB 限制，請選擇較小的檔案。',
           timeout: 5000,
         });
         setToastOpen(true);

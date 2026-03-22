@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     serverActions: {
-      bodySizeLimit: '250mb',
+      bodySizeLimit: '600mb',
     },
   },
   eslint: {
