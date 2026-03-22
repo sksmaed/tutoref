@@ -104,7 +104,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
         ) : (
           <div>
             <p className="text-base text-black-900 leading-normal mb-3">
-              如果你願意跟大家分享課程投影片，那就太好了！（僅限 PDF 檔，檔案大小不超過 50MB）
+              如果你願意跟大家分享課程投影片，那就太好了！（僅限 PDF 檔，檔案大小不超過 500MB）
             </p>
             <Button
               variant="default"
