@@ -1,6 +1,6 @@
-export const ISSUE_START_YEAR = 25;
+export const ISSUE_START_YEAR = 26;
 export const ISSUE_START_SEASON: '夏' | '冬' = '冬';
-export const ISSUE_COUNT = 8;
+export const ISSUE_COUNT = 10;
 
 export const SELECT_ALL_VALUE = '全選';
 export const OLDER_ISSUE_VALUE = '__OLDER__';

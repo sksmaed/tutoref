@@ -19,7 +19,7 @@ export const initialFilters: FilterOptions = {
 // 篩選選項
 export const filterOptions: FilterOptions = {
   team: ['加拿', '初來', '新武', '霧鹿', '利稻', '電光'],
-  semester: ['23冬', '23夏', '24冬', '24夏', '25冬'],
+  semester: ['23冬', '23夏', '24冬', '24夏', '25冬', '25夏', '26冬'],
   category: ['自然', '社會', '綜合', '資訊', '藝文', '國語', '健教', '晨讀', '英文', '其他'],
   grade: ['全年級', '低年級', '中年級', '高年級', '低中年級', '中高年級'],
   duration: ['大堂課（90分鐘）', '小堂課（40分鐘）', '其他'],
