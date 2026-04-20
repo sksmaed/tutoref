@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4.1.13",
+    "@tailwindcss/postcss": "^4.2.2",
     "@types/axios": "^0.9.36",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20",
@@ -55,5 +55,8 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-darwin-arm64": "^4.2.2"
   }
 }

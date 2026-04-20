@@ -157,7 +157,7 @@ export function AllPlansTable({
             aria-pressed={onlyGood}
             onClick={() => setOnlyGood((v) => !v)}
             className={[
-              'h-[32px] w-[102px] inline-flex items-center justify-center gap-[3px]',
+              'h-[32px] w-auto inline-flex items-center justify-center gap-[3px] whitespace-nowrap px-[12px]',
               'rounded-[8px] px-[12px] py-[5px] bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
               'border cursor-pointer',
               onlyGood
@@ -297,7 +297,7 @@ export function AllPlansTable({
               onClick={() => router.push('/upload')}
               className="
                 w-[160px] h-[48px] rounded-[8px] bg-primary-900
-                px-[48px] py-[12px]
+                px-[20px] py-[12px] whitespace-nowrap
                 text-[16px] leading-[150%] font-['Noto_Sans_TC'] font-bold text-white
                 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] cursor-pointer hover:opacity-90
               "

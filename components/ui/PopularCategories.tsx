@@ -26,9 +26,9 @@ function CategoryCard({ item, onSelect }: { item: PopularCategoryItem; onSelect?
       aria-label={`${label} 類別，共 ${count} 筆`}
       onClick={() => onSelect?.(item)}
     >
-      <span className="flex items-center gap-3 w-[64px] h-6">
+      <span className="flex items-center gap-3 h-6">
         <Image src={icon} alt="" aria-hidden width={20} height={20} className="w-5 h-5" />
-        <span className="text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC']" style={{ color }}>
+        <span className="text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] whitespace-nowrap" style={{ color }}>
           {label}
         </span>
       </span>
@@ -54,12 +54,12 @@ export default function PopularCategories({ items, loading = false, error, onSel
 
   return (
     <section className="w-[976px] mx-auto" aria-label="靈感與熱門課程">
-      <h2 className="w-[200px] h-[38px] mx-auto text-center text-[25px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black mt-16">
+      <h2 className="whitespace-nowrap h-[38px] mx-auto text-center text-[25px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black mt-16">
         需要來點靈感嗎？
       </h2>
 
       <div className="mt-10">
-        <span className="inline-block w-[96px] h-6 text-[16px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black">
+        <span className="inline-block whitespace-nowrap h-6 text-[16px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black">
           熱門課程類別
         </span>
       </div>
