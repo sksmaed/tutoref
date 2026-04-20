@@ -380,7 +380,7 @@ export default function SearchResults({
       <section className="mt-10 mx-auto w-[976px]">
       {/* 標題 + 右側控制列 */}
       <div className="flex items-end gap-3">
-        <h2 className="w-[100px] h-[38px] text-[25px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black-900">
+        <h2 className="whitespace-nowrap h-[38px] text-[25px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black-900">
           檢索結果
         </h2>
         <span className="w-[120px] h-6 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] text-black-900">
@@ -394,7 +394,7 @@ export default function SearchResults({
             aria-pressed={onlyGood}
             onClick={() => setOnlyGood((v) => !v)}
             className={[
-              'h-[32px] w-[102px] inline-flex items-center justify-center gap-[3px]',
+              'h-[32px] w-auto inline-flex items-center justify-center gap-[3px] whitespace-nowrap px-[12px]',
               'rounded-[8px] px-[12px] py-[5px] bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
               'border hover:cursor-pointer',
               onlyGood ? 'border-primary-900 text-primary-900' : 'border-transparent text-black-900',
@@ -428,7 +428,7 @@ export default function SearchResults({
         {/* 內容 */}
         {pageRows.length === 0 ? (
           <div className="w-[976px] h-[48px] flex items-center justify-center border-x border-b border-black-200 rounded-b-lg px-11">
-            <p className="w-[336px] h-6 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] text-black-700 text-center">
+            <p className="whitespace-nowrap h-6 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] text-black-700 text-center">
               查無符合條件的教案，請調整檢索條件後再試。
             </p>
           </div>

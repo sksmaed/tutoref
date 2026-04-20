@@ -180,7 +180,7 @@ export default function TeachPlanManagePage() {
 
 const viewAllBtnClass = (disabled: boolean) =>
   [
-    'w-[160px] h-[48px] rounded-[8px] px-[47px] py-[12px] text-[16px] leading-[150%] font-["Noto_Sans_TC"] shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
+    'w-[160px] h-[48px] rounded-[8px] px-[20px] py-[12px] whitespace-nowrap text-[16px] leading-[150%] font-["Noto_Sans_TC"] shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
     disabled
         ? 'bg-white border border-black-300 text-black-300 cursor-not-allowed'
         : 'bg-white border border-primary-900 text-primary-900 cursor-pointer hover:bg-primary-50',
@@ -619,7 +619,7 @@ const viewAllBtnClass = (disabled: boolean) =>
             onClick={() => router.push('/upload')}
             className="
               w-[160px] h-[48px] rounded-[8px] bg-primary-900
-              px-[47px] py-[12px]
+              px-[47px] py-[12px] whitespace-nowrap
               text-[16px] leading-[150%] font-['Noto_Sans_TC'] font-bold text-white
               shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] cursor-pointer hover:opacity-90
             "

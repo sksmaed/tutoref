@@ -29,10 +29,11 @@
   display: flex;
   flex-grow: 0;
   align-items: center;
+  flex-wrap: nowrap;      /* ← 新增這行 */
 }
 
 .menuItem {
-  width: 100px;
+  width: auto;            /* ← 從 100px 改成 auto */
   height: 36px;
   color: var(--colors-black-900);
   text-decoration: none;
@@ -40,6 +41,7 @@
   font-size: 14px;
   padding: 7px 22px;
   transition: color 0.2s;
+  white-space: nowrap;    /* ← 新增這行 */
 }
 
 .menuItem:hover {
