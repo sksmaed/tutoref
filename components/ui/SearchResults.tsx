@@ -131,6 +131,10 @@ function pad2(n: number) {
 
 type IssueSortValue = (typeof ISSUE_SORT_OPTIONS)[number]['value'];
 
+function getDefaultSortByQuery(query: string): IssueSortValue {
+  return query.trim().length > 0 ? 'relevance_desc' : 'issue_desc';
+}
+
 export default function SearchResults({
   query,
   filters,
@@ -140,7 +144,7 @@ export default function SearchResults({
   filters: Filters;
   trigger: number;
 }) {
-  const [sort, setSort] = useState<IssueSortValue>('issue_desc');
+  const [sort, setSort] = useState<IssueSortValue>(() => getDefaultSortByQuery(query));
   const [onlyGood, setOnlyGood] = useState<boolean>(false);
   const [rawRows, setRawRows] = useState<Row[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -243,6 +247,11 @@ export default function SearchResults({
       controller.abort();
     };
   }, [trigger, queryString]);
+
+  useEffect(() => {
+    if (trigger === 0) return;
+    setSort(getDefaultSortByQuery(query));
+  }, [trigger, query]);
 
   // ---- 前端排序（保留你原本的互動）----
   const rowsWithFavorites = useMemo(
