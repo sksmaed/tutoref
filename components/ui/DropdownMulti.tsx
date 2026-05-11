@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 
 export type Option = { value: string; label: string };
 
@@ -11,9 +10,9 @@ type Props = {
   value: Set<string>;
   /** 收合時提交新值 */
   onChange: (next: Set<string>) => void;
-  panelWidth?: number;
+  panelWidth?: number | string;
   panelHeight?: number;
-  triggerWidth?: number;
+  triggerWidth?: number | string;
   triggerHeight?: number;
 };
 
@@ -72,7 +71,7 @@ export default function DropdownMulti({
   const allSelected = others.length > 0 && others.every(x => temp.has(x));
 
   return (
-    <div ref={rootRef} className="relative inline-block">
+    <div ref={rootRef} className={`relative ${triggerWidth === '100%' ? 'block w-full' : 'inline-block'}`}>
       {/* 觸發器 */}
       <button
         type="button"
@@ -91,8 +90,8 @@ export default function DropdownMulti({
         aria-label={label}
       >
         <span className="truncate whitespace-nowrap">{displayText}</span>
-        <Image
-          src={open ? '/icons/angle-up.png' : '/icons/angle-down.png'}
+        <img
+          src={open ? '/icons/angle-up.svg' : '/icons/angle-down.svg'}
           alt=""
           width={20}
           height={20}
@@ -132,8 +131,8 @@ export default function DropdownMulti({
                 title={opt.label}
               >
                 {/* ⬇️ 勾選圖示：未選用 uncheck.png；選取用 checked.png */}
-                <Image
-                  src={checked ? '/icons/checked.png' : '/icons/uncheck.png'}
+                <img
+                  src={checked ? '/icons/checked.svg' : '/icons/uncheck.svg'}
                   alt=""
                   width={20} height={20}
                   className="w-5 h-5 shrink-0 flex items-center justify-center"

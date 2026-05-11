@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { TeachingPlan } from '@/types/api';
 import { filterOptions } from '@/types/filter';
 import RadioCheckboxGroup from '@/components/ui/RadioCheckboxGroup';
@@ -156,6 +155,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
 
   return (
     <div className="w-full max-w-4xl flex flex-col items-center">
+      <div className="w-full overflow-x-auto">
       <div className="w-[777px] bg-white rounded-lg shadow-lg border border-black-200 overflow-hidden">
         <table className="w-full border-collapse">
           <tbody>
@@ -257,8 +257,8 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
                           ))}
                         </select>
                         <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
-                          <Image
-                            src={yearDropdownOpen ? '/icons/angle-up.png' : '/icons/angle-down.png'}
+                          <img
+                            src={yearDropdownOpen ? '/icons/angle-up.svg' : '/icons/angle-down.svg'}
                             alt="dropdown icon"
                             width={20}
                             height={20}
@@ -511,6 +511,7 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
             </tr>
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

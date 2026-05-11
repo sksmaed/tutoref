@@ -128,8 +128,8 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-black-100 flex flex-col items-center pt-[60px]">
-      <h1 className="text-[40px] leading-normal font-bold text-black-900 mb-10">登入註冊</h1>
+    <div className="w-full h-full bg-black-100 flex flex-col items-center pt-8 sm:pt-[60px] px-4 sm:px-0">
+      <h1 className="text-[28px] sm:text-[40px] leading-normal font-bold text-black-900 mb-6 sm:mb-10">登入註冊</h1>
 
       <LoginSignupBoard
         onLogin={handleLogin}

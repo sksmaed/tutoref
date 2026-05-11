@@ -138,10 +138,10 @@ export default function SearchFilters({
 
   return (
     <div
-      className="flex items-center justify-center gap-3 mx-auto mt-4 w-full"
+      className="hidden xl:flex flex-wrap items-center justify-center gap-2 mx-auto mt-4 w-full px-4 sm:px-6 lg:px-0"
       aria-label="搜尋篩選列"
     >
-      <div className="flex items-center gap-3 w-[860px] hover:cursor-pointer">
+      <div className="flex flex-wrap items-center justify-center gap-2 w-full max-w-[976px]">
         <DropdownMulti label="類別" options={CATEGORIES} value={cat} onChange={setCat} />
         <DropdownMulti label="家別" options={FAMILIES} value={fam} onChange={setFam} />
         <DropdownMulti label="期數" options={ISSUES} value={issue} onChange={setIssue} />
@@ -156,21 +156,19 @@ export default function SearchFilters({
           panelWidth={204}
           panelHeight={176}
         />
+        <button
+          type="button"
+          onClick={hasAny ? clearAll : undefined}
+          disabled={!hasAny}
+          aria-disabled={!hasAny}
+          className={`
+            h-[35px] px-4 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] whitespace-nowrap
+            ${hasAny ? 'text-primary-900 cursor-pointer' : 'text-black-900 cursor-not-allowed'}
+          `}
+        >
+          清除所有
+        </button>
       </div>
-
-      {/* 清除所有：有條件才啟用顏色變 primary-900 */}
-      <button
-        type="button"
-        onClick={hasAny ? clearAll : undefined}
-        disabled={!hasAny}
-        aria-disabled={!hasAny}
-        className={`
-          h-[35px] w-[104px] px-6 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] whitespace-nowrap
-          ${hasAny ? 'text-primary-900 cursor-pointer' : 'text-black-900 cursor-not-allowed'}
-        `}
-      >
-        清除所有
-      </button>
     </div>
   );
 }

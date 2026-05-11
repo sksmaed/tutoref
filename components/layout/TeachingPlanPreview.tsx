@@ -1,6 +1,5 @@
 import React from 'react';
 import { TeachingPlan } from '@/types/api';
-import Image from 'next/image';
 
 interface TeachingPlanPreviewProps {
   plan: TeachingPlan;
@@ -12,14 +11,13 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
   return (
     <div className="w-full max-w-4xl flex flex-col items-center">
       <div>
-        <p className="text-xl leading-normal text-black-900 text-center mb-8">
-          以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，
-          <br />    
-          對內容有疑可點擊「編輯內容」進行修改！
+        <p className="text-base sm:text-xl leading-normal text-black-900 text-center mb-8">
+          以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，對內容有疑可點擊「編輯內容」進行修改！
         </p>
       </div>
 
       {/* 預覽表格 */}
+      <div className="w-full overflow-x-auto">
       <div className="w-[777px] bg-white rounded-lg shadow-lg border border-black-200 overflow-hidden">
         <table className="w-full border-collapse">
           <tbody>
@@ -167,8 +165,8 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
             <td className="border border-black-200 pl-6 pr-10 py-4" colSpan={3}>
               {plan.slide_pdf ? (
                 <div className="flex gap-2 items-center">
-                  <Image
-                    src="/icons/file-alt.png"
+                  <img
+                    src="/icons/file-alt.svg"
                     alt="file icon"
                     width={20}
                     height={20}
@@ -187,6 +185,7 @@ const TeachingPlanPreview: React.FC<TeachingPlanPreviewProps> = ({
           </tr>
         </tbody>
       </table>
+      </div>
       </div>
     </div>
   );

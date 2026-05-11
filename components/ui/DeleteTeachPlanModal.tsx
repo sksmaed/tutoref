@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 
 interface DeleteTeachPlanModalProps {
@@ -39,7 +38,7 @@ export function DeleteTeachPlanModal({
           className="absolute right-[16px] top-[16px]"
           disabled={confirming}
         >
-          <Image src="/icons/close.png" alt="close" width={20} height={20} />
+          <img src="/icons/close.svg" alt="close" width={20} height={20} />
         </button>
 
         <p className="text-center text-[16px] leading-[150%] text-black-900">

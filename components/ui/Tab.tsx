@@ -21,7 +21,7 @@ export const Tab: React.FC<TabProps> = ({ activeTab, onTabChange }) => {
 
                 {
                     activeTab === 'login' && (
-                        <div className="w-[186px] h-0 border border-primary-900"></div>
+                        <div className="w-full h-0 border border-primary-900"></div>
                     )
                 }
             </div>
@@ -38,7 +38,7 @@ export const Tab: React.FC<TabProps> = ({ activeTab, onTabChange }) => {
                 </button>
                 {
                     activeTab === 'signup' && (
-                        <div className="w-[186px] h-0 border border-primary-900"></div>
+                        <div className="w-full h-0 border border-primary-900"></div>
                     )
                 }
             </div>

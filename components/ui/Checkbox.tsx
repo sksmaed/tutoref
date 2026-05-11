@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 
 interface CheckboxProps {
     checked: boolean;
@@ -24,8 +23,8 @@ export const Checkbox: React.FC<CheckboxProps> = ({
                     className="sr-only"
                 />
                 <div className="w-5 h-5 flex items-center justify-center">
-                    <Image
-                        src={checked ? "/icons/checked.png" : "/icons/uncheck.png"}
+                    <img
+                        src={checked ? "/icons/checked.svg" : "/icons/uncheck.svg"}
                         alt={checked ? "checked" : "unchecked"}
                         width={20}
                         height={20}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
 
 export const ISSUE_SORT_OPTIONS = [
   { value: 'issue_desc', label: '期數由新到舊' },
@@ -56,7 +55,7 @@ export default function IssueSortDropdown({ value, onChange }: IssueSortDropdown
       >
         <div className="flex h-full items-center justify-between gap-2 px-3 pt-[7px] pb-2 font-['Noto_Sans_TC'] text-[14px] leading-[150%] text-black-900">
           <span className="truncate">{active.label}</span>
-          <Image src="/icons/angle-down.png" alt="" width={20} height={20} />
+          <img src="/icons/angle-down.svg" alt="" width={20} height={20} />
         </div>
       </button>
 

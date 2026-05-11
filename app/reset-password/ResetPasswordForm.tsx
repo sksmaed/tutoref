@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { Input } from '@/components/ui/Input';
 import { validateResetToken, resetPassword } from '@/services/auth';
 import { setFlash } from '@/utils/flash';
@@ -123,7 +122,7 @@ export default function ResetPasswordForm({ uidb64: uidFromProps, token: tokenFr
           </div>
         ) : status === 'invalid' ? (
           <div className="flex flex-col items-center gap-4 text-center">
-            <Image src="/icons/info.png" alt="" width={32} height={32} />
+            <img src="/icons/info.svg" alt="" width={32} height={32} />
             <p className="text-black-900 text-base" style={{ fontFamily: '"Noto Sans TC", sans-serif' }}>
               {errorMessage || '重設連結無效或已失效，請重新申請重設密碼。'}
             </p>
@@ -141,7 +140,7 @@ export default function ResetPasswordForm({ uidb64: uidFromProps, token: tokenFr
               placeholder="電子信箱"
               value={email}
               onChange={(_value) => {}}
-              leftIcon="/icons/mail.png"
+              leftIcon="/icons/mail.svg"
               disabled
             />
 
@@ -151,14 +150,14 @@ export default function ResetPasswordForm({ uidb64: uidFromProps, token: tokenFr
               value={password}
               onChange={(v) => setPassword(v)}
               onBlur={() => setTouchedPwd(true)}
-              leftIcon="/icons/key.png"
+              leftIcon="/icons/key.svg"
               showPasswordToggle
               error={touchedPwd && !pwdOK}
               errorMessage={touchedPwd && !pwdOK ? '不符合下方的密碼設定規則' : undefined}
             />
 
             <div className="w-[378px] h-[52px] rounded-[8px] bg-primary-100 p-4 flex items-center gap-[10px]">
-              <Image src="/icons/lightbulb-alt.png" alt="" width={20} height={20} />
+              <img src="/icons/lightbulb-alt.svg" alt="" width={20} height={20} />
               <span className="text-black-900 text-sm/normal">
                 密碼需至少為 8 個字元，且包含英文及數字字母！
               </span>
@@ -170,7 +169,7 @@ export default function ResetPasswordForm({ uidb64: uidFromProps, token: tokenFr
               value={confirm}
               onChange={(v) => setConfirm(v)}
               onBlur={() => setTouchedConfirm(true)}
-              leftIcon="/icons/key.png"
+              leftIcon="/icons/key.svg"
               showPasswordToggle
               disabled={!pwdOK}
               error={touchedConfirm && pwdOK && confirm !== password}
