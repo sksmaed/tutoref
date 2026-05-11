@@ -1,8 +1,6 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +19,7 @@ type Row = {
   good?: boolean;
   grade?: string;
   duration?: number;
+  hashtags?: string[];
 };
 
 type MyTeachingPlanItem = {
@@ -34,6 +33,7 @@ type MyTeachingPlanItem = {
   grade?: string;
   duration?: number;
   is_excellent?: boolean;
+  hashtags?: string[];
 };
 
 type FavoriteItem = {
@@ -47,6 +47,7 @@ type FavoriteItem = {
   grade?: string;
   duration?: number;
   is_excellent?: boolean;
+  hashtags?: string[];
 };
 
 type MyTeachingPlansResponse = {
@@ -96,6 +97,7 @@ const mapPlanToRow = (plan: MyTeachingPlanItem): Row => ({
   grade: plan.grade ?? '',
   duration: typeof plan.duration === 'number' ? plan.duration : undefined,
   good: plan.is_excellent,
+  hashtags: Array.isArray(plan.hashtags) ? plan.hashtags : [],
 });
 
 const mapFavoriteToRow = (plan: FavoriteItem): Row => ({
@@ -535,74 +537,135 @@ const viewAllBtnClass = (disabled: boolean) =>
   return (
     <>
       <main className="min-h-screen bg-black-50">
-        <section className="mx-auto mt-16 w-[976px]">
-        <h1 className="text-center text-[40px] font-bold font-['Noto_Sans_TC'] text-black-900">
+        <section className="mx-auto mt-16 w-full max-w-[976px] px-4 sm:px-6 lg:px-0">
+        <h1 className="text-center text-[32px] sm:text-[40px] font-bold font-['Noto_Sans_TC'] text-black-900">
           教案管理
         </h1>
 
         {/* ===== 我的教案 ===== */}
         <SectionHeader title="我的教案" total={myPlansAll.length} />
 
-        <TableShell>
-          <TableHeader cols={['家別', '期數', '類別', '教案名稱', '撰寫者', '編輯', '刪除']} />
+        {/* Desktop table */}
+        <div className="mt-2 hidden md:block rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] bg-white overflow-hidden">
+          <table className="w-full border-collapse">
+            <colgroup>
+              <col style={{ width: '9.4%' }} />
+              <col style={{ width: '9.4%' }} />
+              <col style={{ width: '9.4%' }} />
+              <col style={{ width: '36.1%' }} />
+              <col style={{ width: '16.8%' }} />
+              <col style={{ width: '9.4%' }} />
+              <col style={{ width: '9.4%' }} />
+            </colgroup>
+            <thead>
+              <tr className="bg-primary-100 text-[14px] font-bold font-['Noto_Sans_TC'] text-black-900">
+                {['家別', '期數', '類別', '教案名稱', '撰寫者', '編輯', '刪除'].map((col, i, arr) => (
+                  <th key={col} className={['h-[48px] border border-black-200 px-2 text-center font-bold whitespace-nowrap', i === 0 ? 'rounded-tl-lg' : '', i === arr.length - 1 ? 'rounded-tr-lg' : ''].filter(Boolean).join(' ')}>
+                    {col}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {plansLoading ? (
+                <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700">資料載入中...</td></tr>
+              ) : plansError ? (
+                <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700">{plansError}</td></tr>
+              ) : hasPlans ? (
+                myPlans.map((r) => (
+                  <tr key={r.id} className="text-[14px]">
+                    <td className="h-[48px] border border-black-200 px-2 text-center">{r.family}</td>
+                    <td className="h-[48px] border border-black-200 px-2 text-center">{r.issue}</td>
+                    <td className="h-[48px] border border-black-200 px-2 text-center">{r.category}</td>
+                    <td className="h-[48px] border border-black-200 px-2 max-w-0">
+                      <div className="flex items-center justify-center gap-2 overflow-hidden">
+                        {r.good && <img src="/icons/good.svg" alt="" width={16} height={16} style={goodTint} className="shrink-0" />}
+                        <span className="truncate" title={r.title}>{r.title}</span>
+                      </div>
+                    </td>
+                    <td className="h-[48px] border border-black-200 px-2 text-center">{r.author}</td>
+                    <td className="h-[48px] border border-black-200 px-2 text-center">
+                      <button type="button" aria-label="編輯" onClick={() => handleEdit(r)} disabled={plansLoading || deletingId === r.id} className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
+                        <img src="/icons/edit.svg" alt="" width={20} height={20} />
+                      </button>
+                    </td>
+                    <td className="h-[48px] border border-black-200 px-2 text-center">
+                      <button type="button" aria-label="刪除" onClick={() => handleDelete(r)} disabled={plansLoading || deletingId === r.id} className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
+                        <img src="/icons/trash.svg" alt="" width={20} height={20} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700 px-4">你還沒上傳任何教案唷，快點擊下方按鈕上傳第一份教案吧！</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
+        {/* Mobile cards - 我的教案 */}
+        <div className="mt-2 md:hidden flex flex-col gap-3">
           {plansLoading ? (
-            <EmptyRow>資料載入中...</EmptyRow>
+            <div className="rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-4 py-3 text-center text-[14px] text-black-500">資料載入中...</div>
           ) : plansError ? (
-            <EmptyRow>{plansError}</EmptyRow>
+            <div className="rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-4 py-3 text-center text-[14px] text-black-500">{plansError}</div>
           ) : hasPlans ? (
-            <div className="border-x border-b border-black-200 rounded-b-lg divide-y">
-              {myPlans.map((r) => (
-                <div key={r.id} className="flex h-[48px] items-center text-[14px]">
-                  <BodyCell w="92">{r.family}</BodyCell>
-                  <BodyCell w="92">{r.issue}</BodyCell>
-                  <BodyCell w="92">{r.category}</BodyCell>
-                  <BodyCell w="352">
-                    <div className="flex items-center justify-center gap-2">
-                      {r.good && <Image src="/icons/good.png" alt="" width={16} height={16} style={goodTint} />}
-                      <span className="truncate">{r.title}</span>
+            myPlans.map((r) => (
+              <div key={r.id} className="rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] overflow-hidden">
+                {/* 上區塊：優良標籤（左）+ 編輯/刪除（右）→ 標題 */}
+                <div className="px-4 py-2 flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                      {r.good && (
+                        <>
+                          <img src="/icons/good.svg" alt="" width={14} height={14} style={goodTint} className="shrink-0" />
+                          <span className="text-[13px] font-semibold font-['Noto_Sans_TC'] text-secondary-700 shrink-0">優良教案</span>
+                        </>
+                      )}
+                      {r.hashtags?.map((tag) => (
+                        <span key={tag} className="text-[12px] font-['Noto_Sans_TC'] font-normal text-[#808080]">#{tag}</span>
+                      ))}
                     </div>
-                  </BodyCell>
-                 <BodyCell w="164">{r.author}</BodyCell>
-                 <BodyCell w="92" center>
-                    <button
-                      type="button"
-                      aria-label="編輯"
-                      onClick={() => handleEdit(r)}
-                      disabled={plansLoading || deletingId === r.id}
-                      className={
-                        plansLoading || deletingId === r.id
-                          ? 'cursor-not-allowed opacity-60'
-                          : 'cursor-pointer hover:opacity-80'
-                      }
-                    >
-                      <Image src="/icons/edit.png" alt="" width={20} height={20} />
-                    </button>
-                  </BodyCell>
-                  <BodyCell w="92" center>
-                    <button
-                      type="button"
-                      aria-label="刪除"
-                      onClick={() => handleDelete(r)}
-                      disabled={plansLoading || deletingId === r.id}
-                      className={
-                        plansLoading || deletingId === r.id
-                          ? 'cursor-not-allowed opacity-60'
-                          : 'cursor-pointer hover:opacity-80'
-                      }
-                    >
-                      <Image src="/icons/trash.png" alt="" width={20} height={20} />
-                    </button>
-                  </BodyCell>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <button type="button" aria-label="編輯" onClick={() => handleEdit(r)} disabled={plansLoading || deletingId === r.id} className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
+                        <img src="/icons/edit.svg" alt="" width={20} height={20} />
+                      </button>
+                      <button type="button" aria-label="刪除" onClick={() => handleDelete(r)} disabled={plansLoading || deletingId === r.id} className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
+                        <img src="/icons/trash.svg" alt="" width={20} height={20} />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[16px] font-bold font-['Noto_Sans_TC'] text-black-900 leading-snug">{r.title}</p>
                 </div>
-              ))}
-            </div>
+                {/* 下區塊：期數/類別、家別/撰寫者 */}
+                <div className="px-4 py-2 flex flex-col gap-1">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <img src="/icons/calender.svg" alt="" width={14} height={14} className="shrink-0" />
+                      <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.issue}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <img src="/icons/category.svg" alt="" width={14} height={14} className="shrink-0" />
+                      <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.category}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <img src="/icons/home.svg" alt="" width={14} height={14} className="shrink-0" />
+                      <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.family}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <img src="/icons/author.svg" alt="" width={14} height={14} className="shrink-0" />
+                      <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.author}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
           ) : (
-            <EmptyRow>
-              你還沒上傳任何教案唷，快點擊下方按鈕上傳第一份教案吧！
-            </EmptyRow>
+            <div className="rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-4 py-3 text-center text-[14px] text-black-500">你還沒上傳任何教案唷，快點擊下方按鈕上傳第一份教案吧！</div>
           )}
-        </TableShell>
+        </div>
 
         <div className="mt-6 flex w-full items-center justify-center gap-[24px]">
           <button
@@ -631,74 +694,135 @@ const viewAllBtnClass = (disabled: boolean) =>
         {/* ===== 我的收藏 ===== */}
         <SectionHeader className="mt-12" title="我的收藏" total={myLikesAll.length} />
 
-        <TableShell>
-          <TableHeader cols={['家別', '期數', '類別', '教案名稱', '撰寫者', '查看', '收藏']} />
+        {/* Desktop table */}
+        <div className="mt-2 hidden md:block rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] bg-white overflow-hidden">
+          <table className="w-full border-collapse">
+            <colgroup>
+              <col style={{ width: '9.4%' }} />
+              <col style={{ width: '9.4%' }} />
+              <col style={{ width: '9.4%' }} />
+              <col style={{ width: '36.1%' }} />
+              <col style={{ width: '16.8%' }} />
+              <col style={{ width: '9.4%' }} />
+              <col style={{ width: '9.4%' }} />
+            </colgroup>
+            <thead>
+              <tr className="bg-primary-100 text-[14px] font-bold font-['Noto_Sans_TC'] text-black-900">
+                {['家別', '期數', '類別', '教案名稱', '撰寫者', '查看', '收藏'].map((col, i, arr) => (
+                  <th key={col} className={['h-[48px] border border-black-200 px-2 text-center font-bold whitespace-nowrap', i === 0 ? 'rounded-tl-lg' : '', i === arr.length - 1 ? 'rounded-tr-lg' : ''].filter(Boolean).join(' ')}>
+                    {col}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {likesLoading ? (
+                <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700">資料載入中...</td></tr>
+              ) : likesError ? (
+                <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700">{likesError}</td></tr>
+              ) : hasLikes ? (
+                myLikes.map((r) => {
+                  const liked = likes[r.id] ?? true;
+                  return (
+                    <tr key={r.id} className="text-[14px]">
+                      <td className="h-[48px] border border-black-200 px-2 text-center">{r.family}</td>
+                      <td className="h-[48px] border border-black-200 px-2 text-center">{r.issue}</td>
+                      <td className="h-[48px] border border-black-200 px-2 text-center">{r.category}</td>
+                      <td className="h-[48px] border border-black-200 px-2 max-w-0">
+                        <div className="flex items-center justify-center gap-2 overflow-hidden">
+                          {r.good && <img src="/icons/good.svg" alt="" width={16} height={16} style={goodTint} className="shrink-0" />}
+                          <span className="truncate" title={r.title}>{r.title}</span>
+                        </div>
+                      </td>
+                      <td className="h-[48px] border border-black-200 px-2 text-center">{r.author}</td>
+                      <td className="h-[48px] border border-black-200 px-2 text-center">
+                        <button type="button" aria-label="查看" onClick={() => handleView(r)} disabled={detailLoading && detailPlanId === r.id} className={detailLoading && detailPlanId === r.id ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
+                          <img src="/icons/file-alt.svg" alt="" width={20} height={20} />
+                        </button>
+                      </td>
+                      <td className="h-[48px] border border-black-200 px-2 text-center">
+                        <button type="button" onClick={() => handleFavoriteToggle(r)} disabled={favoriteUpdatingId === r.id || likesLoading} aria-label={liked ? '取消收藏' : '加入收藏'} className={favoriteUpdatingId === r.id || likesLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
+                          <img src={liked ? '/icons/liked.svg' : '/icons/like.svg'} alt="" width={20} height={20} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700 px-4">目前沒有收藏的教案唷，快去探索看看其他人的教案吧！</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
+        {/* Mobile cards - 我的收藏 */}
+        <div className="mt-2 md:hidden flex flex-col gap-3">
           {likesLoading ? (
-            <EmptyRow>資料載入中...</EmptyRow>
+            <div className="rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-4 py-3 text-center text-[14px] text-black-500">資料載入中...</div>
           ) : likesError ? (
-            <EmptyRow>{likesError}</EmptyRow>
+            <div className="rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-4 py-3 text-center text-[14px] text-black-500">{likesError}</div>
           ) : hasLikes ? (
-            <div className="border-x border-b border-black-200 rounded-b-lg divide-y">
-              {myLikes.map((r) => {
-                const liked = likes[r.id] ?? true;
-                return (
-                  <div key={r.id} className="flex h-[48px] items-center text-[14px]">
-                    <BodyCell w="92">{r.family}</BodyCell>
-                    <BodyCell w="92">{r.issue}</BodyCell>
-                    <BodyCell w="92">{r.category}</BodyCell>
-                    <BodyCell w="352">
-                      <div className="flex items-center justify-center gap-2">
-                        {r.good && <Image src="/icons/good.png" alt="" width={16} height={16} style={goodTint} />}
-                        <span className="truncate">{r.title}</span>
+            myLikes.map((r) => {
+              const liked = likes[r.id] ?? true;
+              return (
+                <div key={r.id} className="rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] overflow-hidden">
+                  {/* 上區塊：優良標籤（左）+ 心形（右）→ 標題 */}
+                  <div className="px-4 py-2 flex flex-col gap-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                        {r.good && (
+                          <>
+                            <img src="/icons/good.svg" alt="" width={14} height={14} style={goodTint} className="shrink-0" />
+                            <span className="text-[13px] font-semibold font-['Noto_Sans_TC'] text-secondary-700 shrink-0">優良教案</span>
+                          </>
+                        )}
+                        {r.hashtags?.map((tag) => (
+                          <span key={tag} className="text-[12px] font-['Noto_Sans_TC'] font-normal text-[#808080]">#{tag}</span>
+                        ))}
                       </div>
-                    </BodyCell>
-                    <BodyCell w="164">{r.author}</BodyCell>
-                    <BodyCell w="92" center>
-                      <button
-                        type="button"
-                        aria-label="查看"
-                        onClick={() => handleView(r)}
-                        disabled={detailLoading && detailPlanId === r.id}
-                        className={
-                          detailLoading && detailPlanId === r.id
-                            ? 'cursor-not-allowed opacity-60'
-                            : 'cursor-pointer hover:opacity-80'
-                        }
-                      >
-                        <Image src="/icons/file-alt.png" alt="" width={20} height={20} />
+                      <button type="button" onClick={() => handleFavoriteToggle(r)} disabled={favoriteUpdatingId === r.id || likesLoading} aria-label={liked ? '取消收藏' : '加入收藏'} className={`shrink-0 ${favoriteUpdatingId === r.id || likesLoading ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-70 cursor-pointer'}`}>
+                        <img src={liked ? '/icons/liked.svg' : '/icons/like.svg'} alt="" width={20} height={20} />
                       </button>
-                    </BodyCell>
-                    <BodyCell w="92" center>
-                      <button
-                        type="button"
-                        onClick={() => handleFavoriteToggle(r)}
-                        disabled={favoriteUpdatingId === r.id || likesLoading}
-                        aria-label={liked ? '取消收藏' : '加入收藏'}
-                        className={
-                          favoriteUpdatingId === r.id || likesLoading
-                            ? 'cursor-not-allowed opacity-60'
-                            : 'cursor-pointer hover:opacity-80'
-                        }
-                      >
-                        <Image
-                          src={liked ? '/icons/liked.png' : '/icons/like.png'}
-                          alt=""
-                          width={20}
-                          height={20}
-                        />
-                      </button>
-                    </BodyCell>
+                    </div>
+                    <p className="text-[16px] font-bold font-['Noto_Sans_TC'] text-black-900 leading-snug">{r.title}</p>
                   </div>
-                );
-              })}
-            </div>
+                  {/* 下區塊：期數/類別、家別/撰寫者（左）+ 查看按鈕（右） */}
+                  <div className="px-4 py-2 flex items-center gap-3">
+                    <div className="flex-1 flex flex-col gap-1">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <img src="/icons/calender.svg" alt="" width={14} height={14} className="shrink-0" />
+                          <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.issue}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <img src="/icons/category.svg" alt="" width={14} height={14} className="shrink-0" />
+                          <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.category}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <img src="/icons/home.svg" alt="" width={14} height={14} className="shrink-0" />
+                          <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.family}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <img src="/icons/author.svg" alt="" width={14} height={14} className="shrink-0" />
+                          <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.author}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button type="button" aria-label="查看" onClick={() => handleView(r)}
+                      disabled={detailLoading && detailPlanId === r.id}
+                      className={`w-[64px] h-[26px] rounded-[4px] px-[20px] py-[4px] bg-primary-900 text-white text-[12px] font-normal font-['Noto_Sans_TC'] leading-[150%] whitespace-nowrap shrink-0 inline-flex items-center justify-center ${detailLoading && detailPlanId === r.id ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'}`}>
+                      查看
+                    </button>
+                  </div>
+                </div>
+              );
+            })
           ) : (
-            <EmptyRow>
-              目前沒有收藏的教案唷，快去探索看看其他人的教案吧！
-            </EmptyRow>
+            <div className="rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-4 py-3 text-center text-[14px] text-black-500">目前沒有收藏的教案唷，快去探索看看其他人的教案吧！</div>
           )}
-        </TableShell>
+        </div>
 
         <div className="mt-6 mb-12 flex w-full items-center justify-center">
           <button
@@ -756,83 +880,3 @@ function SectionHeader({
   );
 }
 
-function TableShell({ children }: { children: ReactNode }) {
-  return (
-    <div className="mt-2 w-[976px] mx-auto rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] bg-white">
-      {children}
-    </div>
-  );
-}
-
-function TableHeader({ cols }: { cols: string[] }) {
-  return (
-    <div className="w-[976px] h-[48px] flex">
-      <HeaderCell className="rounded-tl-lg">{cols[0]}</HeaderCell>
-      <HeaderCell>{cols[1]}</HeaderCell>
-      <HeaderCell>{cols[2]}</HeaderCell>
-      <HeaderCell wide="title">{cols[3]}</HeaderCell>
-      <HeaderCell wide="author">{cols[4]}</HeaderCell>
-      <HeaderCell>{cols[5]}</HeaderCell>
-      <HeaderCell className="rounded-tr-lg">{cols[6]}</HeaderCell>
-    </div>
-  );
-}
-
-function HeaderCell({
-  children,
-  className = '',
-  wide,
-}: {
-  children: ReactNode;
-  className?: string;
-  wide?: 'title' | 'author';
-}) {
-  const base =
-    'flex items-center justify-center text-[14px] font-bold font-["Noto_Sans_TC"] text-black-900 ' +
-    'border border-black-200 bg-primary-100 whitespace-nowrap break-normal';
-  const padNormal = 'py-2 px-2';
-  const padTitle = 'py-2 px-[30px]';
-  const wClass =
-    wide === 'title'
-      ? 'w-[352px]'
-      : wide === 'author'
-      ? 'w-[164px]'
-      : 'w-[92px]';
-  return (
-    <div className={`${base} ${wClass} ${wide ? padTitle : padNormal} ${className}`} style={{ wordBreak: 'keep-all' }}>
-      {children}
-    </div>
-  );
-}
-
-function BodyCell({
-  children,
-  w,
-  center = true,
-}: {
-  children: ReactNode;
-  w: '92' | '164' | '352';
-  center?: boolean;
-}) {
-  return (
-    <div
-      className={[
-        `w-[${w}px] h-[48px] px-2 flex items-center`,
-        center ? 'justify-center text-center' : '',
-        'border-x border-b border-black-200 first:border-l-0 last:border-r-0',
-      ].join(' ')}
-    >
-      {children}
-    </div>
-  );
-}
-
-function EmptyRow({ children }: { children: ReactNode }) {
-  return (
-    <div className="w-[976px] h-[48px] flex items-center justify-center border-x border-b border-black-200 rounded-b-lg px-11">
-      <p className="text-[16px] leading-[150%] font-['Noto_Sans_TC'] font-normal text-black-700 text-center">
-        {children}
-      </p>
-    </div>
-  );
-}

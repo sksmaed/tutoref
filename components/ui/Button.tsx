@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 
 interface ButtonProps {
   variant?: 'default' | 'large' | 'small';
@@ -22,7 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = `rounded-lg transition-all duration-200 flex items-center justify-center hover:opacity-90 hover:cursor-pointer`;
   const variantClasses = {
     default: 'py-1.5 px-3',
-    large: 'py-3 px-12 w-[378px]',
+    large: 'py-3 px-12 w-full sm:w-[378px]',
     small: 'py-3 px-12 w-[170px]',
   };
   const iconStyle: React.CSSProperties = {
@@ -38,7 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       <span className="flex items-center justify-center gap-2">
         {leftIcon && (
-          <Image
+          <img
             src={leftIcon}
             alt="button icon"
             width={20}

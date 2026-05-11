@@ -14,6 +14,7 @@ export interface TeachingPlanSummary {
   duration: number;
   is_excellent: boolean;
   view_count?: number;
+  hashtags?: string[];
 }
 
 export interface TeachingPlanDetail extends TeachingPlanSummary {

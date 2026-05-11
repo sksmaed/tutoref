@@ -25,6 +25,7 @@ const mapFavoriteToRow = (plan: TeachingPlanSummary): Row => ({
   grade: plan.grade ?? '',
   duration: typeof plan.duration === 'number' ? plan.duration : undefined,
   viewCount: typeof plan.view_count === 'number' ? plan.view_count : undefined,
+  hashtags: Array.isArray(plan.hashtags) ? plan.hashtags : [],
 });
 
 export default function LikesAllPage() {

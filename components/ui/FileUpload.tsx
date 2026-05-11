@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import Image from 'next/image';
 
 interface FileUploadProps {
   onFileUpload: (file: File | null) => void;
@@ -48,7 +47,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     return (
       <div className={`w-full h-[160px] rounded-lg p-10 gap-2.5 bg-primary-100 flex flex-col items-center justify-center ${className}`}>
         <div className="flex justify-center">
-          <Image
+          <img
             src="/icons/file.png"
             alt="file icon"
             width={28}
@@ -89,8 +88,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     >
       {/* 上傳圖示 */}
       <div className="flex justify-center">
-        <Image
-          src="/icons/upload.png"
+        <img
+          src="/icons/upload.svg"
           alt="upload icon"
           width={28}
           height={28}

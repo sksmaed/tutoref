@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Toast } from '@/components/ui/toast';
 import { Flash } from '@/utils/flash';
-import Image from 'next/image';
 
 interface SlideUploadProps {
   initialFileName?: string;
@@ -71,8 +70,8 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
         {currentFileName ? (
           <div className="flex flex-col justify-between p-3 bg-gray-50 rounded gap-3">
             <div className="flex gap-2">
-              <Image
-                src="/icons/file-alt.png"
+              <img
+                src="/icons/file-alt.svg"
                 alt="file icon"
                 width={20}
                 height={20}
@@ -87,7 +86,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
                 variant="default"
                 className="bg-white border border-primary-900 text-primary-900 text-sm"
                 onClick={() => document.getElementById('slide-upload')?.click()}
-                leftIcon="/icons/upload.png"
+                leftIcon="/icons/upload.svg"
               >
                 重新選擇檔案
               </Button>
@@ -95,7 +94,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
                 variant="default"
                 className="border border-black-900 text-black-900 text-sm"
                 onClick={handleRemoveFile}
-                leftIcon="/icons/trash.png"
+                leftIcon="/icons/trash.svg"
               >
                 刪除已選檔案
               </Button>
@@ -110,7 +109,7 @@ const SlideUpload: React.FC<SlideUploadProps> = ({
               variant="default"
               className="bg-white border border-primary-900 text-primary-900 text-sm"
               onClick={() => document.getElementById('slide-upload')?.click()}
-              leftIcon="/icons/upload.png"
+              leftIcon="/icons/upload.svg"
             >
               選擇檔案
             </Button>

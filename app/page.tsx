@@ -7,6 +7,7 @@ import SearchFilters from '@/components/ui/SearchFilters';
 import PopularCategories, { PopularCategoryItem } from '@/components/ui/PopularCategories';
 import StartHere, { StartHereItem } from '@/components/ui/StartHere';
 import SearchResults from '@/components/ui/SearchResults';
+import MobileFilterModal from '@/components/ui/MobileFilterModal';
 import { consumeHomeResetFlag, HOME_RESET_EVENT } from '@/lib/homeReset';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -42,22 +43,23 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 
 const CATEGORY_CONFIG: Array<{ key: string; label: string; color: string; icon: string }> = [
-  { key: 'nature', label: '自然', color: '#728A47', icon: '/icons/lightening.png' },
-  { key: 'social', label: '社會', color: '#F1994A', icon: '/icons/people.png' },
-  { key: 'general', label: '綜合', color: '#7F478A', icon: '/icons/gift.png' },
-  { key: 'info', label: '資訊', color: '#6392B5', icon: '/icons/globe.png' },
-  { key: 'art', label: '藝文', color: '#C85F5F', icon: '/icons/music.png' },
-  { key: 'chinese', label: '國語', color: '#C1B349', icon: '/icons/write.png' },
-  { key: 'health', label: '健教', color: '#3D9375', icon: '/icons/smile.png' },
-  { key: 'morning', label: '晨讀', color: '#C4789A', icon: '/icons/book.png' },
-  { key: 'english', label: '英文', color: '#8E5C36', icon: '/icons/speak.png' },
-  { key: 'other', label: '其他', color: '#0D0D0D', icon: '/icons/more.png' },
+  { key: 'nature', label: '自然', color: '#728A47', icon: '/icons/lightening.svg' },
+  { key: 'social', label: '社會', color: '#F1994A', icon: '/icons/people.svg' },
+  { key: 'general', label: '綜合', color: '#7F478A', icon: '/icons/gift.svg' },
+  { key: 'info', label: '資訊', color: '#6392B5', icon: '/icons/globe.svg' },
+  { key: 'art', label: '藝文', color: '#C85F5F', icon: '/icons/music.svg' },
+  { key: 'chinese', label: '國語', color: '#C1B349', icon: '/icons/write.svg' },
+  { key: 'health', label: '健教', color: '#3D9375', icon: '/icons/smile.svg' },
+  { key: 'morning', label: '晨讀', color: '#C4789A', icon: '/icons/book.svg' },
+  { key: 'english', label: '英文', color: '#8E5C36', icon: '/icons/speak.svg' },
+  { key: 'other', label: '其他', color: '#0D0D0D', icon: '/icons/more.svg' },
 ];
 
 export default function Home() {
   const { loading, authenticated } = useAuth();
   const [toast, setToast] = useState<Flash | null>(null);
   const [open, setOpen] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // 搜尋與篩選狀態
   const [query, setQuery] = useState('');
@@ -90,6 +92,8 @@ export default function Home() {
   // 每按一次搜尋就 +1，讓 SearchResults 重新執行假搜尋
   const [searchTrigger, setSearchTrigger] = useState(0);
   const [hasSearched, setHasSearched] = useState(false);
+  const [initialSort, setInitialSort] = useState<'issue_desc' | 'issue_asc' | 'views_desc' | 'relevance_desc' | 'uploaded_desc'>('issue_desc');
+  const [initialOnlyGood, setInitialOnlyGood] = useState(false);
   const [popularCategories, setPopularCategories] = useState<PopularCategoryItem[]>([]);
   const [startHereItems, setStartHereItems] = useState<StartHereItem[]>([]);
   const [inspirationLoading, setInspirationLoading] = useState(false);
@@ -109,8 +113,10 @@ export default function Home() {
     if (!canSearch) return;
     setSubmittedQuery(query);
     setSubmittedFilters(cloneFilters(filters));
-    setHasSearched(true);                 // ⬅️ 顯示結果、隱藏靈感區
-    setSearchTrigger((n) => n + 1);       // 觸發 SearchResults 做一次搜尋
+    setInitialSort('issue_desc');
+    setInitialOnlyGood(false);
+    setHasSearched(true);
+    setSearchTrigger((n) => n + 1);
   }, [canSearch, filters, query]);
 
   const handlePopularCategorySelect = useCallback((item: PopularCategoryItem) => {
@@ -127,9 +133,29 @@ export default function Home() {
       return nextFilters;
     });
     setHasFilters(true);
+    setInitialSort('issue_desc');
+    setInitialOnlyGood(false);
     setHasSearched(true);
     setSearchTrigger((n) => n + 1);
   }, [query]);
+
+  const handleStartHereSelect = useCallback((id: string) => {
+    setSubmittedQuery('');
+    setSubmittedFilters(createEmptyFilters());
+    if (id === 'good') {
+      setInitialSort('issue_desc');
+      setInitialOnlyGood(true);
+    } else if (id === 'most') {
+      setInitialSort('views_desc');
+      setInitialOnlyGood(false);
+    } else {
+      // 'latest'
+      setInitialSort('uploaded_desc');
+      setInitialOnlyGood(false);
+    }
+    setHasSearched(true);
+    setSearchTrigger((n) => n + 1);
+  }, []);
 
   const resetHome = useCallback(() => {
     setQuery('');
@@ -272,19 +298,19 @@ export default function Home() {
         })();
 
         const startItems: StartHereItem[] = [
-          { id: 'good', label: '優良教案', count: excellentCount, icon: '/icons/good.png' },
+          { id: 'good', label: '優良教案', count: excellentCount, icon: '/icons/good.svg' },
           {
             id: 'most',
             label: '最多人參考',
             count: topViewedCount,
-            icon: '/icons/eye-open.png',
+            icon: '/icons/eye-open.svg',
             helperText: topViewedHelper,
           },
           {
             id: 'latest',
             label: '最新上傳',
             count: latestCount,
-            icon: '/icons/time.png',
+            icon: '/icons/time.svg',
             helperText: '近 30 天新增',
           },
         ];
@@ -345,6 +371,8 @@ export default function Home() {
           onQueryChange={setQuery}
           canSearch={canSearch}
           onSearch={handleSearch}
+          onFilterClick={() => setMobileFilterOpen(true)}
+          hasFilters={hasFilters}
         />
 
         <SearchFilters
@@ -362,6 +390,8 @@ export default function Home() {
             query={submittedQuery}
             filters={submittedFilters}
             trigger={searchTrigger}
+            initialSort={initialSort}
+            initialOnlyGood={initialOnlyGood}
           />
         ) : (
           <>
@@ -371,14 +401,54 @@ export default function Home() {
               error={inspirationError}
               onSelect={handlePopularCategorySelect}
             />
-            {/* <StartHere
+            <StartHere
               items={startHereItems}
               loading={inspirationLoading}
               error={inspirationError}
-            /> */}
+              onSelect={handleStartHereSelect}
+            />
           </>
 )}
       </main>
+
+      <MobileFilterModal
+        isOpen={mobileFilterOpen}
+        onClose={() => setMobileFilterOpen(false)}
+        initial={{
+          categories: filters.categories,
+          families: filters.families,
+          issues: filters.issues,
+          grades: filters.grades,
+          durations: filters.durations,
+        }}
+        onApply={(mobileFilters) => {
+          setFilters((prev) => ({
+            ...prev,
+            categories: mobileFilters.categories,
+            families: mobileFilters.families,
+            issues: mobileFilters.issues,
+            grades: mobileFilters.grades,
+            durations: mobileFilters.durations,
+          }));
+          setHasFilters(
+            mobileFilters.categories.size > 0 ||
+            mobileFilters.families.size > 0 ||
+            mobileFilters.issues.size > 0 ||
+            mobileFilters.grades.size > 0 ||
+            mobileFilters.durations.size > 0
+          );
+          setSubmittedFilters((prev) => ({
+            ...prev,
+            categories: mobileFilters.categories,
+            families: mobileFilters.families,
+            issues: mobileFilters.issues,
+            grades: mobileFilters.grades,
+            durations: mobileFilters.durations,
+          }));
+          setHasSearched(true);
+          setSearchTrigger((n) => n + 1);
+        }}
+      />
 
       <Toast
         open={open && !!toast}

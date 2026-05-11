@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 
 export type PopularCategoryItem = {
   key: string;
@@ -22,12 +21,12 @@ function CategoryCard({ item, onSelect }: { item: PopularCategoryItem; onSelect?
   return (
     <button
       type="button"
-      className="w-[180px] h-[56px] flex items-center justify-between rounded-lg px-5 py-4 bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] transition-transform hover:-translate-y-px active:translate-y-0 hover:cursor-pointer"
+      className="w-full h-[56px] flex items-center justify-between rounded-lg px-4 py-4 bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] transition-transform hover:-translate-y-px active:translate-y-0 hover:cursor-pointer"
       aria-label={`${label} 類別，共 ${count} 筆`}
       onClick={() => onSelect?.(item)}
     >
       <span className="flex items-center gap-3 h-6">
-        <Image src={icon} alt="" aria-hidden width={20} height={20} className="w-5 h-5" />
+        <img src={icon} alt="" aria-hidden width={20} height={20} className="w-5 h-5 shrink-0" />
         <span className="text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] whitespace-nowrap" style={{ color }}>
           {label}
         </span>
@@ -39,9 +38,9 @@ function CategoryCard({ item, onSelect }: { item: PopularCategoryItem; onSelect?
 
 function CategoryCardSkeleton() {
   return (
-    <div className="w-[180px] h-[56px] rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-5 py-4 flex items-center justify-between animate-pulse">
-      <span className="flex items-center gap-3 w-[64px] h-6">
-        <span className="h-5 w-5 rounded-full bg-black-100" />
+    <div className="w-full h-[56px] rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-4 py-4 flex items-center justify-between animate-pulse">
+      <span className="flex items-center gap-3 h-6">
+        <span className="h-5 w-5 rounded-full bg-black-100 shrink-0" />
         <span className="h-4 w-12 rounded bg-black-100" />
       </span>
       <span className="h-4 w-8 rounded bg-black-100" />
@@ -53,24 +52,24 @@ export default function PopularCategories({ items, loading = false, error, onSel
   const hasData = items.length > 0;
 
   return (
-    <section className="w-[976px] mx-auto" aria-label="靈感與熱門課程">
-      <h2 className="whitespace-nowrap h-[38px] mx-auto text-center text-[25px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black mt-16">
+    <section className="w-full max-w-[976px] mx-auto px-4 sm:px-6 lg:px-0" aria-label="靈感與熱門課程">
+      <h2 className="hidden xl:block whitespace-nowrap mx-auto text-center text-[22px] lg:text-[25px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black mt-10 lg:mt-16">
         需要來點靈感嗎？
       </h2>
 
-      <div className="mt-10">
+      <div className="mt-6 lg:mt-10">
         <span className="inline-block whitespace-nowrap h-6 text-[16px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black">
           熱門課程類別
         </span>
       </div>
 
-      <div className="grid grid-cols-5 gap-[19px] w-[976px] mt-4 min-h-[124px]">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-[19px] mt-4 min-h-[124px]">
         {loading
           ? Array.from({ length: 10 }).map((_, index) => <CategoryCardSkeleton key={index} />)
           : hasData
             ? items.map((item) => <CategoryCard key={item.key} item={item} onSelect={onSelect} />)
             : (
-                <div className="col-span-5 flex h-[56px] items-center justify-center rounded-lg bg-white text-[14px] text-black-500 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+                <div className="col-span-2 sm:col-span-3 lg:col-span-5 flex h-[56px] items-center justify-center rounded-lg bg-white text-[14px] text-black-500 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
                   {error || '目前尚無熱門類別資料。'}
                 </div>
               )}

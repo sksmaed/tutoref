@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
 
 type InputState = 'default' | 'disabled' | 'entered' | 'error';
 
@@ -91,7 +90,7 @@ export const Input: React.FC<InputProps> = ({
       <div className={getContainerStyles()}>
         {leftIcon && (
           <div className={`${getIconColor()}`}>
-            <Image
+            <img
               src={leftIcon}
               alt="left icon"
               width={20}
@@ -132,16 +131,16 @@ export const Input: React.FC<InputProps> = ({
                 className={`${getIconColor()} disabled:cursor-not-allowed hover:cursor-pointer`}
               >
                 {showPassword ? (
-                  <Image
-                    src="/icons/eye-open.png"
+                  <img
+                    src="/icons/eye-open.svg"
                     alt="hide password"
                     width={20}
                     height={20}
                     className="w-5 h-5"
                   />
                 ) : (
-                  <Image
-                    src="/icons/eye-closed.png"
+                  <img
+                    src="/icons/eye-closed.svg"
                     alt="show password"
                     width={20}
                     height={20}
@@ -157,7 +156,7 @@ export const Input: React.FC<InputProps> = ({
                 className={`${getIconColor()} disabled:cursor-not-allowed ${!onRightIconClick ? 'cursor-default' : 'hover:cursor-pointer'
                   }`}
               >
-                <Image
+                <img
                   src={rightIcon}
                   alt="right icon"
                   width={20}

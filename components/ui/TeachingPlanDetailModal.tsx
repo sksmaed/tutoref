@@ -1,7 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { TeachingPlanDetail } from '@/services/teachingPlan';
 
 type PlanSummary = {
@@ -27,10 +26,11 @@ interface TeachingPlanDetailModalProps {
   onToggleFavorite?: (planId: string, nextLiked: boolean) => Promise<void> | void;
 }
 
-const overlayClass = 'fixed inset-0 z-50 flex items-center justify-center bg-[#0d0d0db2] backdrop-blur-[1px]';
+const overlayClass = 'fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-[#0d0d0db2] backdrop-blur-[1px]';
 const panelClass = [
-  'relative flex h-[680px] w-[960px] flex-col rounded-[8px] bg-white',
-  'px-[60px] pt-[32px] pb-[44px] text-black-900 shadow-[0_20px_60px_rgba(0,0,0,0.18)]',
+  'relative flex w-full sm:w-[960px] flex-col rounded-[16px] sm:rounded-[8px] bg-white',
+  'h-[90dvh] sm:h-[680px]',
+  'px-5 sm:px-[60px] pt-6 sm:pt-[32px] pb-8 sm:pb-[44px] text-black-900 shadow-[0_20px_60px_rgba(0,0,0,0.18)]',
 ].join(' ');
 
 type ExpandableKey = 'objectives' | 'outline' | 'notes';
@@ -104,25 +104,45 @@ export function TeachingPlanDetailModal({
             onClose();
           }}
           aria-label="關閉"
-          className="absolute right-[24px] top-[24px] inline-flex h-8 w-8 items-center justify-center rounded-full bg-black-100 hover:cursor-pointer"
+          className="absolute right-[24px] top-[24px] z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black-100 hover:cursor-pointer"
         >
-          <Image src="/icons/close.png" alt="close" width={18} height={18} />
+          <img src="/icons/close.svg" alt="close" width={18} height={18} />
         </button>
 
-        <div className="flex h-full flex-col gap-[44px]">
-          <header className="relative flex flex-col items-center">
-            <h2 className="text-center font-['Noto_Sans_TC'] text-[25px] font-bold leading-[150%] text-black-900">
+        <div className="flex h-full flex-col gap-5 sm:gap-[44px]">
+          <header className="relative flex flex-col items-center gap-3 sm:gap-0">
+            <h2 className="text-center font-['Noto_Sans_TC'] text-[20px] sm:text-[25px] font-bold leading-[150%] text-black-900">
               課程詳細資訊
             </h2>
-            <div className="absolute right-2 top-10">
-                <FavoriteButton
-                  liked={liked}
-                  disabled={favoriteLoading || !display?.id || !onToggleFavorite}
-                  onClick={async () => {
-                    if (!onToggleFavorite || !display?.id) return;
-                    await onToggleFavorite(display.id, !liked);
-                  }}
-                />
+
+            {/* 手機版：標題下方的操作列 */}
+            <div className="flex w-full items-center justify-between sm:hidden">
+              {display?.isExcellent ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary-100 px-3 py-1 text-[14px] font-semibold text-secondary-700">
+                  <img src="/icons/good.svg" alt="優良教案" width={20} height={20} />
+                  優良教案
+                </span>
+              ) : <span />}
+              <FavoriteButton
+                liked={liked}
+                disabled={favoriteLoading || !display?.id || !onToggleFavorite}
+                onClick={async () => {
+                  if (!onToggleFavorite || !display?.id) return;
+                  await onToggleFavorite(display.id, !liked);
+                }}
+              />
+            </div>
+
+            {/* 桌機版：收藏按鈕絕對定位 */}
+            <div className="absolute right-2 top-10 hidden sm:block">
+              <FavoriteButton
+                liked={liked}
+                disabled={favoriteLoading || !display?.id || !onToggleFavorite}
+                onClick={async () => {
+                  if (!onToggleFavorite || !display?.id) return;
+                  await onToggleFavorite(display.id, !liked);
+                }}
+              />
             </div>
           </header>
 
@@ -138,8 +158,8 @@ export function TeachingPlanDetailModal({
                     <div className="flex items-center justify-between gap-4">
                       <p className="text-[16px] font-semibold leading-[150%] text-black-900">{display.title}</p>
                       {display.isExcellent ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary-100 px-3 py-1 text-[14px] font-semibold text-secondary-700">
-                          <Image src="/icons/good.png" alt="優良教案" width={20} height={20} />
+                        <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-primary-100 px-3 py-1 text-[14px] font-semibold text-secondary-700">
+                          <img src="/icons/good.svg" alt="優良教案" width={20} height={20} />
                           優良教案
                         </span>
                       ) : null}
@@ -235,29 +255,25 @@ function DetailRowGroup({
   items: Array<{ label: string; content: React.ReactNode }>;
   isLast?: boolean;
 }) {
-  const template = items.map(() => '120px minmax(0,1fr)').join(' ');
-
   return (
-    <div
-      className={['grid bg-white', !isLast ? 'border-b border-black-200' : ''].join(' ')}
-      style={{ gridTemplateColumns: template }}
-    >
+    <div className={['bg-white flex flex-col sm:flex-row', !isLast ? 'border-b border-black-200' : ''].join(' ')}>
       {items.map((item, index) => {
-        const isLastPair = index === items.length - 1;
+        const isLastItem = index === items.length - 1;
         return (
-          <Fragment key={item.label}>
+          <div
+            key={item.label}
+            className={[
+              'flex-1 grid grid-cols-[120px_1fr]',
+              !isLastItem ? 'border-b border-black-200 sm:border-b-0 sm:border-r' : '',
+            ].join(' ')}
+          >
             <div className="flex min-h-[48px] items-center justify-center border-r border-black-200 bg-primary-100 px-[16px] py-[8px] text-[16px] font-semibold leading-[150%] text-black-900">
               {item.label}
             </div>
-            <div
-              className={[
-                'px-[24px] py-[12px] text-[16px] leading-[150%] text-black-900 whitespace-pre-line',
-                !isLastPair ? 'border-r border-black-200' : '',
-              ].join(' ')}
-            >
+            <div className="px-[24px] py-[12px] text-[16px] leading-[150%] text-black-900 whitespace-pre-line">
               {item.content}
             </div>
-          </Fragment>
+          </div>
         );
       })}
     </div>
@@ -363,8 +379,8 @@ function FavoriteButton({
         disabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-primary-100/60 hover:cursor-pointer',
       ].join(' ')}
     >
-      <Image
-        src={liked ? '/icons/liked.png' : '/icons/like.png'}
+      <img
+        src={liked ? '/icons/liked.svg' : '/icons/like.svg'}
         alt="收藏"
         width={16}
         height={16}

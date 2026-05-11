@@ -94,11 +94,11 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
     }, [forceTab]); // ← 去掉 activeTab
 
     return (
-        <div className={`flex flex-col w-[576px] bg-white rounded-lg pb-10 gap-8`}>
+        <div className={`flex flex-col w-full sm:w-[576px] bg-white rounded-xl sm:rounded-lg pb-10 gap-8`}>
             <Tab activeTab={activeTab} onTabChange={setActiveTab} />
 
             <form onSubmit={handleSubmit} className="flex flex-col items-center gap-8">
-                <div className="w-[378px] flex flex-col gap-5">
+                <div className="w-full px-6 sm:px-0 sm:w-[378px] flex flex-col gap-5">
                     {activeTab === 'login' && (
                         <Warning
                             message={
@@ -125,7 +125,7 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                             value={email}
                             onChange={(v) => { setEmail(v); setShowWarning(false); }}
                             onBlur={() => setTouched((t) => ({ ...t, email: true }))}
-                            leftIcon="/icons/mail.png"
+                            leftIcon="/icons/mail.svg"
                             error={(touched.email || submitted) && !isValidEmail(email)}
                             errorMessage={(touched.email || submitted) && !isValidEmail(email)
                                 ? "此為無效電子信箱" : undefined}
@@ -137,7 +137,7 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                             value={password}
                             onChange={(v) => { setPassword(v); setShowWarning(false); }}
                             onBlur={() => setTouched((t) => ({ ...t, password: true }))}
-                            leftIcon="/icons/key.png"
+                            leftIcon="/icons/key.svg"
                             showPasswordToggle
                             error={
                                 activeTab === 'login'
@@ -167,7 +167,7 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                                 value={confirmPassword}
                                 onChange={(v) => { setConfirmPassword(v); setShowWarning(false); }}
                                 onBlur={() => setTouched((t) => ({ ...t, confirm: true }))}
-                                leftIcon="/icons/key.png"
+                                leftIcon="/icons/key.svg"
                                 showPasswordToggle
                                 disabled={!isValidPassword(password)}
                                 error={(touched.confirm || submitted) && confirmPassword !== password}
@@ -196,14 +196,14 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
                     )}
                 </div>
 
-                <div className='w-[378px] border border-black-200'></div>
+                <div className='w-[calc(100%-3rem)] sm:w-[378px] border border-black-200'></div>
 
-                <div className="w-[378px] flex flex-col gap-4">
+                <div className="w-full px-6 sm:px-0 sm:w-[378px] flex flex-col gap-4">
                     <Button
                         variant="large"
                         onClick={onGoogleLogin}
                         className='bg-black-700 font-normal text-base/normal text-white'
-                        leftIcon='/icons/google.png'
+                        leftIcon='/icons/google.svg'
                     >
                         使用 Google 帳號登入
                     </Button>

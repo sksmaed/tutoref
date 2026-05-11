@@ -621,13 +621,13 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="w-full h-full bg-black-100 flex flex-col items-center pt-[60px]">
-      <h1 className="text-[40px] leading-normal font-bold text-black-900 mb-10">上傳教案</h1>
-      
+    <div className="w-full h-full bg-black-100 flex flex-col items-center pt-8 sm:pt-[60px] px-4 sm:px-0">
+      <h1 className="text-[28px] sm:text-[40px] leading-normal font-bold text-black-900 mb-6 sm:mb-10">上傳教案</h1>
+
       {!showPreview && !showEditor ? (
         <>
           {/* 上傳卡片 */}
-          <div className={`w-[576px] flex flex-col bg-white rounded-lg px-[100px] py-20`}>
+          <div className={`w-full sm:w-[576px] flex flex-col bg-white rounded-xl sm:rounded-lg px-6 sm:px-[100px] py-10 sm:py-20`}>
             {/* 使用新的 FileUpload 元件 */}
             <FileUpload
               onFileUpload={handleFileUpload}
@@ -709,10 +709,8 @@ const UploadPage = () => {
       ) : (
         /* 編輯表格 */
         <>
-          <p className="text-xl leading-normal text-black-900 text-center mb-8">
-            以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，
-            <br />
-            現在你可以修改內容囉！
+          <p className="text-base sm:text-xl leading-normal text-black-900 text-center mb-8">
+            以下資訊為系統自動辨識檔案內容產生，供大家在檢索結果中預覽，現在你可以修改內容囉！
           </p>
           {currentPlan && (
             <TeachingPlanEditor
