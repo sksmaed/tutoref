@@ -133,6 +133,10 @@ function pad2(n: number) {
 
 type IssueSortValue = (typeof ISSUE_SORT_OPTIONS)[number]['value'];
 
+function getDefaultSortByQuery(query: string): IssueSortValue {
+  return query.trim().length > 0 ? 'relevance_desc' : 'issue_desc';
+}
+
 export default function SearchResults({
   query,
   filters,
@@ -146,13 +150,13 @@ export default function SearchResults({
   initialSort?: IssueSortValue;
   initialOnlyGood?: boolean;
 }) {
-  const [sort, setSort] = useState<IssueSortValue>(initialSort);
+  const [sort, setSort] = useState<IssueSortValue>(() => getDefaultSortByQuery(query));
   const [onlyGood, setOnlyGood] = useState<boolean>(initialOnlyGood);
 
-  // 當外部觸發新搜尋時，同步初始 sort / onlyGood
+  // 當外部觸發新搜尋時，重設排序與優良篩選
   useEffect(() => {
     if (trigger === 0) return;
-    setSort(initialSort);
+    setSort(getDefaultSortByQuery(query));
     setOnlyGood(initialOnlyGood);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger]);
@@ -257,6 +261,11 @@ export default function SearchResults({
       controller.abort();
     };
   }, [trigger, queryString]);
+
+  useEffect(() => {
+    if (trigger === 0) return;
+    setSort(getDefaultSortByQuery(query));
+  }, [trigger, query]);
 
   // ---- 前端排序（保留你原本的互動）----
   const rowsWithFavorites = useMemo(
