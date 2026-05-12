@@ -201,139 +201,55 @@ export default function Home() {
     const load = async () => {
       setInspirationLoading(true);
       try {
-        const categoryRequests = CATEGORY_CONFIG.map(async (category) => {
-          const url = new URL(`${API_PREFIX}/search`);
-          url.searchParams.append('category', category.label);
+        const res = await fetch(`${API_PREFIX}/stats`, { method: 'GET', credentials: 'include' });
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
 
-          const res = await fetch(url.toString(), {
-            method: 'GET',
-            credentials: 'include',
-          });
-
-          if (!res.ok) {
-            throw new Error(`HTTP ${res.status} ${res.statusText}`);
-          }
-
-          const payload = await res.json();
-          const data: any[] = Array.isArray(payload?.data) ? payload.data : [];
-          const count = typeof payload?.count === 'number' ? payload.count : data.length;
-
-          return {
-            category,
-            count,
-            plans: data,
-          };
-        });
-
-        const responses = await Promise.allSettled(categoryRequests);
+        const stats = await res.json() as {
+          category_counts: Record<string, number>;
+          excellent_count: number;
+          recent_count: number;
+          top_viewed: { tp_name: string; view_count: number } | null;
+        };
 
         if (cancelled) return;
 
-        const fulfilled = responses.filter(
-          (result): result is { status: 'fulfilled'; value: { category: (typeof CATEGORY_CONFIG)[number]; count: number; plans: any[] } } =>
-            result.status === 'fulfilled',
-        );
-
-        const aggregatedPlans = new Map<string, any>();
-        const categoryCountMap = new Map<string, number>();
-
-        fulfilled.forEach(({ value }) => {
-          categoryCountMap.set(value.category.label, value.count);
-          value.plans.forEach((plan: any) => {
-            if (plan?.id) {
-              aggregatedPlans.set(plan.id, plan);
-            }
-          });
-        });
-
         const sortedCategories = CATEGORY_CONFIG
-          .map((category) => {
-            const count = categoryCountMap.get(category.label) ?? 0;
-            return {
-              key: category.key,
-              label: category.label,
-              color: category.color,
-              icon: category.icon,
-              count,
-            } satisfies PopularCategoryItem;
-          })
+          .map((category) => ({
+            key: category.key,
+            label: category.label,
+            color: category.color,
+            icon: category.icon,
+            count: stats.category_counts[category.label] ?? 0,
+          } satisfies PopularCategoryItem))
           .sort((a, b) => b.count - a.count)
           .slice(0, 10);
 
         setPopularCategories(sortedCategories);
 
-        const allPlans = Array.from(aggregatedPlans.values());
-        const excellentCount = allPlans.reduce((total, plan: any) => total + (plan?.is_excellent ? 1 : 0), 0);
+        const topCategory = sortedCategories.find((c) => c.count > 0) ?? sortedCategories[0];
+        const topViewedCount = stats.top_viewed?.view_count ?? topCategory?.count ?? 0;
+        const topViewedHelper = stats.top_viewed
+          ? `人氣教案：「${stats.top_viewed.tp_name}」`
+          : topCategory?.count
+            ? `目前以「${topCategory.label}」最受歡迎`
+            : undefined;
 
-        const now = Date.now();
-        const latestThreshold = now - 30 * 24 * 60 * 60 * 1000;
-        const latestCount = allPlans.reduce((total, plan: any) => {
-          const createdAt = plan?.created_at ? Date.parse(plan.created_at) : Number.NaN;
-          return total + (Number.isFinite(createdAt) && createdAt >= latestThreshold ? 1 : 0);
-        }, 0);
+        setStartHereItems([
+          { id: 'good', label: '優良教案', count: stats.excellent_count, icon: '/icons/good.svg' },
+          { id: 'most', label: '最多人參考', count: topViewedCount, icon: '/icons/eye-open.svg', helperText: topViewedHelper },
+          { id: 'latest', label: '最新上傳', count: stats.recent_count, icon: '/icons/time.svg', helperText: '近 30 天新增' },
+        ]);
 
-        const topCategory = sortedCategories.find((category) => category.count > 0) ?? sortedCategories[0];
-
-        const topViewedPlan = allPlans.reduce<null | any>((best, plan) => {
-          const views = typeof plan?.view_count === 'number' ? plan.view_count : 0;
-          if (!best) return plan ?? null;
-          const bestViews = typeof best.view_count === 'number' ? best.view_count : 0;
-          return views > bestViews ? plan : best;
-        }, null);
-
-        const hasViewMetric = topViewedPlan && typeof topViewedPlan.view_count === 'number' && topViewedPlan.view_count > 0;
-        const topViewedCount = hasViewMetric
-          ? topViewedPlan!.view_count
-          : topCategory?.count ?? allPlans.length;
-
-        const topViewedHelper = (() => {
-          if (hasViewMetric && topViewedPlan) {
-            const name = topViewedPlan.tp_name?.trim() || topViewedPlan.category?.trim();
-            return name ? `人氣教案：「${name}」` : undefined;
-          }
-          if (topCategory && topCategory.count > 0) {
-            return `目前以「${topCategory.label}」最受歡迎`;
-          }
-          return undefined;
-        })();
-
-        const startItems: StartHereItem[] = [
-          { id: 'good', label: '優良教案', count: excellentCount, icon: '/icons/good.svg' },
-          {
-            id: 'most',
-            label: '最多人參考',
-            count: topViewedCount,
-            icon: '/icons/eye-open.svg',
-            helperText: topViewedHelper,
-          },
-          {
-            id: 'latest',
-            label: '最新上傳',
-            count: latestCount,
-            icon: '/icons/time.svg',
-            helperText: '近 30 天新增',
-          },
-        ];
-
-        setStartHereItems(startItems);
-
-        const hasRejected = responses.some((result) => result.status === 'rejected');
-        const hasAnyData = sortedCategories.some((item) => item.count > 0);
-        setInspirationError(hasAnyData
-          ? (hasRejected ? '部分熱門資料載入失敗，已顯示可用資訊。' : '')
-          : '目前無法取得熱門資料，請稍後再試。'
-        );
+        setInspirationError(sortedCategories.some((c) => c.count > 0) ? '' : '目前無法取得熱門資料，請稍後再試。');
       } catch (error) {
         if (!cancelled) {
-          console.error('[Home] Failed to load inspiration data', error);
+          console.error('[Home] Failed to load stats', error);
           setPopularCategories([]);
           setStartHereItems([]);
           setInspirationError(error instanceof Error ? error.message : '無法載入資料，請稍後再試。');
         }
       } finally {
-        if (!cancelled) {
-          setInspirationLoading(false);
-        }
+        if (!cancelled) setInspirationLoading(false);
       }
     };
 

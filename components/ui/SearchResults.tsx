@@ -161,6 +161,7 @@ export default function SearchResults({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger]);
   const [rawRows, setRawRows] = useState<Row[]>([]);
+  const [searching, setSearching] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState<number>(1);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -233,6 +234,9 @@ export default function SearchResults({
     let aborted = false;
     const controller = new AbortController();
 
+    setSearching(true);
+    setRawRows([]);
+
     (async () => {
       try {
         const url = queryString ? `${API_PREFIX}/search?${queryString}` : `${API_PREFIX}/search`;
@@ -247,11 +251,13 @@ export default function SearchResults({
         if (!aborted) {
           setRawRows(items);
           setPage(1);
+          setSearching(false);
         }
       } catch {
         if (!aborted) {
           setRawRows([]);
           setPage(1);
+          setSearching(false);
         }
       }
     })();
@@ -404,7 +410,7 @@ export default function SearchResults({
       {/* 手機版：單行（count + icon-only 篩選 + 排序） */}
       <div className="flex items-center justify-between md:hidden">
         <span className="text-[14px] font-normal font-['Noto_Sans_TC'] text-black-900">
-          檢索結果：{total} 筆
+          {searching ? '搜尋中…' : `檢索結果：${total} 筆`}
         </span>
         <div className="flex items-center gap-2">
           <button
@@ -438,7 +444,7 @@ export default function SearchResults({
             檢索結果
           </h2>
           <span className="h-6 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] text-black-900 sm:w-[120px]">
-            （共 {total} 筆）
+            {searching ? '搜尋中…' : `（共 ${total} 筆）`}
           </span>
         </div>
         <div className="flex items-center gap-3 sm:ml-auto">
@@ -485,7 +491,17 @@ export default function SearchResults({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-black-200">
-            {pageRows.length === 0 ? (
+            {searching ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  {Array.from({ length: 7 }).map((__, j) => (
+                    <td key={j} className="h-[48px] px-3 border-x border-black-200">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse mx-auto" style={{ width: j === 3 ? '80%' : '60%' }} />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : pageRows.length === 0 ? (
               <tr>
                 <td colSpan={7} className="h-[48px] text-center text-[16px] text-black-700 border-x border-b border-black-200 rounded-b-lg">
                   查無符合條件的教案，請調整檢索條件後再試。
@@ -533,7 +549,15 @@ export default function SearchResults({
 
       {/* 手機卡片（md 以下） */}
       <div className="mt-4 md:hidden flex flex-col gap-3">
-        {pageRows.length === 0 ? (
+        {searching ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] overflow-hidden p-4 flex flex-col gap-3">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/3" />
+              <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2" />
+            </div>
+          ))
+        ) : pageRows.length === 0 ? (
           <div className="py-6 text-center text-[15px] font-['Noto_Sans_TC'] text-black-700 bg-white rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
             查無符合條件的教案，請調整檢索條件後再試。
           </div>
