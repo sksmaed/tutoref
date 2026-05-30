@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AllPlansTable, Row } from '@/components/ui/AllPlansTable';
 import { DeleteTeachPlanModal } from '@/components/ui/DeleteTeachPlanModal';
 import { fetchMyTeachingPlans, TeachingPlanDetail } from '@/services/teachingPlan';
@@ -8,6 +9,53 @@ import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { popFlash, Flash } from '@/utils/flash';
 import { Toast } from '@/components/ui/toast';
+
+const MINE_PLANS_CACHE_KEY = 'plansMine:rowsCache:v1';
+const MANAGE_MY_PLANS_CACHE_KEY = 'manage:myPlansCache:v1';
+const MANAGE_MY_LIKES_CACHE_KEY = 'manage:myLikesCache:v1';
+const MANAGE_LIKES_STATE_CACHE_KEY = 'manage:likesStateCache:v1';
+
+const readSessionJson = <T,>(key: string): T | null => {
+  if (typeof window === 'undefined') return null;
+  const raw = window.sessionStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    window.sessionStorage.removeItem(key);
+    return null;
+  }
+};
+
+const writeSessionJson = (key: string, value: unknown) => {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.setItem(key, JSON.stringify(value));
+};
+
+const removePlanIdFromManageCaches = (planId: string) => {
+  const manageMyPlans = readSessionJson<Row[]>(MANAGE_MY_PLANS_CACHE_KEY);
+  if (Array.isArray(manageMyPlans)) {
+    writeSessionJson(
+      MANAGE_MY_PLANS_CACHE_KEY,
+      manageMyPlans.filter((item) => item.id !== planId),
+    );
+  }
+
+  const manageMyLikes = readSessionJson<Row[]>(MANAGE_MY_LIKES_CACHE_KEY);
+  if (Array.isArray(manageMyLikes)) {
+    writeSessionJson(
+      MANAGE_MY_LIKES_CACHE_KEY,
+      manageMyLikes.filter((item) => item.id !== planId),
+    );
+  }
+
+  const likesState = readSessionJson<Record<string, boolean>>(MANAGE_LIKES_STATE_CACHE_KEY);
+  if (likesState && typeof likesState === 'object') {
+    const nextLikesState = { ...likesState };
+    delete nextLikesState[planId];
+    writeSessionJson(MANAGE_LIKES_STATE_CACHE_KEY, nextLikesState);
+  }
+};
 
 const mapMyPlanToRow = (plan: TeachingPlanDetail): Row => ({
   id: plan.id,
@@ -26,6 +74,7 @@ const mapMyPlanToRow = (plan: TeachingPlanDetail): Row => ({
 });
 
 export default function MineAllPage() {
+  const router = useRouter();
   const [rows, setRows] = useState<Row[]>([]);
   const { toast } = useToast();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -44,13 +93,20 @@ export default function MineAllPage() {
 
   useEffect(() => {
     let mounted = true;
+    const cachedRows = readSessionJson<Row[]>(MINE_PLANS_CACHE_KEY);
+    if (Array.isArray(cachedRows) && cachedRows.length > 0) {
+      setRows(cachedRows);
+    }
+
     (async () => {
       try {
         const plans = await fetchMyTeachingPlans();
         if (!mounted) return;
-        setRows(plans.map(mapMyPlanToRow));
+        const mappedRows = plans.map(mapMyPlanToRow);
+        setRows(mappedRows);
+        writeSessionJson(MINE_PLANS_CACHE_KEY, mappedRows);
       } catch (error) {
-        if (mounted) {
+        if (mounted && (!cachedRows || cachedRows.length === 0)) {
           toast({
             title: '❌ 無法取得我的教案',
             description: error instanceof Error ? error.message : '請稍後再試。',
@@ -74,7 +130,7 @@ export default function MineAllPage() {
       });
       return;
     }
-    window.location.href = `/plans/${row.id}/edit`;
+    router.push(`/plans/${row.id}/edit`);
   };
 
   const handleDelete = async (row: Row): Promise<void> => {
@@ -104,7 +160,12 @@ export default function MineAllPage() {
     setIsDeleting(true);
     try {
       await api.delete(`/teaching-plan/detail/${deleteTarget.id}`);
-      setRows((prev) => prev.filter((item) => item.id !== deleteTarget.id));
+      setRows((prev) => {
+        const nextRows = prev.filter((item) => item.id !== deleteTarget.id);
+        writeSessionJson(MINE_PLANS_CACHE_KEY, nextRows);
+        return nextRows;
+      });
+      removePlanIdFromManageCaches(deleteTarget.id);
       toast({
         title: '✅ 已刪除教案',
         description: '教案已成功移除。',

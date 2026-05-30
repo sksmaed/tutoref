@@ -8,6 +8,58 @@ import { TeachingPlan } from '@/types/api';
 import { api } from '@/lib/api';
 import { DURATION_MAP, DURATION_INVERSE_MAP } from '@/lib/constant';
 
+const MY_PLANS_CACHE_KEY = 'manage:myPlansCache:v1';
+const MY_LIKES_CACHE_KEY = 'manage:myLikesCache:v1';
+const MINE_PLANS_CACHE_KEY = 'plansMine:rowsCache:v1';
+
+type ManageCachedRow = {
+  id: string;
+  family: string;
+  issue: string;
+  category: string;
+  title: string;
+  author: string;
+  liked?: boolean;
+  good?: boolean;
+  grade?: string;
+  duration?: number;
+  hashtags?: string[];
+};
+
+type MineCachedRow = {
+  id: string;
+  family: string;
+  issue: string;
+  category: string;
+  title: string;
+  author: string;
+  good?: boolean;
+  liked?: boolean;
+  grade?: string;
+  duration?: number;
+  viewCount?: number;
+  searchScore?: number;
+  createdAt?: number;
+  hashtags?: string[];
+};
+
+const readSessionJson = <T,>(key: string): T | null => {
+  if (typeof window === 'undefined') return null;
+  const raw = window.sessionStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    window.sessionStorage.removeItem(key);
+    return null;
+  }
+};
+
+const writeSessionJson = (key: string, value: unknown) => {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.setItem(key, JSON.stringify(value));
+};
+
 const normalizePlan = (detail: any): TeachingPlan => {
   const semester = `${detail?.academic_year ?? ''}${detail?.semester_period ?? ''}`;
   return {
@@ -56,6 +108,65 @@ const toPatchPayload = (plan: TeachingPlan) => {
     semester_period: semester.slice(2) || '冬',
     duration,
   };
+};
+
+const mapDetailToManageRow = (detail: any): ManageCachedRow => ({
+  id: String(detail?.id ?? ''),
+  family: detail?.team ?? '',
+  issue: `${detail?.academic_year ?? ''}${detail?.semester_period ?? ''}`.trim(),
+  category: detail?.category ?? '',
+  title: detail?.tp_name ?? '',
+  author: detail?.writer_name ?? '',
+  good: Boolean(detail?.is_excellent),
+  grade: detail?.grade ?? '',
+  duration: typeof detail?.duration === 'number' ? detail.duration : undefined,
+  hashtags: Array.isArray(detail?.hashtags) ? detail.hashtags : [],
+});
+
+const mapDetailToMineRow = (detail: any): MineCachedRow => ({
+  id: String(detail?.id ?? ''),
+  family: detail?.team ?? '',
+  issue: `${detail?.academic_year ?? ''}${detail?.semester_period ?? ''}`.trim(),
+  category: detail?.category ?? '',
+  title: detail?.tp_name ?? '',
+  author: detail?.writer_name ?? '',
+  good: Boolean(detail?.is_excellent),
+  liked: false,
+  grade: detail?.grade ?? '',
+  duration: typeof detail?.duration === 'number' ? detail.duration : undefined,
+  viewCount: typeof detail?.view_count === 'number' ? detail.view_count : undefined,
+  createdAt: detail?.created_at ? Date.parse(String(detail.created_at)) : undefined,
+  hashtags: Array.isArray(detail?.hashtags) ? detail.hashtags : [],
+});
+
+const updateManageCachesAfterEdit = (detail: any) => {
+  const nextRow = mapDetailToManageRow(detail);
+  const nextMineRow = mapDetailToMineRow(detail);
+  if (!nextRow.id) return;
+
+  const cachedMyPlans = readSessionJson<ManageCachedRow[]>(MY_PLANS_CACHE_KEY);
+  if (Array.isArray(cachedMyPlans)) {
+    const nextMyPlans = cachedMyPlans.map((item) =>
+      item.id === nextRow.id ? { ...item, ...nextRow } : item,
+    );
+    writeSessionJson(MY_PLANS_CACHE_KEY, nextMyPlans);
+  }
+
+  const cachedMyLikes = readSessionJson<ManageCachedRow[]>(MY_LIKES_CACHE_KEY);
+  if (Array.isArray(cachedMyLikes)) {
+    const nextMyLikes = cachedMyLikes.map((item) =>
+      item.id === nextRow.id ? { ...item, ...nextRow, liked: true } : item,
+    );
+    writeSessionJson(MY_LIKES_CACHE_KEY, nextMyLikes);
+  }
+
+  const cachedMinePlans = readSessionJson<MineCachedRow[]>(MINE_PLANS_CACHE_KEY);
+  if (Array.isArray(cachedMinePlans)) {
+    const nextMinePlans = cachedMinePlans.map((item) =>
+      item.id === nextMineRow.id ? { ...item, ...nextMineRow } : item,
+    );
+    writeSessionJson(MINE_PLANS_CACHE_KEY, nextMinePlans);
+  }
 };
 
 export default function EditTeachingPlanPage() {
@@ -118,6 +229,8 @@ export default function EditTeachingPlanPage() {
         await api.delete(`/teaching-plan/detail/${planId}/slides`);
         setPlan((prev) => (prev ? { ...prev, slide_pdf: '' } : prev));
       }
+
+      updateManageCachesAfterEdit(data);
 
       toast({
         title: '✅ 教案已更新',
