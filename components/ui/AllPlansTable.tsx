@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { compareIssues } from '@/lib/issues';
 import IssueSortDropdown, { ISSUE_SORT_OPTIONS } from '@/components/ui/IssueSortDropdown';
@@ -102,6 +102,7 @@ export function AllPlansTable({
   const [baseRows, setBaseRows] = useState<Row[]>(rowsInput);
   const [rows, setRows] = useState<Row[]>(rowsInput);
   const [page, setPage] = useState<number>(initialUiState.page);
+  const isFirstRender = useRef(true);
   const pageSize = 8;
   const router = useRouter();
 
@@ -169,6 +170,10 @@ export function AllPlansTable({
   }, [baseRows, sort, onlyGood, mode]);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     setPage(1);
   }, [sort, onlyGood]);
 
@@ -178,11 +183,7 @@ export function AllPlansTable({
   const canNext = totalPages > 0 && page < totalPages;
 
   useEffect(() => {
-    if (totalPages === 0) {
-      if (page !== 1) setPage(1);
-      return;
-    }
-    if (page > totalPages) {
+    if (totalPages > 0 && page > totalPages) {
       setPage(totalPages);
     }
   }, [page, totalPages]);
