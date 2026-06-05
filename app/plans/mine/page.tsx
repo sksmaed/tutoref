@@ -11,6 +11,7 @@ import { popFlash, Flash } from '@/utils/flash';
 import { Toast } from '@/components/ui/toast';
 
 const MINE_PLANS_CACHE_KEY = 'plansMine:rowsCache:v1';
+const MINE_TABLE_UI_CACHE_KEY = 'plansMine:tableUiState:v1';
 const MANAGE_MY_PLANS_CACHE_KEY = 'manage:myPlansCache:v1';
 const MANAGE_MY_LIKES_CACHE_KEY = 'manage:myLikesCache:v1';
 const MANAGE_LIKES_STATE_CACHE_KEY = 'manage:likesStateCache:v1';
@@ -195,6 +196,7 @@ export default function MineAllPage() {
         title="我的教案"
         rowsInput={rows}
         mode="mine"
+        uiStateStorageKey={MINE_TABLE_UI_CACHE_KEY}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
