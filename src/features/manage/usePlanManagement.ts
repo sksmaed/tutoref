@@ -7,6 +7,13 @@ import { useAuth } from '@/features/auth/useAuth';
 import { fetchTeachingPlanDetail, TeachingPlanDetail } from '@/services/teaching-plan';
 import type { Row, MyTeachingPlansResponse, FavoritesResponse } from './types';
 import { formatIssue, mapPlanToRow, mapFavoriteToRow, requestJson, debugLog } from './helpers';
+import { readSessionJson, writeSessionJson } from '@/lib/session-cache';
+import {
+  MY_PLANS_CACHE_KEY,
+  MY_LIKES_CACHE_KEY,
+  LIKES_STATE_CACHE_KEY,
+  buildLikesMapFromRows,
+} from './cache';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
@@ -92,7 +99,14 @@ export function usePlanManagement() {
     let isMounted = true;
 
     const loadMyPlans = async () => {
-      setPlansLoading(true);
+      // 快取先行：有快取就先顯示、背景更新；沒有才進 loading 狀態
+      const cachedPlans = readSessionJson<Row[]>(MY_PLANS_CACHE_KEY);
+      if (cachedPlans) {
+        setMyPlansAll(cachedPlans);
+        setPlansLoading(false);
+      } else {
+        setPlansLoading(true);
+      }
       setPlansError('');
       try {
         const payload = await requestJson<MyTeachingPlansResponse>(`${API_PREFIX}/my-teaching-plans`);
@@ -100,10 +114,11 @@ export function usePlanManagement() {
         debugLog('Fetched my plans', rows);
         if (isMounted) {
           setMyPlansAll(rows);
+          writeSessionJson(MY_PLANS_CACHE_KEY, rows);
         }
       } catch (error) {
         debugLog('Fetch my plans failed', error);
-        if (isMounted) {
+        if (isMounted && !cachedPlans) {
           setPlansError(error instanceof Error ? error.message : '取得我的教案失敗');
         }
       } finally {
@@ -114,19 +129,30 @@ export function usePlanManagement() {
     };
 
     const loadFavorites = async () => {
-      setLikesLoading(true);
+      const cachedLikes = readSessionJson<Row[]>(MY_LIKES_CACHE_KEY);
+      const cachedLikesState = readSessionJson<Record<string, boolean>>(LIKES_STATE_CACHE_KEY);
+      if (cachedLikes) {
+        setMyLikesAll(cachedLikes);
+        setLikes(cachedLikesState ?? buildLikesMapFromRows(cachedLikes));
+        setLikesLoading(false);
+      } else {
+        setLikesLoading(true);
+      }
       setLikesError('');
       try {
         const payload = await requestJson<FavoritesResponse>(`${API_PREFIX}/favorites`);
         const rows = Array.isArray(payload?.data) ? payload.data.map(mapFavoriteToRow) : [];
+        const nextLikesState = buildLikesMapFromRows(rows);
         debugLog('Fetched favorites', rows);
         if (isMounted) {
           setMyLikesAll(rows);
-          setLikes(Object.fromEntries(rows.map((row) => [row.id, true])));
+          setLikes(nextLikesState);
+          writeSessionJson(MY_LIKES_CACHE_KEY, rows);
+          writeSessionJson(LIKES_STATE_CACHE_KEY, nextLikesState);
         }
       } catch (error) {
         debugLog('Fetch favorites failed', error);
-        if (isMounted) {
+        if (isMounted && !cachedLikes) {
           setLikesError(error instanceof Error ? error.message : '取得收藏清單失敗');
         }
       } finally {
@@ -204,25 +230,26 @@ export function usePlanManagement() {
     debugLog('Toggle favorite requested', { id, currentlyLiked, row });
     const previousLikes = { ...likes };
     const previousFavorites = [...myLikesAll];
+    let nextLikes = previousLikes;
+    let nextFavorites = previousFavorites;
 
     setFavoriteUpdatingId(id);
 
     if (currentlyLiked) {
-      setLikes((prev) => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-      setMyLikesAll((prev) => prev.filter((item) => item.id !== id));
+      nextLikes = { ...previousLikes };
+      delete nextLikes[id];
+      nextFavorites = previousFavorites.filter((item) => item.id !== id);
     } else {
-      setLikes((prev) => ({ ...prev, [id]: true }));
-      setMyLikesAll((prev) => {
-        if (prev.some((item) => item.id === id)) {
-          return prev;
-        }
-        return [row, ...prev];
-      });
+      nextLikes = { ...previousLikes, [id]: true };
+      nextFavorites = previousFavorites.some((item) => item.id === id)
+        ? previousFavorites
+        : [row, ...previousFavorites];
     }
+
+    setLikes(nextLikes);
+    setMyLikesAll(nextFavorites);
+    writeSessionJson(MY_LIKES_CACHE_KEY, nextFavorites);
+    writeSessionJson(LIKES_STATE_CACHE_KEY, nextLikes);
 
     try {
       await requestJson(`${API_PREFIX}/${id}/favorite`, {
@@ -237,6 +264,8 @@ export function usePlanManagement() {
       debugLog('Toggle favorite failed', error);
       setLikes(previousLikes);
       setMyLikesAll(previousFavorites);
+      writeSessionJson(MY_LIKES_CACHE_KEY, previousFavorites);
+      writeSessionJson(LIKES_STATE_CACHE_KEY, previousLikes);
       toast({
         title: '❌ 收藏更新失敗',
         description: error instanceof Error ? error.message : '請稍後再試。',
@@ -348,16 +377,18 @@ export function usePlanManagement() {
     const previousPlans = [...myPlansAll];
     const previousFavorites = [...myLikesAll];
     const previousLikesState = { ...likes };
+    const nextPlans = previousPlans.filter((item) => item.id !== id);
+    const nextFavorites = previousFavorites.filter((item) => item.id !== id);
+    const nextLikesState = { ...previousLikesState };
+    delete nextLikesState[id];
 
     setDeletingId(id);
-    setMyPlansAll((prev) => prev.filter((item) => item.id !== id));
-    setMyLikesAll((prev) => prev.filter((item) => item.id !== id));
-    setLikes((prev) => {
-      if (!prev[id]) return prev;
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
+    setMyPlansAll(nextPlans);
+    setMyLikesAll(nextFavorites);
+    setLikes(nextLikesState);
+    writeSessionJson(MY_PLANS_CACHE_KEY, nextPlans);
+    writeSessionJson(MY_LIKES_CACHE_KEY, nextFavorites);
+    writeSessionJson(LIKES_STATE_CACHE_KEY, nextLikesState);
 
     try {
       const res = await requestJson<{ message?: string }>(`${API_PREFIX}/detail/${id}`, {
@@ -374,6 +405,9 @@ export function usePlanManagement() {
       setMyPlansAll(previousPlans);
       setMyLikesAll(previousFavorites);
       setLikes(previousLikesState);
+      writeSessionJson(MY_PLANS_CACHE_KEY, previousPlans);
+      writeSessionJson(MY_LIKES_CACHE_KEY, previousFavorites);
+      writeSessionJson(LIKES_STATE_CACHE_KEY, previousLikesState);
       toast({
         title: '❌ 刪除失敗',
         description: error instanceof Error ? error.message : '請稍後再試。',

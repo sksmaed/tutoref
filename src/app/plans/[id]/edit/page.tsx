@@ -7,6 +7,7 @@ import TeachingPlanEditor, { TeachingPlanEditorRef } from '@/features/teaching-p
 import { TeachingPlan } from '@/types/api';
 import { api } from '@/lib/api';
 import { DURATION_MAP, DURATION_INVERSE_MAP } from '@/lib/constants';
+import { updateManageCachesAfterEdit } from '@/features/manage/cache';
 
 const normalizePlan = (detail: any): TeachingPlan => {
   const semester = `${detail?.academic_year ?? ''}${detail?.semester_period ?? ''}`;
@@ -118,6 +119,8 @@ export default function EditTeachingPlanPage() {
         await api.delete(`/teaching-plan/detail/${planId}/slides`);
         setPlan((prev) => (prev ? { ...prev, slide_pdf: '' } : prev));
       }
+
+      updateManageCachesAfterEdit(data);
 
       toast({
         title: '✅ 教案已更新',

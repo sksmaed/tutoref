@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { compareIssues } from '@/lib/issues';
 import IssueSortDropdown, { ISSUE_SORT_OPTIONS } from '@/features/teaching-plan/IssueSortDropdown';
+import { readSessionJson, writeSessionJson } from '@/lib/session-cache';
 
 export type Row = {
   id: string;
@@ -33,10 +34,17 @@ function pad2(n: number) {
 
 type IssueSortValue = (typeof ISSUE_SORT_OPTIONS)[number]['value'];
 
+type TableUiState = {
+  sort: IssueSortValue;
+  onlyGood: boolean;
+  page: number;
+};
+
 export function AllPlansTable({
   title,
   rowsInput,
   mode,
+  uiStateStorageKey,
   onToggleFavorite,
   onEdit,
   onDelete,
@@ -45,18 +53,48 @@ export function AllPlansTable({
   title: string;
   rowsInput: Row[];
   mode: 'mine' | 'likes';
+  /** 提供時，排序／篩選／頁碼會存進 sessionStorage，回到頁面時還原。 */
+  uiStateStorageKey?: string;
   onToggleFavorite?: (row: Row, nextLiked: boolean) => Promise<void>;
   onEdit?: (row: Row) => void;
   onDelete?: (row: Row) => Promise<void>;
   onView?: (row: Row) => void;
 }) {
-  const [sort, setSort] = useState<IssueSortValue>('issue_desc');
-  const [onlyGood, setOnlyGood] = useState<boolean>(false);
+  const initialUiState = useMemo<TableUiState>(() => {
+    if (!uiStateStorageKey) {
+      return { sort: 'issue_desc', onlyGood: false, page: 1 };
+    }
+    const cachedState = readSessionJson<TableUiState>(uiStateStorageKey);
+    if (!cachedState) {
+      return { sort: 'issue_desc', onlyGood: false, page: 1 };
+    }
+
+    const safeSort = ISSUE_SORT_OPTIONS.some((item) => item.value === cachedState.sort)
+      ? cachedState.sort
+      : 'issue_desc';
+    const safePage = Number.isFinite(cachedState.page) && cachedState.page > 0
+      ? Math.floor(cachedState.page)
+      : 1;
+    return {
+      sort: safeSort,
+      onlyGood: Boolean(cachedState.onlyGood),
+      page: safePage,
+    };
+  }, [uiStateStorageKey]);
+
+  const [sort, setSort] = useState<IssueSortValue>(initialUiState.sort);
+  const [onlyGood, setOnlyGood] = useState<boolean>(initialUiState.onlyGood);
   const [baseRows, setBaseRows] = useState<Row[]>(rowsInput);
   const [rows, setRows] = useState<Row[]>(rowsInput);
-  const [page, setPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(initialUiState.page);
+  const isFirstRender = useRef(true);
   const pageSize = 8;
   const router = useRouter();
+
+  useEffect(() => {
+    if (!uiStateStorageKey) return;
+    writeSessionJson(uiStateStorageKey, { sort, onlyGood, page });
+  }, [uiStateStorageKey, sort, onlyGood, page]);
 
   const handleToggleLike = async (row: Row) => {
     const nextLiked = !(row.liked ?? false);
@@ -114,13 +152,27 @@ export function AllPlansTable({
     });
 
     setRows(dataset);
-    setPage(1);
   }, [baseRows, sort, onlyGood, mode]);
+
+  // 排序／篩選變更時回到第一頁；首次渲染略過，才不會蓋掉還原的頁碼
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setPage(1);
+  }, [sort, onlyGood]);
 
   const total = rows.length;
   const totalPages = Math.max(0, Math.ceil(total / pageSize));
   const canPrev = page > 1;
   const canNext = totalPages > 0 && page < totalPages;
+
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   const pageRows = useMemo(() => {
     if (total === 0) return [];
