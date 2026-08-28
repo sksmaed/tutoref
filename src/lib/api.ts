@@ -1,9 +1,22 @@
 import axios from "axios";
 import { VersionResponse } from "@/types/api";
+import { CSRF_HEADER_NAME, ensureCsrfToken, isUnsafeMethod } from "@/lib/csrf";
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v2",
   withCredentials: true, // 關鍵：送/收 Session Cookie
+});
+
+// 跨網域（frontend/backend 不同 host）下 axios 不會自動帶 XSRF header，
+// 手動幫每個會改資料的請求加上 X-CSRFToken。
+api.interceptors.request.use(async config => {
+  if (isUnsafeMethod(config.method)) {
+    const token = await ensureCsrfToken();
+    if (token) {
+      config.headers.set(CSRF_HEADER_NAME, token);
+    }
+  }
+  return config;
 });
 
 // 統一錯誤攔截（友善訊息給 UI）

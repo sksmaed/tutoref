@@ -6,6 +6,7 @@ import { TeachingPlan } from '@/types/api';
 import { TeachingPlanEditorRef } from '@/features/teaching-plan/TeachingPlanEditor';
 import { useToast } from '@/hooks/use-toast';
 import { setFlash } from '@/lib/flash';
+import { CSRF_HEADER_NAME, ensureCsrfToken } from '@/lib/csrf';
 import { normalizeTeachingPlan, toUpdatePayload, toCreatePayload } from './transformers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -158,10 +159,12 @@ export function useUploadFlow() {
       const formData = new FormData();
       formData.append('file', uploadedFile);
 
+      const csrfToken = await ensureCsrfToken();
       const res = await fetch(`${API_PREFIX}/extract`, {
         method: 'POST',
         body: formData,
         credentials: 'include',
+        headers: csrfToken ? { [CSRF_HEADER_NAME]: csrfToken } : undefined,
       });
 
       const contentType = res.headers.get('content-type') || '';
@@ -274,10 +277,12 @@ export function useUploadFlow() {
         // 添加投影片檔案
         formData.append('slide_pdf_file', updatedPlan.slide_pdf_file);
 
+        const csrfToken = await ensureCsrfToken();
         const res = await fetch(`${API_PREFIX}/detail/${updatedPlan.id}`, {
           method: 'PATCH',
           credentials: 'include',
           body: formData,
+          headers: csrfToken ? { [CSRF_HEADER_NAME]: csrfToken } : undefined,
         });
 
         const contentType = res.headers.get('content-type') || '';
@@ -296,10 +301,12 @@ export function useUploadFlow() {
       } else {
         // 沒有新檔案時，使用 JSON 更新
         const payload = toUpdatePayload(updatedPlan);
+        const csrfToken = await ensureCsrfToken();
         const res = await fetch(`${API_PREFIX}/detail/${updatedPlan.id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
+            ...(csrfToken ? { [CSRF_HEADER_NAME]: csrfToken } : {}),
           },
           credentials: 'include',
           body: JSON.stringify(payload),
@@ -432,10 +439,12 @@ export function useUploadFlow() {
         formData.append('slide_pdf_file', plan.slide_pdf_file);
       }
 
+      const csrfToken = await ensureCsrfToken();
       const res = await fetch(`${API_PREFIX}/upload-file`, {
         method: 'POST',
         body: formData,
         credentials: 'include',
+        headers: csrfToken ? { [CSRF_HEADER_NAME]: csrfToken } : undefined,
       });
 
       const contentType = res.headers.get('content-type') || '';

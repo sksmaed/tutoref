@@ -1,4 +1,5 @@
 import type { Row, MyTeachingPlanItem, FavoriteItem } from './types';
+import { CSRF_HEADER_NAME, ensureCsrfToken, isUnsafeMethod } from '@/lib/csrf';
 
 export const formatIssue = (academicYear?: string | null, semesterPeriod?: string | null) => {
   const year = academicYear ?? '';
@@ -39,9 +40,15 @@ export const mapFavoriteToRow = (plan: FavoriteItem): Row => ({
   liked: true,
 });
 
-/** fetch 包裝：自動帶 cookie、檢查 content-type、統一錯誤訊息抽取。 */
+/** fetch 包裝：自動帶 cookie、改資料的請求自動帶 X-CSRFToken、檢查 content-type、統一錯誤訊息抽取。 */
 export const requestJson = async <T,>(url: string, init?: RequestInit): Promise<T> => {
-  const response = await fetch(url, { credentials: 'include', ...init });
+  const headers = new Headers(init?.headers);
+  if (isUnsafeMethod(init?.method)) {
+    const token = await ensureCsrfToken();
+    if (token) headers.set(CSRF_HEADER_NAME, token);
+  }
+
+  const response = await fetch(url, { credentials: 'include', ...init, headers });
   const contentType = response.headers.get('content-type') ?? '';
   const isJson = contentType.includes('application/json');
   const payload = isJson ? await response.json() : await response.text();
