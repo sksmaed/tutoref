@@ -65,7 +65,7 @@ export const ADMIN_SECTIONS: ReviewSection[] = [
     href: '/admin/members',
     capability: 'admin.enter',
     description: '期別成員、家別與角色設定。',
-    available: false, // F7-1
+    available: true,
   },
   {
     key: 'plans',
@@ -73,7 +73,7 @@ export const ADMIN_SECTIONS: ReviewSection[] = [
     href: '/admin/plans',
     capability: 'admin.enter',
     description: '全團教案檢視與優良標記。',
-    available: false, // F7-2
+    available: true,
   },
   {
     key: 'rubric',
@@ -81,6 +81,6 @@ export const ADMIN_SECTIONS: ReviewSection[] = [
     href: '/admin/rubric',
     capability: 'rubric.manage',
     description: '初驗 / 總驗評分標準的檢視與編輯。',
-    available: false, // F7-3
+    available: true,
   },
 ];
