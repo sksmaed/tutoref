@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   fetchReviewWorkspace,
   saveInitialDraft,
+  submitFinalRecord,
   submitInitialReview,
+  type FinalRecordPayload,
   type InitialReviewPayload,
   type ReviewWorkspace,
 } from '@/services/review';
@@ -115,6 +117,19 @@ export function useReviewWorkspace(jobId: string) {
     }
   }, [jobId, load]);
 
+  const submitFinal = useCallback(
+    async (payload: FinalRecordPayload) => {
+      setSubmitting(true);
+      try {
+        await submitFinalRecord(jobId, payload);
+        await load();
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [jobId, load]
+  );
+
   /** 試算分數：底分減掉勾選項目的扣分。以送出後系統計算為準。 */
   const liveScore = useMemo(() => {
     const scoring = workspace?.rubric?.scoring;
@@ -144,6 +159,7 @@ export function useReviewWorkspace(jobId: string) {
     update,
     saveDraft,
     submit,
+    submitFinal,
     submitting,
     submitted,
     draftSavedAt,

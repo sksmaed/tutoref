@@ -7,6 +7,7 @@ import { useTermContext } from '@/features/review-shared/useTermContext';
 import { LockBanner } from '@/features/review-shared/LockBanner';
 import { ReviewWorkspace } from '@/features/review-tasks/ReviewWorkspace';
 import { InitialReviewForm } from '@/features/review-tasks/InitialReviewForm';
+import { FinalReviewForm } from '@/features/review-tasks/FinalReviewForm';
 import { useReviewWorkspace } from '@/features/review-tasks/useReviewWorkspace';
 
 export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobId: string }> }) {
@@ -20,6 +21,7 @@ export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobI
     update,
     saveDraft,
     submit,
+    submitFinal,
     submitting,
     submitted,
     draftSavedAt,
@@ -28,6 +30,19 @@ export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobI
   const [notice, setNotice] = useState<{ type: 'success' | 'error'; title: string; message?: string } | null>(
     null
   );
+
+  const handleFinalSubmit = async (payload: Parameters<typeof submitFinal>[0]) => {
+    try {
+      await submitFinal(payload);
+      setNotice({ type: 'success', title: '已送出總驗判定' });
+    } catch (err) {
+      setNotice({
+        type: 'error',
+        title: '送出失敗',
+        message: err instanceof Error ? err.message : '請稍後再試。',
+      });
+    }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -63,6 +78,8 @@ export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobI
 
   const metadata = workspace.snapshot.metadata as Record<string, string | number>;
   const editable = context?.policy?.reviewer_can_edit_after_submit ?? false;
+  // 總驗記在 ReviewRecord，初驗記在 ReviewSubmission，兩邊都要算「已提交」
+  const alreadySubmitted = submitted || !!workspace.my_record;
 
   return (
     <div className="mb-16">
@@ -82,7 +99,7 @@ export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobI
         </div>
       </div>
 
-      {submitted && (
+      {alreadySubmitted && (
         <div className="mt-4">
           <LockBanner
             title="你已提交這份驗收"
@@ -97,7 +114,15 @@ export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobI
       )}
 
       <ReviewWorkspace workspace={workspace}>
-        {workspace.rubric ? (
+        {workspace.job.job_type === 'final_review' ? (
+          <FinalReviewForm
+            rubric={workspace.rubric}
+            initialFeedback={workspace.initial_feedback ?? []}
+            record={workspace.my_record}
+            submitting={submitting}
+            onSubmit={handleFinalSubmit}
+          />
+        ) : workspace.rubric ? (
           <InitialReviewForm
             rubric={workspace.rubric}
             form={form}

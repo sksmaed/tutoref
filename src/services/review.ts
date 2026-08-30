@@ -107,6 +107,14 @@ export interface RubricCheckItem {
   sort_order: number;
 }
 
+export interface FinalCheckItem {
+  id: string;
+  label: string;
+  description: string;
+  section: string;
+  sort_order: number;
+}
+
 export interface RubricSnapshot {
   rubric_kind: string;
   version: number;
@@ -118,6 +126,14 @@ export interface RubricSnapshot {
     discussion_min_score: string;
   };
   check_items?: RubricCheckItem[];
+  final_check_items?: FinalCheckItem[];
+}
+
+/** 總驗工作區帶回來的初驗回饋與作者處理狀況。 */
+export interface InitialFeedbackRecap {
+  body: string;
+  status: string;
+  responses: string[];
 }
 
 export interface ReviewSubmissionOut {
@@ -131,7 +147,18 @@ export interface ReviewSubmissionOut {
   band: string;
 }
 
+export interface OwnFinalRecord {
+  sheet_result: string;
+  slide_result: string;
+  sheet_failed_reason: string;
+  slide_failed_reason: string;
+  submitted_at: string | null;
+}
+
 export interface ReviewWorkspace {
+  initial_feedback: InitialFeedbackRecap[];
+  /** 總驗才有：自己這一 slot 已送出的判定。 */
+  my_record: OwnFinalRecord | null;
   job: { id: string; job_type: string; job_state: string; round_no: number };
   snapshot: {
     metadata: Record<string, unknown>;
@@ -313,7 +340,16 @@ export interface FinalDecisionOut {
   decided_at: string | null;
 }
 
+export interface FinalRecord {
+  sheet_result: string;
+  slide_result: string;
+  sheet_failed_reason: string;
+  slide_failed_reason: string;
+}
+
 export interface ResultRow {
+  /** 總驗才有：教案紙 / 投影片各自的判定。 */
+  records?: { A: FinalRecord | null; B: FinalRecord | null };
   job_id: string;
   plan_id: string;
   tp_name: string;
@@ -444,5 +480,18 @@ export async function uploadRevisedSheet(planId: string, file: File): Promise<{ 
     `/teaching-plan/detail/${planId}/sheet`,
     form
   );
+  return response.data;
+}
+
+export interface FinalRecordPayload {
+  sheet_result: 'passed' | 'failed';
+  slide_result: 'passed' | 'failed';
+  sheet_failed_reason?: string;
+  slide_failed_reason?: string;
+}
+
+/** 總驗判定：教案紙 / 投影片各自通過或未通過，未通過必填理由（後端也擋）。 */
+export async function submitFinalRecord(jobId: string, payload: FinalRecordPayload): Promise<unknown> {
+  const response = await api.post(`/review/jobs/${jobId}/final-record`, payload);
   return response.data;
 }
