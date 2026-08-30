@@ -13,6 +13,9 @@ import { FamilyProgressTable } from '@/features/admin/overview/FamilyProgressTab
 import { AssignmentByPlan } from '@/features/admin/assignments/AssignmentByPlan';
 import { AssignmentByReviewer } from '@/features/admin/assignments/AssignmentByReviewer';
 import { useAssignmentBoard } from '@/features/admin/assignments/useAssignmentBoard';
+import { ResultTable } from '@/features/admin/results/ResultTable';
+import { ResultConfirmModal, type ResultAction } from '@/features/admin/results/ResultConfirmModal';
+import { useResults } from '@/features/admin/results/useResults';
 import { ScheduleSettings } from '@/features/admin/settings/ScheduleSettings';
 import { PolicySettings } from '@/features/admin/settings/PolicySettings';
 import {
@@ -155,6 +158,75 @@ export default function AdminReviewPage() {
       setNotice({
         type: 'error',
         title: '發布失敗',
+        message: err instanceof Error ? err.message : '請稍後再試。',
+      });
+    }
+  };
+
+  /* ---------- 驗收結果 ---------- */
+  const results = useResults(round);
+  const [selectedResults, setSelectedResults] = useState<Set<string>>(new Set());
+  const [confirmAction, setConfirmAction] = useState<ResultAction | null>(null);
+  const [unlockTarget, setUnlockTarget] = useState<string | null>(null);
+  const [unlockReason, setUnlockReason] = useState('');
+
+  const pickedResults = results.rows.filter((row) => selectedResults.has(row.job_id));
+  const lockedUnpublished = results.rows.filter(
+    (row) => row.final_decision?.result_state === 'locked' && !row.result_published
+  );
+  const canUnlock = !!context?.policy?.leader_can_unlock_result;
+
+  const handleResultConfirm = async ({ reason, force }: { reason: string; force: boolean }) => {
+    if (!confirmAction) return;
+    try {
+      if (confirmAction === 'publish') {
+        await results.publish(
+          lockedUnpublished,
+          `${context?.current_term?.label ?? ''} ${round === 'initial' ? '初驗' : '總驗'}結果公告`
+        );
+        setNotice({
+          type: 'success',
+          title: '結果已發布',
+          message: `${lockedUnpublished.length} 份教案的作者現在看得到結果與回饋。`,
+        });
+      } else {
+        const failures = await results.applyDecision(pickedResults, confirmAction, { reason, force });
+        if (failures.length === 0) {
+          setSelectedResults(new Set());
+          setConfirmAction(null);
+          setNotice({ type: 'success', title: '結果已鎖定', message: `共 ${pickedResults.length} 份。` });
+        } else {
+          // 失敗的留在選取狀態、modal 不關，才能勾「強制套用」直接重試
+          setSelectedResults(new Set(failures.map((item) => item.jobId)));
+          setNotice({
+            type: 'error',
+            title: `${failures.length} 份未套用`,
+            message: failures.map((item) => `${item.tpName}：${item.message}`).join('；'),
+          });
+        }
+        return;
+      }
+      setConfirmAction(null);
+    } catch (err) {
+      setNotice({
+        type: 'error',
+        title: '操作失敗',
+        message: err instanceof Error ? err.message : '請稍後再試。',
+      });
+    }
+  };
+
+  const handleUnlock = async () => {
+    if (!unlockTarget || !unlockReason.trim()) return;
+    try {
+      await results.unlock(unlockTarget, unlockReason.trim());
+      setUnlockTarget(null);
+      setUnlockReason('');
+      setNotice({ type: 'success', title: '已解鎖', message: '這筆解鎖已寫入稽核紀錄。' });
+    } catch (err) {
+      setNotice({
+        type: 'error',
+        title: '解鎖失敗',
         message: err instanceof Error ? err.message : '請稍後再試。',
       });
     }
@@ -316,11 +388,73 @@ export default function AdminReviewPage() {
       )}
 
       {tab === 'results' && (
-        <div className="mt-6 rounded-lg bg-white px-6 py-10 text-center shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-          <p className="font-['Noto_Sans_TC'] text-[16px] text-black-900">驗收結果尚未開放</p>
-          <p className="mt-2 font-['Noto_Sans_TC'] text-[14px] text-black-700">
-            初驗結果彙整與確認鎖定是下一張 ticket（F5-4）。
-          </p>
+        <div className="mt-6">
+          {results.loading ? (
+            <div className="flex min-h-[30vh] items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-900" />
+            </div>
+          ) : results.error ? (
+            <p className="font-['Noto_Sans_TC'] text-[15px] text-status-alert">{results.error}</p>
+          ) : (
+            <>
+              <ResultTable
+                rows={results.rows}
+                selected={selectedResults}
+                onToggle={(jobId, checked) =>
+                  setSelectedResults((prev) => {
+                    const next = new Set(prev);
+                    if (checked) next.add(jobId);
+                    else next.delete(jobId);
+                    return next;
+                  })
+                }
+                onToggleAll={(checked) =>
+                  setSelectedResults(
+                    checked
+                      ? new Set(
+                          results.rows
+                            .filter((row) => row.final_decision?.result_state !== 'locked')
+                            .map((row) => row.job_id)
+                        )
+                      : new Set()
+                  )
+                }
+                canUnlock={canUnlock}
+                onUnlock={(row) => setUnlockTarget(row.job_id)}
+              />
+
+              <BulkActionBar
+                summary={
+                  <>
+                    已選 <span className="font-bold text-primary-900">{pickedResults.length}</span> 份
+                    ｜已鎖定待發布 <span className="font-bold">{lockedUnpublished.length}</span> 份
+                  </>
+                }
+              >
+                <Button
+                  onClick={() => setConfirmAction('passed')}
+                  disabled={pickedResults.length === 0}
+                  className="border border-primary-900 bg-white px-4 py-1 text-primary-900"
+                >
+                  判定通過
+                </Button>
+                <Button
+                  onClick={() => setConfirmAction('remedial')}
+                  disabled={pickedResults.length === 0}
+                  className="border border-status-alert bg-white px-4 py-1 text-status-alert"
+                >
+                  判定補驗
+                </Button>
+                <Button
+                  onClick={() => setConfirmAction('publish')}
+                  disabled={lockedUnpublished.length === 0}
+                  className="bg-secondary-700 px-4 py-1 font-bold text-white"
+                >
+                  發布結果
+                </Button>
+              </BulkActionBar>
+            </>
+          )}
         </div>
       )}
 
@@ -328,6 +462,54 @@ export default function AdminReviewPage() {
         <div className="mt-6">
           <ScheduleSettings schedules={schedules} saving={settingsSaving} onSave={handleSaveSchedules} />
           <PolicySettings policy={policy} saving={settingsSaving} onToggle={handleTogglePolicy} />
+        </div>
+      )}
+
+      <ResultConfirmModal
+        action={confirmAction}
+        rows={confirmAction === 'publish' ? lockedUnpublished : pickedResults}
+        working={results.working}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleResultConfirm}
+      />
+
+      {unlockTarget && (
+        <div className="fixed inset-0 z-1000">
+          <div
+            className="absolute inset-0"
+            style={{ backgroundColor: '#0D0D0DB2' }}
+            onClick={() => setUnlockTarget(null)}
+            aria-hidden
+          />
+          <div className="absolute left-1/2 top-1/2 w-[min(460px,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-[8px] bg-white px-8 py-6 shadow-xl">
+            <h3 className="text-center font-['Noto_Sans_TC'] text-[18px] font-medium text-black-900">
+              解鎖結果
+            </h3>
+            <p className="mt-2 font-['Noto_Sans_TC'] text-[13px] text-black-700">
+              解鎖必須填理由，這筆會寫進稽核紀錄。
+            </p>
+            <textarea
+              value={unlockReason}
+              onChange={(event) => setUnlockReason(event.target.value)}
+              rows={3}
+              className="mt-3 w-full rounded-lg border border-black-200 px-3 py-2 text-[14px]"
+            />
+            <div className="mt-4 flex justify-center gap-[10px]">
+              <Button
+                onClick={() => setUnlockTarget(null)}
+                className="w-[110px] rounded-lg border border-primary-900 bg-white py-2 text-primary-900"
+              >
+                取消
+              </Button>
+              <Button
+                onClick={handleUnlock}
+                disabled={!unlockReason.trim() || results.working}
+                className="w-[110px] rounded-lg bg-primary-900 py-2 font-bold text-white"
+              >
+                解鎖
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

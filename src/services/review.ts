@@ -303,3 +303,92 @@ export async function publishAssignments(
   });
   return response.data;
 }
+
+/* ---------------- 後台：驗收結果 ---------------- */
+
+export interface FinalDecisionOut {
+  decision: string;
+  result_state: string;
+  reason: string;
+  decided_at: string | null;
+}
+
+export interface ResultRow {
+  job_id: string;
+  plan_id: string;
+  tp_name: string;
+  family: string;
+  score_a: string | null;
+  score_b: string | null;
+  average: string | null;
+  band: string | null;
+  job_state: string;
+  final_decision: FinalDecisionOut | null;
+  feedback_progress: { total: number; todo: number; done: number };
+  result_published: boolean;
+}
+
+export interface FeedbackItemRow {
+  id: string;
+  job_id: string;
+  body: string;
+  status: string;
+  reviewer_name?: string | null;
+  responses: { body: string; status: string; created_at: string }[];
+}
+
+export async function fetchResults(termId: string, stage: Round): Promise<ResultRow[]> {
+  const response = await api.get<ResultRow[]>('/review/results', {
+    params: { term_id: termId, stage },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function setDecision(
+  jobId: string,
+  decision: 'passed' | 'remedial',
+  options: { reason?: string; force?: boolean } = {}
+): Promise<FinalDecisionOut> {
+  const response = await api.put<FinalDecisionOut>(`/review/jobs/${jobId}/decision`, {
+    decision,
+    reason: options.reason ?? '',
+    force: options.force ?? false,
+  });
+  return response.data;
+}
+
+export async function confirmDecision(jobId: string): Promise<FinalDecisionOut> {
+  const response = await api.post<FinalDecisionOut>(`/review/jobs/${jobId}/decision/confirm`, {});
+  return response.data;
+}
+
+export async function lockDecision(jobId: string): Promise<FinalDecisionOut> {
+  const response = await api.post<FinalDecisionOut>(`/review/jobs/${jobId}/decision/lock`, {});
+  return response.data;
+}
+
+/** 解鎖需要理由；權限由 policy.leader_can_unlock_result 或 admin 決定。 */
+export async function unlockDecision(jobId: string, reason: string): Promise<FinalDecisionOut> {
+  const response = await api.post<FinalDecisionOut>(`/review/jobs/${jobId}/decision/unlock`, { reason });
+  return response.data;
+}
+
+export async function publishResults(
+  termId: string,
+  stage: Round,
+  jobIds: string[],
+  options: { title?: string; body?: string; send_email?: boolean } = {}
+): Promise<{ announcement_id: string; published_at: string }> {
+  const response = await api.post<{ announcement_id: string; published_at: string }>(
+    '/review/results/publish',
+    { term_id: termId, stage, job_ids: jobIds, ...options }
+  );
+  return response.data;
+}
+
+export async function fetchFeedbackItems(jobId: string): Promise<FeedbackItemRow[]> {
+  const response = await api.get<FeedbackItemRow[]>('/review/feedback-items', {
+    params: { job_id: jobId },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+}
