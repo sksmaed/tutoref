@@ -69,6 +69,18 @@
   --color-category-other: #0d0d0d;
 
   --color-error-border: #f24822;
+
+  /* 驗收流程狀態色：全部指向既有色票，不新增品牌色 */
+  --color-status-idle: var(--color-black-400);        /* 尚未開始 / 未送出 */
+  --color-status-idle-bg: var(--color-black-100);
+  --color-status-active: var(--color-primary-900);    /* 進行中 / 待處理 */
+  --color-status-active-bg: var(--color-primary-100);
+  --color-status-done: var(--color-secondary-700);    /* 已完成 / 通過 */
+  --color-status-done-bg: var(--color-secondary-100);
+  --color-status-alert: var(--color-category-art);    /* 補驗 / 未通過 */
+  --color-status-alert-bg: #faf0f0;
+  --color-status-locked: var(--color-black-500);      /* 已鎖定 / 唯讀 */
+  --color-status-locked-bg: var(--color-black-100);
 }
 
 /*
