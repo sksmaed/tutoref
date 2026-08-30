@@ -30,7 +30,7 @@ export const REVIEW_SECTIONS: ReviewSection[] = [
     href: '/review/tasks',
     capability: 'review.submit',
     description: '查看被指派的教案、進入驗收工作區評分。',
-    available: false, // F5-1
+    available: true,
   },
   {
     key: 'my-plans',
