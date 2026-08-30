@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { StatusChip } from '@/features/review-shared/StatusChip';
-import { fetchFeedbackItems, type FeedbackItemRow, type ResultRow } from '@/services/review';
+import { fetchFeedbackItems, type FeedbackItemRow, type FinalRecord, type ResultRow } from '@/services/review';
+import type { Round } from '@/features/review-shared/types';
 
 const BAND_LABEL: Record<string, string> = {
   potential_excellent: '潛力優良',
@@ -23,7 +24,24 @@ export function decisionLabel(row: ResultRow): string {
   return name;
 }
 
+/** 總驗沒有分數，看的是教案紙 / 投影片各自通過與否。 */
+const RecordCell: React.FC<{ record: FinalRecord | null | undefined }> = ({ record }) => {
+  if (!record) return <span className="text-status-idle">未提交</span>;
+  const mark = (label: string, result: string) => (
+    <span className={result === 'passed' ? 'text-status-done' : 'text-status-alert'}>
+      {result === 'passed' ? '✓' : '✗'} {label}
+    </span>
+  );
+  return (
+    <span className="flex flex-col items-center text-[13px]">
+      {mark('教案紙', record.sheet_result)}
+      {mark('投影片', record.slide_result)}
+    </span>
+  );
+};
+
 interface ResultTableProps {
+  round: Round;
   rows: ResultRow[];
   selected: Set<string>;
   onToggle: (jobId: string, checked: boolean) => void;
@@ -33,6 +51,7 @@ interface ResultTableProps {
 }
 
 export const ResultTable: React.FC<ResultTableProps> = ({
+  round,
   rows,
   selected,
   onToggle,
@@ -75,10 +94,19 @@ export const ResultTable: React.FC<ResultTableProps> = ({
             </th>
             <th className="h-[48px] px-4 text-left">教案</th>
             <th className="h-[48px] w-[80px] px-2 text-center">家別</th>
-            <th className="h-[48px] w-[70px] px-2 text-center">A</th>
-            <th className="h-[48px] w-[70px] px-2 text-center">B</th>
-            <th className="h-[48px] w-[80px] px-2 text-center">平均</th>
-            <th className="h-[48px] w-[100px] px-2 text-center">系統訊號</th>
+            {round === 'final' ? (
+              <>
+                <th className="h-[48px] w-[110px] px-2 text-center">A 判定</th>
+                <th className="h-[48px] w-[110px] px-2 text-center">B 判定</th>
+              </>
+            ) : (
+              <>
+                <th className="h-[48px] w-[70px] px-2 text-center">A</th>
+                <th className="h-[48px] w-[70px] px-2 text-center">B</th>
+                <th className="h-[48px] w-[80px] px-2 text-center">平均</th>
+                <th className="h-[48px] w-[100px] px-2 text-center">系統訊號</th>
+              </>
+            )}
             <th className="h-[48px] w-[110px] px-2 text-center">Feedback</th>
             <th className="h-[48px] w-[120px] px-2 text-center">最終結果</th>
             <th className="h-[48px] w-[80px] px-2 text-center" />
@@ -87,7 +115,7 @@ export const ResultTable: React.FC<ResultTableProps> = ({
         <tbody className="divide-y divide-black-200 bg-white">
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={10} className="h-[80px] text-center text-black-700">
+              <td colSpan={round === 'final' ? 8 : 10} className="h-[80px] text-center text-black-700">
                 本輪還沒有任何驗收任務。
               </td>
             </tr>
@@ -119,12 +147,25 @@ export const ResultTable: React.FC<ResultTableProps> = ({
                       </button>
                     </td>
                     <td className="h-[56px] px-2 text-center">{row.family}</td>
-                    <td className="h-[56px] px-2 text-center">{row.score_a ?? '—'}</td>
-                    <td className="h-[56px] px-2 text-center">{row.score_b ?? '—'}</td>
-                    <td className="h-[56px] px-2 text-center font-bold">{row.average ?? '—'}</td>
-                    <td className="h-[56px] px-2 text-center">
-                      {row.band ? BAND_LABEL[row.band] ?? row.band : '—'}
-                    </td>
+                    {round === 'final' ? (
+                      <>
+                        <td className="h-[56px] px-2 text-center">
+                          <RecordCell record={row.records?.A} />
+                        </td>
+                        <td className="h-[56px] px-2 text-center">
+                          <RecordCell record={row.records?.B} />
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="h-[56px] px-2 text-center">{row.score_a ?? '—'}</td>
+                        <td className="h-[56px] px-2 text-center">{row.score_b ?? '—'}</td>
+                        <td className="h-[56px] px-2 text-center font-bold">{row.average ?? '—'}</td>
+                        <td className="h-[56px] px-2 text-center">
+                          {row.band ? BAND_LABEL[row.band] ?? row.band : '—'}
+                        </td>
+                      </>
+                    )}
                     <td className="h-[56px] px-2 text-center text-[13px]">
                       {row.feedback_progress.total === 0
                         ? '尚未產生'
@@ -147,12 +188,27 @@ export const ResultTable: React.FC<ResultTableProps> = ({
                   </tr>
                   {expanded === row.job_id && (
                     <tr className="bg-black-100">
-                      <td colSpan={10} className="px-6 py-4">
+                      <td colSpan={round === 'final' ? 8 : 10} className="px-6 py-4">
                         {row.final_decision?.reason && (
                           <p className="mb-2 text-[13px] text-black-700">
                             判定理由：{row.final_decision.reason}
                           </p>
                         )}
+                        {round === 'final' &&
+                          (['A', 'B'] as const).map((slot) => {
+                            const record = row.records?.[slot];
+                            if (!record) return null;
+                            const reasons = [
+                              record.sheet_result === 'failed' ? `教案紙：${record.sheet_failed_reason}` : null,
+                              record.slide_result === 'failed' ? `投影片：${record.slide_failed_reason}` : null,
+                            ].filter(Boolean);
+                            if (reasons.length === 0) return null;
+                            return (
+                              <p key={slot} className="mb-1 text-[13px] text-status-alert">
+                                {slot} 未通過理由——{reasons.join('；')}
+                              </p>
+                            );
+                          })}
                         {items === 'loading' ? (
                           <p className="text-[13px] text-black-500">載入中…</p>
                         ) : !items || items.length === 0 ? (

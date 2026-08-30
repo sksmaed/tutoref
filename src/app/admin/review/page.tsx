@@ -398,6 +398,7 @@ export default function AdminReviewPage() {
           ) : (
             <>
               <ResultTable
+                round={round}
                 rows={results.rows}
                 selected={selectedResults}
                 onToggle={(jobId, checked) =>
