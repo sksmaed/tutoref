@@ -22,7 +22,7 @@ export const REVIEW_SECTIONS: ReviewSection[] = [
     href: '/review/family',
     capability: 'family.submit',
     description: '確認本家要送驗的教案、註記缺交，並送出本輪驗收。',
-    available: false, // F3-1
+    available: true,
   },
   {
     key: 'tasks',
