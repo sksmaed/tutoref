@@ -42,3 +42,19 @@ export function deadlineState(dueAt?: string | null, now: Date = new Date()): De
   const hours = Math.floor(diff / (60 * 60 * 1000));
   return { label: hours > 0 ? `距離截止剩不到 ${hours + 1} 小時` : '即將截止', overdue: false };
 }
+
+/** ISO 字串 → <input type="datetime-local"> 需要的本地時間字串。 */
+export function toDateTimeLocal(value?: string | null): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/** datetime-local 的值 → 後端要的 ISO 字串；空字串代表「清掉這個日期」。 */
+export function fromDateTimeLocal(value: string): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}

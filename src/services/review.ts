@@ -185,3 +185,121 @@ export async function submitInitialReview(
   );
   return response.data;
 }
+
+/* ---------------- 後台：時程 / policy / 分配 ---------------- */
+
+export interface ScheduleRow {
+  id: string;
+  stage: string;
+  round_no: number;
+  submission_due_at: string | null;
+  review_due_at: string | null;
+  note?: string;
+  submission_overdue: boolean;
+  review_overdue: boolean;
+}
+
+export interface ScheduleItemInput {
+  stage: string;
+  round_no?: number;
+  submission_due_at?: string | null;
+  review_due_at?: string | null;
+  note?: string | null;
+}
+
+export interface MemberRow {
+  user_id: string;
+  email: string;
+  name: string;
+  family_id: string | null;
+  family_name: string | null;
+  membership_active: boolean;
+  roles: { role: string; scope_type: string; family_id?: string | null; family_name?: string | null }[];
+}
+
+export interface ReviewerLoadRow {
+  reviewer_id: string;
+  reviewer_name: string;
+  job_count: number;
+  points: number;
+  jobs: { job_id: string; tp_name: string; slot_label: string; points: number }[];
+}
+
+export interface AssignmentInput {
+  job_id: string;
+  slot_label: string;
+  reviewer_id: string;
+}
+
+export async function fetchSchedules(termId: string): Promise<ScheduleRow[]> {
+  const response = await api.get<ScheduleRow[]>('/review/schedules', { params: { term_id: termId } });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function updateSchedules(
+  termId: string,
+  items: ScheduleItemInput[]
+): Promise<ScheduleRow[]> {
+  const response = await api.put<ScheduleRow[]>('/review/schedules', { term_id: termId, items });
+  return response.data;
+}
+
+export async function fetchPolicy(termId: string): Promise<Record<string, boolean>> {
+  const response = await api.get<Record<string, boolean>>(`/organization/terms/${termId}/policy`);
+  return response.data;
+}
+
+export async function patchPolicy(
+  termId: string,
+  values: Record<string, boolean>
+): Promise<Record<string, boolean>> {
+  const response = await api.patch<Record<string, boolean>>(`/organization/terms/${termId}/policy`, {
+    values,
+  });
+  return response.data;
+}
+
+/** 後台檢視全部任務（需要 review.manage）。 */
+export async function fetchAllJobs(termId: string, stage: Round): Promise<ReviewJobRow[]> {
+  const response = await api.get<ReviewJobRow[]>('/review/jobs', {
+    params: { term_id: termId, stage },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function fetchReviewerLoad(termId: string, stage: Round): Promise<ReviewerLoadRow[]> {
+  const response = await api.get<ReviewerLoadRow[]>('/review/assignments/reviewer-load', {
+    params: { term_id: termId, stage },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function fetchMembers(termId: string): Promise<MemberRow[]> {
+  const response = await api.get<MemberRow[]>('/organization/members', { params: { term_id: termId } });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+/** 分配草稿批次儲存；reviewer 仍看不到，要 publish 之後才看得到。 */
+export async function saveAssignments(
+  termId: string,
+  items: AssignmentInput[]
+): Promise<{ saved: number; warnings: { job_id: string; message: string }[] }> {
+  const response = await api.put<{ saved: number; warnings: { job_id: string; message: string }[] }>(
+    '/review/assignments/bulk',
+    { term_id: termId, items }
+  );
+  return response.data;
+}
+
+export async function publishAssignments(
+  termId: string,
+  stage: Round,
+  options: { title?: string; body?: string; send_email?: boolean } = {}
+): Promise<unknown> {
+  const response = await api.post('/review/assignments/publish', {
+    term_id: termId,
+    stage,
+    ...options,
+  });
+  return response.data;
+}
