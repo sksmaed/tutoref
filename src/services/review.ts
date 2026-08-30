@@ -611,3 +611,60 @@ export async function createRubricVersion(payload: {
   const response = await api.post('/review/rubric-versions', payload);
   return response.data;
 }
+
+/* ---------------- 公告 ---------------- */
+
+export type AnnouncementType =
+  | 'general'
+  | 'schedule'
+  | 'open_assignment'
+  | 'publish_initial_result'
+  | 'publish_final_result'
+  | 'remedial';
+
+export interface AnnouncementRow {
+  id: string;
+  announcement_type: AnnouncementType;
+  title: string;
+  body: string;
+  audience: string;
+  state: string;
+  published_at: string | null;
+  published_by_name: string | null;
+}
+
+export const ANNOUNCEMENT_TYPE_LABEL: Record<AnnouncementType, string> = {
+  general: '一般公告',
+  schedule: '驗收時程',
+  open_assignment: '開放驗收任務',
+  publish_initial_result: '初驗結果',
+  publish_final_result: '總驗結果',
+  remedial: '補驗通知',
+};
+
+export async function fetchAnnouncements(params: {
+  termId?: string;
+  type?: AnnouncementType;
+} = {}): Promise<AnnouncementRow[]> {
+  const response = await api.get<AnnouncementRow[]>('/review/announcements', {
+    params: { term_id: params.termId, announcement_type: params.type },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function publishAnnouncement(payload: {
+  term_id: string;
+  announcement_type: AnnouncementType;
+  title: string;
+  body?: string;
+  audience?: string;
+  send_email?: boolean;
+}): Promise<AnnouncementRow> {
+  const response = await api.post<AnnouncementRow>('/review/announcements', payload);
+  return response.data;
+}
+
+export async function fetchAnnouncement(id: string): Promise<AnnouncementRow> {
+  const response = await api.get<AnnouncementRow>(`/review/announcements/${id}`);
+  return response.data;
+}
