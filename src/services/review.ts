@@ -392,3 +392,57 @@ export async function fetchFeedbackItems(jobId: string): Promise<FeedbackItemRow
   });
   return Array.isArray(response.data) ? response.data : [];
 }
+
+/* ---------------- 作者端 ---------------- */
+
+export interface AuthorJobRow {
+  id: string;
+  plan_id: string;
+  tp_name: string;
+  family: string;
+  job_type: string;
+  job_state: string;
+  round_no: number;
+  sheet_present: boolean;
+  slide_present: boolean;
+  editing_status: string;
+  feedback_progress: { total: number; todo: number; done: number };
+  result_published: boolean;
+  /** 只有結果發布之後才有值。 */
+  decision: string | null;
+  /** 只有 policy.show_raw_score_to_author 才會出現。 */
+  average?: string | null;
+}
+
+export type FeedbackStatus = 'todo' | 'changed' | 'partially_changed' | 'not_changed';
+
+export async function fetchAuthorJobs(termId: string, stage: Round): Promise<AuthorJobRow[]> {
+  const response = await api.get<AuthorJobRow[]>('/review/jobs', {
+    params: { term_id: termId, stage, author: 'me' },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+/** 非 todo 的狀態一定要附說明，前端擋一次，後端也擋。 */
+export async function updateFeedbackStatus(
+  itemId: string,
+  status: FeedbackStatus,
+  responseBody: string
+): Promise<FeedbackItemRow> {
+  const response = await api.patch<FeedbackItemRow>(`/review/feedback-items/${itemId}`, {
+    status,
+    response_body: responseBody,
+  });
+  return response.data;
+}
+
+/** 上傳總驗修改版教案紙；後端排背景工作換 Drive 檔案，舊檔保留給 snapshot。 */
+export async function uploadRevisedSheet(planId: string, file: File): Promise<{ message: string }> {
+  const form = new FormData();
+  form.append('sheet_pdf', file);
+  const response = await api.post<{ status: string; message: string }>(
+    `/teaching-plan/detail/${planId}/sheet`,
+    form
+  );
+  return response.data;
+}

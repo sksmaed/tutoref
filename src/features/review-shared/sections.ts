@@ -38,7 +38,7 @@ export const REVIEW_SECTIONS: ReviewSection[] = [
     href: '/review/my-plans',
     capability: 'plan.author',
     description: '查看驗收回饋、處理修改並上傳總驗版本。',
-    available: false, // F6-1
+    available: true,
   },
 ];
 
