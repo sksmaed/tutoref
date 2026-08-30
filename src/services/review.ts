@@ -12,6 +12,7 @@ export interface FamilyPlan {
   sheet_present: boolean;
   slide_present: boolean;
   editing_status: string;
+  is_excellent: boolean;
   included: boolean;
   snapshot: {
     submitted_at: string;
@@ -493,5 +494,120 @@ export interface FinalRecordPayload {
 /** 總驗判定：教案紙 / 投影片各自通過或未通過，未通過必填理由（後端也擋）。 */
 export async function submitFinalRecord(jobId: string, payload: FinalRecordPayload): Promise<unknown> {
   const response = await api.post(`/review/jobs/${jobId}/final-record`, payload);
+  return response.data;
+}
+
+/* ---------------- 後台：成員 / 教案 / 標準 ---------------- */
+
+export interface TermRow {
+  id: string;
+  label: string;
+  academic_year: string;
+  semester_period: string;
+  is_active: boolean;
+  is_readonly: boolean;
+}
+
+export interface FamilyRow {
+  id: string;
+  name: string;
+}
+
+export interface MemberUpsertInput {
+  email: string;
+  name?: string;
+  family_id?: string | null;
+  roles?: { role: string; family_id?: string | null }[];
+}
+
+export interface MemberPatchInput {
+  user_id: string;
+  membership_active?: boolean | null;
+  revoke_roles?: string[];
+}
+
+export async function fetchTerms(): Promise<TermRow[]> {
+  const response = await api.get<TermRow[]>('/organization/terms');
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function fetchFamilies(): Promise<FamilyRow[]> {
+  const response = await api.get<FamilyRow[]>('/organization/families');
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function upsertMembers(termId: string, members: MemberUpsertInput[]): Promise<MemberRow[]> {
+  const response = await api.post<MemberRow[]>('/organization/members', { term_id: termId, members });
+  return response.data;
+}
+
+export async function patchMembers(termId: string, items: MemberPatchInput[]): Promise<MemberRow[]> {
+  const response = await api.patch<MemberRow[]>('/organization/members', { term_id: termId, items });
+  return response.data;
+}
+
+export async function cloneMembersFromTerm(fromTermId: string, toTermId: string): Promise<unknown> {
+  const response = await api.post('/organization/members/clone-from-term', {
+    from_term_id: fromTermId,
+    to_term_id: toTermId,
+  });
+  return response.data;
+}
+
+export async function setPlanExcellent(planId: string, isExcellent: boolean): Promise<unknown> {
+  const response = await api.patch(`/review/plans/${planId}/excellent`, { is_excellent: isExcellent });
+  return response.data;
+}
+
+/** 後台檢視某一家的教案；家長只拿得到自己家的，教案組可指定 family_id。 */
+export async function fetchFamilyPlansFor(familyId: string, stage: Round): Promise<FamilyPlan[]> {
+  const response = await api.get<FamilyPlan[]>('/review/family-plans', {
+    params: { family_id: familyId, stage },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export interface RubricVersionRow {
+  id: string;
+  version: number;
+  title: string;
+  status: string;
+  published_at: string | null;
+  content_snapshot: RubricSnapshot;
+}
+
+export interface RubricRow {
+  id: string;
+  kind: 'initial' | 'final';
+  name: string;
+  description: string;
+  is_active: boolean;
+  versions: RubricVersionRow[];
+}
+
+export interface RubricItemInput {
+  label: string;
+  description?: string;
+  category?: string;
+  section?: string;
+  deduction_value?: number | null;
+  sort_order?: number;
+}
+
+export async function fetchRubrics(termId: string): Promise<RubricRow[]> {
+  const response = await api.get<RubricRow[]>('/review/rubrics', { params: { term_id: termId } });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function createRubricVersion(payload: {
+  rubric_id: string;
+  kind: 'initial' | 'final';
+  title?: string;
+  description?: string;
+  items: RubricItemInput[];
+  scoring?: Record<string, number> | null;
+  activate?: boolean;
+}): Promise<unknown> {
+  const response = await api.post('/review/rubric-versions', payload);
   return response.data;
 }
