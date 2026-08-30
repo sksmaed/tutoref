@@ -49,7 +49,7 @@ export const ADMIN_SECTIONS: ReviewSection[] = [
     href: '/admin/review',
     capability: 'review.manage',
     description: '六家進度、驗收分配、結果與時程設定。',
-    available: false, // F4-1
+    available: true,
   },
   {
     key: 'announcements',
