@@ -129,7 +129,10 @@ export default function AdminReviewPage() {
       setNotice({
         type: 'success',
         title: '分配已儲存',
-        message: '這是草稿，reviewer 還看不到；要發布之後才會出現在他們的任務清單。',
+        // 可見性看的是「這一輪有沒有發布過」，所以已發布的輪次存完就立刻生效
+        message: published
+          ? '本輪已發布，被指派的人現在就看得到這些變動。'
+          : '這是草稿，reviewer 還看不到；要按「發布任務」才會出現在他們的任務清單。',
       });
     } catch (err) {
       setNotice({
