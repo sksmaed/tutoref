@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Checkbox } from '@/components/ui/Checkbox';
 import { StatusChip } from '@/features/review-shared/StatusChip';
 import { jobPoints, type SlotMap } from './useAssignmentBoard';
 import type { MemberRow, ReviewJobRow } from '@/services/review';
@@ -21,9 +20,6 @@ interface AssignmentByPlanProps {
   slots: SlotMap;
   reviewers: MemberRow[];
   editing: boolean;
-  selected: Set<string>;
-  onToggleSelect: (jobId: string, checked: boolean) => void;
-  onToggleSelectAll: (checked: boolean) => void;
   onSetSlot: (jobId: string, slot: 'A' | 'B', reviewerId: string) => void;
 }
 
@@ -33,13 +29,8 @@ export const AssignmentByPlan: React.FC<AssignmentByPlanProps> = ({
   slots,
   reviewers,
   editing,
-  selected,
-  onToggleSelect,
-  onToggleSelectAll,
   onSetSlot,
 }) => {
-  const allChecked = jobs.length > 0 && jobs.every((job) => selected.has(job.id));
-
   const slotCell = (job: ReviewJobRow, slot: 'A' | 'B') => {
     const reviewerId = slots[job.id]?.[slot] ?? '';
     const reviewer = reviewers.find((item) => item.user_id === reviewerId);
@@ -74,13 +65,6 @@ export const AssignmentByPlan: React.FC<AssignmentByPlanProps> = ({
       <table className="w-full min-w-[860px] border-collapse text-[14px] font-['Noto_Sans_TC']">
         <thead>
           <tr className="bg-primary-100 font-bold text-black-900">
-            <th className="h-[48px] w-[52px] px-2 text-center">
-              {editing && (
-                <span className="inline-flex justify-center">
-                  <Checkbox checked={allChecked} onChange={onToggleSelectAll} label="" />
-                </span>
-              )}
-            </th>
             <th className="h-[48px] px-4 text-left">教案</th>
             <th className="h-[48px] w-[80px] px-2 text-center">家別</th>
             <th className="h-[48px] w-[70px] px-2 text-center">點數</th>
@@ -92,7 +76,7 @@ export const AssignmentByPlan: React.FC<AssignmentByPlanProps> = ({
         <tbody className="divide-y divide-black-200 bg-white">
           {jobs.length === 0 ? (
             <tr>
-              <td colSpan={7} className="h-[80px] text-center text-black-700">
+              <td colSpan={6} className="h-[80px] text-center text-black-700">
                 本輪還沒有任何送件，沒有可分配的教案。
               </td>
             </tr>
@@ -104,17 +88,6 @@ export const AssignmentByPlan: React.FC<AssignmentByPlanProps> = ({
                   key={job.id}
                   className={`transition-colors hover:bg-primary-100 ${missingSlot ? 'bg-status-alert-bg' : ''}`}
                 >
-                  <td className="h-[56px] px-2 text-center">
-                    {editing && (
-                      <span className="inline-flex justify-center">
-                        <Checkbox
-                          checked={selected.has(job.id)}
-                          onChange={(next) => onToggleSelect(job.id, next)}
-                          label=""
-                        />
-                      </span>
-                    )}
-                  </td>
                   <td className="h-[56px] px-4">
                     <span className="block truncate" title={job.tp_name}>
                       {job.tp_name}

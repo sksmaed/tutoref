@@ -119,17 +119,8 @@ export default function AdminReviewPage() {
   const board = useAssignmentBoard(round);
   const [editing, setEditing] = useState(false);
   const [byReviewer, setByReviewer] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkReviewer, setBulkReviewer] = useState('');
-  const [bulkSlot, setBulkSlot] = useState<'A' | 'B'>('A');
 
   const published = context?.stage_state?.[round]?.assignment_published ?? false;
-
-  const applyBulk = () => {
-    if (!bulkReviewer) return;
-    selected.forEach((jobId) => board.setSlot(jobId, bulkSlot, bulkReviewer));
-    setSelected(new Set());
-  };
 
   const handleSaveAssignments = async () => {
     try {
@@ -285,7 +276,7 @@ export default function AdminReviewPage() {
             <div className="mt-4">
               <LockBanner
                 title="本輪任務已發布"
-                description="reviewer 已經看得到自己的任務。之後換人會保留原本的分配紀錄，但對方會立刻看到變動。"
+                description="發布是整輪一次的動作，不會再發第二次。之後新增或換人的分配只要按「儲存草稿」，對方就立刻看得到；換掉的人會保留原本的分配紀錄。"
                 tone="active"
               />
             </div>
@@ -315,18 +306,6 @@ export default function AdminReviewPage() {
               slots={board.slots}
               reviewers={board.reviewers}
               editing={editing}
-              selected={selected}
-              onToggleSelect={(jobId, checked) =>
-                setSelected((prev) => {
-                  const next = new Set(prev);
-                  if (checked) next.add(jobId);
-                  else next.delete(jobId);
-                  return next;
-                })
-              }
-              onToggleSelectAll={(checked) =>
-                setSelected(checked ? new Set(board.jobs.map((job) => job.id)) : new Set())
-              }
               onSetSlot={board.setSlot}
             />
           )}
@@ -335,39 +314,16 @@ export default function AdminReviewPage() {
             <BulkActionBar
               summary={
                 <>
-                  已選 <span className="font-bold text-primary-900">{selected.size}</span> 份
-                  ｜未填滿 <span className="font-bold">{board.incomplete.length}</span> 份
-                  ｜未儲存 <span className="font-bold">{board.changes.length}</span> 格
+                  未填滿 <span className="font-bold">{board.incomplete.length}</span> 份
+                  ｜未儲存 <span className="font-bold text-primary-900">{board.changes.length}</span> 格
+                  {published && (
+                    <span className="ml-2 text-[13px] text-black-500">
+                      本輪已發布，儲存後對方立刻看得到
+                    </span>
+                  )}
                 </>
               }
             >
-              <select
-                value={bulkSlot}
-                onChange={(event) => setBulkSlot(event.target.value as 'A' | 'B')}
-                className="rounded-lg border border-black-200 px-2 py-1 text-[14px]"
-              >
-                <option value="A">Slot A</option>
-                <option value="B">Slot B</option>
-              </select>
-              <select
-                value={bulkReviewer}
-                onChange={(event) => setBulkReviewer(event.target.value)}
-                className="max-w-[180px] rounded-lg border border-black-200 px-2 py-1 text-[14px]"
-              >
-                <option value="">選擇 reviewer</option>
-                {board.reviewers.map((reviewer) => (
-                  <option key={reviewer.user_id} value={reviewer.user_id}>
-                    {reviewer.name || reviewer.email}
-                  </option>
-                ))}
-              </select>
-              <Button
-                onClick={applyBulk}
-                disabled={!bulkReviewer || selected.size === 0}
-                className="border border-primary-900 bg-white px-4 py-1 text-primary-900"
-              >
-                批量指派
-              </Button>
               <Button
                 onClick={handleSaveAssignments}
                 disabled={board.saving || board.changes.length === 0}
@@ -375,13 +331,22 @@ export default function AdminReviewPage() {
               >
                 {board.saving ? '儲存中…' : '儲存草稿'}
               </Button>
-              <Button
-                onClick={handlePublish}
-                disabled={board.saving || board.incomplete.length > 0 || board.changes.length > 0}
-                className="bg-secondary-700 px-4 py-1 font-bold text-white"
-              >
-                發布任務
-              </Button>
+              {/* 發布是整輪一次的動作 (term + stage)，發過就不會再有第二次;
+                  之後新增的分配只要儲存，reviewer 立刻看得到 */}
+              {!published && (
+                <Button
+                  onClick={handlePublish}
+                  disabled={
+                    board.saving ||
+                    board.jobs.length === 0 ||
+                    board.incomplete.length > 0 ||
+                    board.changes.length > 0
+                  }
+                  className="bg-secondary-700 px-4 py-1 font-bold text-white"
+                >
+                  發布任務
+                </Button>
+              )}
             </BulkActionBar>
           )}
         </div>
