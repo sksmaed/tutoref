@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/useAuth';
 import { useTermContext } from '@/features/review-shared/useTermContext';
+import { REVIEW_SECTIONS } from '@/features/review-shared/sections';
 
 /**
  * 驗收區共用殼層：期別標題 + capability guard（§7.2）。
@@ -12,6 +14,7 @@ import { useTermContext } from '@/features/review-shared/useTermContext';
  */
 export default function ReviewLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { loading: authLoading, authenticated } = useAuth();
   const { context, loading } = useTermContext();
 
@@ -29,6 +32,10 @@ export default function ReviewLayout({ children }: { children: React.ReactNode }
 
   if (!authenticated) return null;
 
+  const sections = REVIEW_SECTIONS.filter(
+    (section) => section.available && context?.capabilities?.includes(section.capability)
+  );
+
   return (
     <section className="mx-auto mt-10 w-full max-w-[976px] px-4 sm:px-6 lg:px-0">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -44,6 +51,26 @@ export default function ReviewLayout({ children }: { children: React.ReactNode }
           </span>
         )}
       </div>
+      {/* 一個人可能同時是家長 / reviewer / 撰寫者，沒有這排就只進得去預設的那一頁 */}
+      {sections.length > 1 && (
+        <nav className="mt-4 flex flex-wrap gap-2">
+          {sections.map((section) => {
+            const active = pathname?.startsWith(section.href);
+            return (
+              <Link
+                key={section.key}
+                href={section.href}
+                className={`rounded-lg px-3 py-1 font-['Noto_Sans_TC'] text-[14px] ${
+                  active ? 'bg-primary-900 text-white' : 'bg-white text-black-700 hover:bg-primary-100'
+                }`}
+              >
+                {section.label}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
+
       {children}
     </section>
   );
