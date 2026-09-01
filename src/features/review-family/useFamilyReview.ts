@@ -42,10 +42,11 @@ export function useFamilyReview(round: Round) {
         fetchFamilyPlans(round),
         fetchFamilySubmissions(round),
       ]);
-      const progress =
-        submissions.find((row) => (familyId ? row.family_id === familyId : true) && row.submitted) ??
-        submissions[0] ??
-        null;
+      // 只認自己家那一列。有 review.manage 的人（組長）會拿到全部六家，
+      // 用「第一列」當備援會把別家的送件狀態掛到自己頭上，整頁誤判成已鎖定。
+      const progress = familyId
+        ? (submissions.find((row) => row.family_id === familyId) ?? null)
+        : null;
       setData({ plans, progress });
       setError(null);
     } catch (err) {
