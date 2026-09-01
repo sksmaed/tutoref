@@ -72,6 +72,8 @@ export default function Navbar() {
     if (termContext?.capabilities?.length) {
       items.push({ key: "review", label: "教案驗收", to: "/review" });
     }
+    // 公告是團內資訊, 後端要求登入才讀得到, 所以只在登入後出現
+    items.push({ key: "announcement", label: "公告", to: "/announcement" });
     return [...items, ...BASE_MENU.slice(1)];
   }, [authenticated, termContext]);
 
