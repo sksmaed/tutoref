@@ -3,7 +3,14 @@
 import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { StatusChip } from '@/features/review-shared/StatusChip';
-import { fetchFeedbackItems, type FeedbackItemRow, type FinalRecord, type ResultRow } from '@/services/review';
+import {
+  fetchFeedbackItems,
+  fetchJobReviews,
+  type FeedbackItemRow,
+  type FinalRecord,
+  type JobReviewRow,
+  type ResultRow,
+} from '@/services/review';
 import type { Round } from '@/features/review-shared/types';
 
 const BAND_LABEL: Record<string, string> = {
@@ -61,6 +68,7 @@ export const ResultTable: React.FC<ResultTableProps> = ({
 }) => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Record<string, FeedbackItemRow[] | 'loading'>>({});
+  const [reviews, setReviews] = useState<Record<string, JobReviewRow[] | 'loading'>>({});
 
   const allChecked = rows.length > 0 && rows.every((row) => selected.has(row.job_id));
 
@@ -71,6 +79,16 @@ export const ResultTable: React.FC<ResultTableProps> = ({
       return;
     }
     setExpanded(row.job_id);
+    // reviewer 寫了什麼是判定當下就要看到的；FeedbackItem 要發布後才有，兩個都撈
+    if (!reviews[row.job_id]) {
+      setReviews((prev) => ({ ...prev, [row.job_id]: 'loading' }));
+      try {
+        const rows = await fetchJobReviews(row.job_id);
+        setReviews((prev) => ({ ...prev, [row.job_id]: rows }));
+      } catch {
+        setReviews((prev) => ({ ...prev, [row.job_id]: [] }));
+      }
+    }
     if (!feedback[row.job_id]) {
       setFeedback((prev) => ({ ...prev, [row.job_id]: 'loading' }));
       try {
@@ -123,6 +141,7 @@ export const ResultTable: React.FC<ResultTableProps> = ({
             rows.map((row) => {
               const locked = row.final_decision?.result_state === 'locked';
               const items = feedback[row.job_id];
+              const reviewRows = reviews[row.job_id];
               return (
                 <React.Fragment key={row.job_id}>
                   <tr className={`transition-colors hover:bg-primary-100 ${locked ? 'bg-status-locked-bg' : ''}`}>
@@ -209,11 +228,63 @@ export const ResultTable: React.FC<ResultTableProps> = ({
                               </p>
                             );
                           })}
-                        {items === 'loading' ? (
+                        {/* 判定當下要看的是 reviewer 寫了什麼，不是等發布後的 FeedbackItem */}
+                        {reviewRows === 'loading' ? (
                           <p className="text-[13px] text-black-500">載入中…</p>
-                        ) : !items || items.length === 0 ? (
+                        ) : (
+                          <div className="mb-3 grid gap-3 sm:grid-cols-2">
+                            {(reviewRows ?? []).map((review) => (
+                              <div
+                                key={review.slot_label}
+                                className="rounded-lg border border-black-200 bg-white px-3 py-2"
+                              >
+                                <p className="text-[13px] font-bold text-black-900">
+                                  {review.slot_label}・{review.reviewer_name}
+                                  {review.score && (
+                                    <span className="ml-2 font-normal text-black-700">{review.score} 分</span>
+                                  )}
+                                </p>
+                                {!review.review_state ? (
+                                  <p className="mt-1 text-[13px] text-status-idle">尚未提交</p>
+                                ) : (
+                                  <>
+                                    {review.overall_comment && (
+                                      <p className="mt-1 text-[13px] text-black-900">
+                                        {review.overall_comment}
+                                      </p>
+                                    )}
+                                    {review.checked_items.length > 0 && (
+                                      <ul className="mt-1 flex flex-col gap-[2px]">
+                                        {review.checked_items.map((item, index) => (
+                                          <li key={index} className="text-[12px] text-black-700">
+                                            <span className="text-status-alert">−{item.deduction_value}</span>{' '}
+                                            {item.label}
+                                            {item.reason && `：${item.reason}`}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                    {review.private_note && (
+                                      <p className="mt-1 text-[12px] text-black-500">
+                                        內部備註：{review.private_note}
+                                      </p>
+                                    )}
+                                    {review.record && (
+                                      <p className="mt-1 text-[12px] text-black-700">
+                                        教案紙 {review.record.sheet_result === 'passed' ? '通過' : '未通過'}・
+                                        投影片 {review.record.slide_result === 'passed' ? '通過' : '未通過'}
+                                      </p>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {items === 'loading' ? null : !items || items.length === 0 ? (
                           <p className="text-[13px] text-black-500">
-                            回饋會在初驗結果發布時產生，目前這份還沒有。
+                            給作者的回饋會在發布結果時產生，目前這份還沒有。
                           </p>
                         ) : (
                           <ul className="flex flex-col gap-1">

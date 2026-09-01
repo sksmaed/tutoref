@@ -668,3 +668,22 @@ export async function fetchAnnouncement(id: string): Promise<AnnouncementRow> {
   const response = await api.get<AnnouncementRow>(`/review/announcements/${id}`);
   return response.data;
 }
+
+export interface JobReviewRow {
+  slot_label: string;
+  reviewer_name: string;
+  /** null 代表這一格還沒提交（草稿不算）。 */
+  review_state: string | null;
+  score: string | null;
+  band: string | null;
+  overall_comment: string;
+  private_note: string;
+  checked_items: { label: string; category: string; deduction_value: string; reason: string }[];
+  record: FinalRecord | null;
+}
+
+/** 教案組看兩位 reviewer 各自寫了什麼；作者端不會用到這支。 */
+export async function fetchJobReviews(jobId: string): Promise<JobReviewRow[]> {
+  const response = await api.get<JobReviewRow[]>(`/review/jobs/${jobId}/reviews`);
+  return Array.isArray(response.data) ? response.data : [];
+}
