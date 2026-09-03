@@ -1,6 +1,7 @@
 # AGENTS.md
 
-給 coding agent 的專案指南（人類請看 `README.md`）。
+給 coding agent 的專案指南（人類請看 `README.md`；
+驗收模組的實作規格見 `docs/REVIEW_MODULE_PLAN.md`，動到 /review、/admin 相關頁面前必讀）。
 
 ## 專案概觀
 

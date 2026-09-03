@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import styles from "./Navbar.module.css";
 import Image from "next/image";
 import { useAuth } from "@/features/auth/useAuth";
+import { useTermContext } from "@/features/review-shared/useTermContext";
 import { isCurrentlyInMaintenanceMode } from "@/lib/maintenance";
 import { triggerHomeReset } from "@/lib/home-reset";
 
@@ -32,6 +33,7 @@ export default function Navbar() {
   const hideTimer = useRef<number | null>(null);
 
   const { loading, authenticated, logout } = useAuth() as any;
+  const { context: termContext } = useTermContext();
 
   useEffect(() => {
     setMaintenanceMode(isCurrentlyInMaintenanceMode());
@@ -63,9 +65,20 @@ export default function Navbar() {
     }
   };
 
-  const menu = authenticated
-    ? [BASE_MENU[0], { key: "manage", label: "教案管理", to: "/manage" }, ...BASE_MENU.slice(1)]
-    : BASE_MENU;
+  // 選單依 capability 決定；capabilities 由後端算好，前端只做 includes（§7.1）
+  const menu = useMemo(() => {
+    if (!authenticated) return BASE_MENU;
+    const items: typeof BASE_MENU = [BASE_MENU[0], { key: "manage", label: "教案管理", to: "/manage" }];
+    if (termContext?.capabilities?.length) {
+      items.push({ key: "review", label: "教案驗收", to: "/review" });
+    }
+    // 公告是團內資訊, 後端要求登入才讀得到, 所以只在登入後出現
+    items.push({ key: "announcement", label: "公告", to: "/announcement" });
+    return [...items, ...BASE_MENU.slice(1)];
+  }, [authenticated, termContext]);
+
+  const canEnterAdmin = !!termContext?.capabilities?.includes("admin.enter");
+  const inAdmin = pathname?.startsWith("/admin") ?? false;
 
   const handleHomeClick = useCallback(() => {
     triggerHomeReset();
@@ -160,6 +173,16 @@ export default function Navbar() {
                     onMouseEnter={openMenu}
                     onMouseLeave={scheduleClose}
                   >
+                    {canEnterAdmin && (
+                      <Link
+                        href={inAdmin ? "/" : "/admin"}
+                        className="w-full px-[20px] py-[8px] flex items-center gap-[8px] rounded-[8px] hover:bg-primary-100 cursor-pointer"
+                      >
+                        <span className="text-[16px] font-['Noto_Sans_TC'] text-black-900">
+                          {inAdmin ? "教案平台" : "後台管理"}
+                        </span>
+                      </Link>
+                    )}
                     <button
                       type="button"
                       onClick={handleLogout}
@@ -204,6 +227,16 @@ export default function Navbar() {
             {!loading && (
               <div className="px-4 pb-8 border-t border-gray-100 pt-4">
                 {authenticated ? (
+                  <>
+                  {canEnterAdmin && (
+                    <Link
+                      href={inAdmin ? "/" : "/admin"}
+                      className="flex items-center gap-2 px-4 py-3 text-[16px] font-['Noto_Sans_TC'] text-black-900 hover:bg-primary-100 rounded-lg w-full"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {inAdmin ? "教案平台" : "後台管理"}
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={handleLogout}
@@ -212,6 +245,7 @@ export default function Navbar() {
                     <img src="/icons/logout.svg" alt="" width={18} height={18} />
                     登出
                   </button>
+                  </>
                 ) : (
                   <Link
                     href="/login"

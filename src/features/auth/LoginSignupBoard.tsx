@@ -95,7 +95,14 @@ export const LoginSignupBoard: React.FC<LoginSignupBoardProps> = ({
 
     return (
         <div className={`flex flex-col w-full sm:w-[576px] bg-white rounded-xl sm:rounded-lg pb-10 gap-8`}>
-            <Tab activeTab={activeTab} onTabChange={setActiveTab} />
+            <Tab
+                tabs={[
+                    { key: 'login' as const, label: '登入帳號' },
+                    { key: 'signup' as const, label: '註冊帳號' },
+                ]}
+                active={activeTab}
+                onChange={setActiveTab}
+            />
 
             <form onSubmit={handleSubmit} className="flex flex-col items-center gap-8">
                 <div className="w-full px-6 sm:px-0 sm:w-[378px] flex flex-col gap-5">

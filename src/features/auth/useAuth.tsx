@@ -14,6 +14,7 @@ import {
   logout as apiLogout,
 } from "@/services/auth";
 import { setFlash } from "@/lib/flash";
+import { clearTermContextCache } from "@/features/review-shared/useTermContext";
 
 type AuthContextType = {
   loading: boolean;
@@ -85,12 +86,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     await apiLogin(email, password);
+    // 換人登入 = 換一組角色與能力，驗收 context 必須重抓（§5.1）
+    clearTermContextCache();
     await refresh();
   };
 
   const logout = async () => {
     // 若後端尚未提供 /auth/logout/ 可先註解這行
     await apiLogout?.();
+    clearTermContextCache();
     await refresh();
   };
 

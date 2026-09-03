@@ -1,54 +1,66 @@
-'use client'
+'use client';
 
 import { use, useEffect, useState } from 'react';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
+import { StatusChip } from '@/features/review-shared/StatusChip';
+import { formatDateTime } from '@/features/review-shared/format';
+import { ANNOUNCEMENT_TYPE_LABEL, fetchAnnouncement, type AnnouncementRow } from '@/services/review';
 
-interface AnnouncementDetailProps {
-  params: Promise<{ id: string }>;
-}
-
-const AnnouncementDetail = ({ params }: AnnouncementDetailProps) => {
+export default function AnnouncementDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-
-  const [announcement, setAnnouncement] = useState({
-    title: 'Loading...',
-    content: 'Loading...',
-    writer_name: 'Loading...',
-    created_at: 'Loading...',
-  });
+  const [announcement, setAnnouncement] = useState<AnnouncementRow | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAnnouncement = async () => {
-      const response = await fetch(`/api/announcements/${id}`);
-      const data = await response.json();
-      setAnnouncement(data);
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await fetchAnnouncement(id);
+        if (mounted) setAnnouncement(data);
+      } catch (err) {
+        if (mounted) setError(err instanceof Error ? err.message : '找不到這則公告');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
     };
-
-    fetchAnnouncement();
   }, [id]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">{announcement.title}</h1>
-        <div className="prose">
-          <ReactMarkdown>{announcement.content}</ReactMarkdown>
-        </div>
-        <div className="flex flex-col gap-2 mt-4">
-          <p className="text-gray-600">By {announcement.writer_name}</p>
-          <p className="text-gray-600">{announcement.created_at}</p>
-        </div>
+    <section className="mx-auto mt-10 mb-16 w-full max-w-[976px] px-4 sm:px-6 lg:px-0">
+      <Link href="/announcement" className="font-['Noto_Sans_TC'] text-[14px] text-primary-900 hover:opacity-80">
+        ← 公告列表
+      </Link>
 
-        {/* Back button */}
-        <button
-          onClick={() => window.history.back()}
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md mt-6"
-        >
-          Back
-        </button>
-      </div>
-    </div>
+      {loading ? (
+        <div className="flex min-h-[30vh] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-900" />
+        </div>
+      ) : error || !announcement ? (
+        <div className="mt-4 rounded-lg bg-white px-6 py-12 text-center shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+          <p className="font-['Noto_Sans_TC'] text-[16px] text-status-alert">{error ?? '找不到這則公告'}</p>
+        </div>
+      ) : (
+        <article className="mt-4 rounded-lg bg-white px-6 py-6 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h1 className="font-['Noto_Sans_TC'] text-[22px] font-bold text-black-900">{announcement.title}</h1>
+            <StatusChip
+              status={ANNOUNCEMENT_TYPE_LABEL[announcement.announcement_type] ?? announcement.announcement_type}
+              tone={announcement.announcement_type === 'general' ? 'idle' : 'active'}
+            />
+          </div>
+          <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-500">
+            {announcement.published_by_name ?? '系統'}・{formatDateTime(announcement.published_at)}
+          </p>
+          <div className="prose mt-4 max-w-none font-['Noto_Sans_TC'] text-[15px] text-black-900">
+            <ReactMarkdown>{announcement.body || '（沒有內文）'}</ReactMarkdown>
+          </div>
+        </article>
+      )}
+    </section>
   );
-};
-
-export default AnnouncementDetail;
+}

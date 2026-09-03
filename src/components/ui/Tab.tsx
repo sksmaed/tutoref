@@ -1,47 +1,39 @@
 import React from 'react';
 
-interface TabProps {
-    activeTab: 'login' | 'signup';
-    onTabChange: (tab: 'login' | 'signup') => void;
+export interface TabItem<T extends string> {
+    key: T;
+    label: string;
 }
 
-export const Tab: React.FC<TabProps> = ({ activeTab, onTabChange }) => {
+interface TabProps<T extends string> {
+    tabs: TabItem<T>[];
+    active: T;
+    // NoInfer：T 只由 tabs / active 決定，避免傳 setState 進來時把 T 推成 string
+    onChange: (tab: NoInfer<T>) => void;
+}
+
+export function Tab<T extends string>({ tabs, active, onChange }: TabProps<T>) {
     return (
         <div className="flex justify-between h-[72px] border-b border-black-100">
-            <div className="flex flex-col w-1/2 items-center">
-                <button
-                    onClick={() => onTabChange('login')}
-                    className={`flex-1 w-full text-center text-xl/normal font-medium hover:opacity-90 hover:cursor-pointer ${activeTab === 'login'
-                        ? 'text-primary-900'
-                        : 'text-black-900'
-                        }`}
-                >
-                    登入帳號
-                </button>
+            {tabs.map((tab) => (
+                <div key={tab.key} className="flex flex-col flex-1 items-center">
+                    <button
+                        onClick={() => onChange(tab.key)}
+                        className={`flex-1 w-full text-center text-xl/normal font-medium hover:opacity-90 hover:cursor-pointer ${active === tab.key
+                            ? 'text-primary-900'
+                            : 'text-black-900'
+                            }`}
+                    >
+                        {tab.label}
+                    </button>
 
-                {
-                    activeTab === 'login' && (
-                        <div className="w-full h-0 border border-primary-900"></div>
-                    )
-                }
-            </div>
-
-            <div className="flex flex-col w-1/2 items-center">
-                <button
-                    onClick={() => onTabChange('signup')}
-                    className={`flex-1 w-full text-center text-xl/normal font-medium hover:opacity-90 hover:cursor-pointer ${activeTab === 'signup'
-                        ? 'text-primary-900'
-                        : 'text-black-900'
-                        }`}
-                >
-                    註冊帳號
-                </button>
-                {
-                    activeTab === 'signup' && (
-                        <div className="w-full h-0 border border-primary-900"></div>
-                    )
-                }
-            </div>
+                    {
+                        active === tab.key && (
+                            <div className="w-full h-0 border border-primary-900"></div>
+                        )
+                    }
+                </div>
+            ))}
         </div>
     );
-};
+}

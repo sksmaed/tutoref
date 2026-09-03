@@ -8,6 +8,7 @@ import { TeachingPlan } from '@/types/api';
 import { api } from '@/lib/api';
 import { DURATION_MAP, DURATION_INVERSE_MAP } from '@/lib/constants';
 import { updateManageCachesAfterEdit } from '@/features/manage/cache';
+import Link from 'next/link';
 
 const normalizePlan = (detail: any): TeachingPlan => {
   const semester = `${detail?.academic_year ?? ''}${detail?.semester_period ?? ''}`;
@@ -67,6 +68,10 @@ export default function EditTeachingPlanPage() {
   const { toast } = useToast();
 
   const [plan, setPlan] = useState<TeachingPlan | null>(null);
+  // 教案一旦進入驗收就不能從這裡改，改動要走「本期教案」的修改版流程。
+  // 判準是「有沒有進過驗收流程」而不是 editing_status——歷屆教案在 migration 0012
+  // 被回填成 locked，那是「歷屆已通過」，不是正在驗收。
+  const [inReviewPipeline, setInReviewPipeline] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [slideAction, setSlideAction] = useState<'none' | 'upload' | 'remove'>('none');
@@ -78,9 +83,12 @@ export default function EditTeachingPlanPage() {
 
     (async () => {
       try {
-        const { data } = await api.get(`/teaching-plan/detail/${planId}`);
+        const { data } = await api.get<{ in_review_pipeline?: boolean }>(
+          `/teaching-plan/detail/${planId}`
+        );
         if (!mounted) return;
         setPlan(normalizePlan(data));
+        setInReviewPipeline(!!data?.in_review_pipeline);
         setSlideAction('none');
         setSelectedSlideFile(null);
       } catch (error: any) {
@@ -156,6 +164,39 @@ export default function EditTeachingPlanPage() {
       <div className="flex min-h-screen items-center justify-center text-black-700">
         資料載入中...
       </div>
+    );
+  }
+
+  if (inReviewPipeline) {
+    return (
+      <main className="min-h-screen flex flex-col items-center py-16">
+        <div className="w-full max-w-[640px] rounded-lg bg-white px-8 py-10 text-center shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+          <h1 className="font-['Noto_Sans_TC'] text-[22px] font-bold text-black-900">
+            本期教案已進入驗收
+          </h1>
+          <p className="mt-3 font-['Noto_Sans_TC'] text-[15px] leading-[170%] text-black-700">
+            送出驗收後這頁不能再編輯——驗收看的是送出當下凍結的版本，
+            在這裡改不會影響已經在跑的驗收，只會讓兩邊對不起來。
+            <br />
+            要處理回饋或上傳總驗修改版，請到「本期教案」。
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="h-[44px] w-[140px] rounded-[8px] border border-primary-900 bg-white text-primary-900 hover:cursor-pointer"
+            >
+              返回
+            </button>
+            <Link
+              href="/review/my-plans"
+              className="flex h-[44px] w-[160px] items-center justify-center rounded-[8px] bg-primary-900 font-bold text-white"
+            >
+              前往本期教案
+            </Link>
+          </div>
+        </div>
+      </main>
     );
   }
 
