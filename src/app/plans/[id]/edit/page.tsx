@@ -68,8 +68,10 @@ export default function EditTeachingPlanPage() {
   const { toast } = useToast();
 
   const [plan, setPlan] = useState<TeachingPlan | null>(null);
-  // 教案一旦進入驗收就不能從這裡改，改動要走「本期教案」的修改版流程
-  const [editingStatus, setEditingStatus] = useState<string>('draft');
+  // 教案一旦進入驗收就不能從這裡改，改動要走「本期教案」的修改版流程。
+  // 判準是「有沒有進過驗收流程」而不是 editing_status——歷屆教案在 migration 0012
+  // 被回填成 locked，那是「歷屆已通過」，不是正在驗收。
+  const [inReviewPipeline, setInReviewPipeline] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [slideAction, setSlideAction] = useState<'none' | 'upload' | 'remove'>('none');
@@ -81,10 +83,12 @@ export default function EditTeachingPlanPage() {
 
     (async () => {
       try {
-        const { data } = await api.get<{ editing_status?: string }>(`/teaching-plan/detail/${planId}`);
+        const { data } = await api.get<{ in_review_pipeline?: boolean }>(
+          `/teaching-plan/detail/${planId}`
+        );
         if (!mounted) return;
         setPlan(normalizePlan(data));
-        setEditingStatus(data?.editing_status ?? 'draft');
+        setInReviewPipeline(!!data?.in_review_pipeline);
         setSlideAction('none');
         setSelectedSlideFile(null);
       } catch (error: any) {
@@ -163,7 +167,7 @@ export default function EditTeachingPlanPage() {
     );
   }
 
-  if (editingStatus !== 'draft') {
+  if (inReviewPipeline) {
     return (
       <main className="min-h-screen flex flex-col items-center py-16">
         <div className="w-full max-w-[640px] rounded-lg bg-white px-8 py-10 text-center shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
