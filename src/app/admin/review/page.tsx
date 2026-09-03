@@ -265,14 +265,6 @@ export default function AdminReviewPage() {
               </button>
             </div>
 
-            {!byReviewer && (
-              <Button
-                onClick={() => setEditing((prev) => !prev)}
-                className={`ml-auto px-4 py-1 ${editing ? 'border border-primary-900 bg-white text-primary-900' : 'bg-primary-900 text-white'}`}
-              >
-                {editing ? '結束編輯' : '編輯分配'}
-              </Button>
-            )}
           </div>
 
           {published && (
@@ -313,12 +305,18 @@ export default function AdminReviewPage() {
             />
           )}
 
-          {!byReviewer && editing && (
+          {/* 操作列不分模式一律顯示: 只在編輯時才出現的話, 還沒分配過的輪次看起來像唯讀頁 */}
+          {!byReviewer && !board.loading && (
             <BulkActionBar
               summary={
                 <>
                   未填滿 <span className="font-bold">{board.incomplete.length}</span> 份
-                  ｜未儲存 <span className="font-bold text-primary-900">{board.changes.length}</span> 格
+                  {editing && (
+                    <>
+                      ｜未儲存{' '}
+                      <span className="font-bold text-primary-900">{board.changes.length}</span> 格
+                    </>
+                  )}
                   {published && (
                     <span className="ml-2 text-[13px] text-black-500">
                       本輪已發布，儲存後對方立刻看得到
@@ -327,13 +325,31 @@ export default function AdminReviewPage() {
                 </>
               }
             >
-              <Button
-                onClick={handleSaveAssignments}
-                disabled={board.saving || board.changes.length === 0}
-                className="bg-primary-900 px-4 py-1 font-bold text-white"
-              >
-                {board.saving ? '儲存中…' : '儲存草稿'}
-              </Button>
+              {editing ? (
+                <>
+                  <Button
+                    onClick={() => setEditing(false)}
+                    className="border border-primary-900 bg-white px-4 py-1 text-primary-900"
+                  >
+                    結束編輯
+                  </Button>
+                  <Button
+                    onClick={handleSaveAssignments}
+                    disabled={board.saving || board.changes.length === 0}
+                    className="bg-primary-900 px-4 py-1 font-bold text-white"
+                  >
+                    {board.saving ? '儲存中…' : '儲存草稿'}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={() => setEditing(true)}
+                  disabled={board.jobs.length === 0}
+                  className="bg-primary-900 px-4 py-1 font-bold text-white"
+                >
+                  編輯分配
+                </Button>
+              )}
               {/* 發布是整輪一次的動作 (term + stage)，發過就不會再有第二次;
                   之後新增的分配只要儲存，reviewer 立刻看得到 */}
               {!published && (
