@@ -27,6 +27,8 @@ export function authorStatusLabel(job: AuthorJobRow): string {
 interface AuthorPlanListProps {
   jobs: AuthorJobRow[];
   feedback: Record<string, FeedbackItemRow[]>;
+  /** 就地更新後仍要正確的進度, 所以由 hook 依已載入的回饋推算。 */
+  jobProgress: (job: AuthorJobRow) => { total: number; todo: number; done: number };
   working: boolean;
   onRespond: (itemId: string, status: FeedbackStatus, body: string) => Promise<void>;
   onUploadRevision: (job: AuthorJobRow) => void;
@@ -35,6 +37,7 @@ interface AuthorPlanListProps {
 export const AuthorPlanList: React.FC<AuthorPlanListProps> = ({
   jobs,
   feedback,
+  jobProgress,
   working,
   onRespond,
   onUploadRevision,
@@ -57,6 +60,7 @@ export const AuthorPlanList: React.FC<AuthorPlanListProps> = ({
       {jobs.map((job) => {
         const items = feedback[job.id] ?? [];
         const open = expanded === job.id;
+        const progress = jobProgress(job);
         return (
           <div
             key={job.id}
@@ -68,9 +72,7 @@ export const AuthorPlanList: React.FC<AuthorPlanListProps> = ({
                 <p className="font-['Noto_Sans_TC'] text-[13px] text-black-700">
                   {job.family}
                   {job.average ? `・平均 ${job.average}` : ''}
-                  {job.feedback_progress.total > 0
-                    ? `・回饋 ${job.feedback_progress.done} / ${job.feedback_progress.total} 則已處理`
-                    : ''}
+                  {progress.total > 0 ? `・回饋 ${progress.done} / ${progress.total} 則已處理` : ''}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -82,7 +84,7 @@ export const AuthorPlanList: React.FC<AuthorPlanListProps> = ({
                 >
                   上傳修改版
                 </Button>
-                {job.feedback_progress.total > 0 && (
+                {progress.total > 0 && (
                   <button
                     type="button"
                     onClick={() => setExpanded(open ? null : job.id)}

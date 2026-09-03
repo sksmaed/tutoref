@@ -14,7 +14,7 @@ export default function MyPlansPage() {
   const router = useRouter();
   const round = useRound();
   const { context, loading: contextLoading } = useTermContext();
-  const { jobs, feedback, loading, error, working, progress, respond, uploadSheet } =
+  const { jobs, feedback, loading, error, working, progress, jobProgress, respond, uploadSheet } =
     useAuthorReview(round);
 
   const [uploadTarget, setUploadTarget] = useState<AuthorJobRow | null>(null);
@@ -28,10 +28,10 @@ export default function MyPlansPage() {
     if (!contextLoading && !canAuthor) router.replace('/review');
   }, [canAuthor, contextLoading, router]);
 
+  // 成功不跳 toast: 那一列自己會顯示新狀態與「已儲存」, 十則回饋不該彈十次
   const handleRespond = async (itemId: string, status: Parameters<typeof respond>[1], body: string) => {
     try {
       await respond(itemId, status, body);
-      setNotice({ type: 'success', title: '已更新處理狀態' });
     } catch (err) {
       setNotice({
         type: 'error',
@@ -75,7 +75,8 @@ export default function MyPlansPage() {
         </p>
       )}
 
-      {loading ? (
+      {/* 只有還沒有資料時才用 spinner 佔位; 有資料就留著, 免得列表被卸載、展開狀態歸零 */}
+      {loading && jobs.length === 0 ? (
         <div className="flex min-h-[30vh] items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-900" />
         </div>
@@ -87,6 +88,7 @@ export default function MyPlansPage() {
         <AuthorPlanList
           jobs={jobs}
           feedback={feedback}
+          jobProgress={jobProgress}
           working={working}
           onRespond={handleRespond}
           onUploadRevision={setUploadTarget}
