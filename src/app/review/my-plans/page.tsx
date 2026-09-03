@@ -52,11 +52,17 @@ export default function MyPlansPage() {
         message: result.message ?? '檔案更新作業已排入背景處理。',
       });
     } catch (err) {
-      setNotice({
-        type: 'error',
-        title: '上傳失敗',
-        message: err instanceof Error ? err.message : '請稍後再試。',
-      });
+      // 後端只回錯誤碼, 這裡翻成使用者看得懂的話
+      const code = (err as { code?: string })?.code;
+      const message =
+        code === 'teaching_plan:not_author'
+          ? '只有這份教案的撰寫者可以上傳修改版。'
+          : code === 'teaching_plan:not_found'
+            ? '找不到這份教案，請重新整理後再試。'
+            : err instanceof Error
+              ? err.message
+              : '請稍後再試。';
+      setNotice({ type: 'error', title: '上傳失敗', message });
     }
   };
 
