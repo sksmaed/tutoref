@@ -36,7 +36,11 @@ export default function ReviewTasksPage() {
           <p className="font-['Noto_Sans_TC'] text-[16px] text-status-alert">{error}</p>
         </div>
       ) : (
-        <TaskList jobs={jobs} reviewDueAt={context?.stage_state?.[round]?.review_due_at ?? null} />
+        <TaskList
+          jobs={jobs}
+          reviewDueAt={context?.stage_state?.[round]?.review_due_at ?? null}
+          canEditAfterSubmit={!!context?.policy?.reviewer_can_edit_after_submit}
+        />
       )}
     </div>
   );

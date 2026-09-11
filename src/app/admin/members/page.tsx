@@ -152,6 +152,9 @@ export default function AdminMembersPage() {
       <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-700">
         以 email 為準；沒有帳號的人會建立一個尚未設定密碼的帳號，之後由本人設定密碼。
       </p>
+      <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-500">
+        「本期家別歸屬」講的是這個人這一期算哪一家的人，跟帳號能不能登入無關；移出本期不會停用帳號，也不會動到他的角色。
+      </p>
 
       {loading ? (
         <div className="flex min-h-[30vh] items-center justify-center">
@@ -164,7 +167,7 @@ export default function AdminMembersPage() {
           onToggleActive={(row) =>
             void run(
               () => patchMembers(termId!, [{ user_id: row.user_id, membership_active: !row.membership_active }]),
-              row.membership_active ? '已停用' : '已啟用'
+              row.membership_active ? '已移出本期' : '已加回本期'
             )
           }
           onRevokeRole={(row, role) =>

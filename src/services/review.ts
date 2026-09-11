@@ -241,6 +241,8 @@ export interface MemberRow {
   name: string;
   family_id: string | null;
   family_name: string | null;
+  /** 本期有沒有這個人的家別歸屬紀錄; false 代表他只有角色、還沒分家 */
+  has_membership: boolean;
   membership_active: boolean;
   roles: { role: string; scope_type: string; family_id?: string | null; family_name?: string | null }[];
 }
@@ -609,6 +611,18 @@ export async function createRubricVersion(payload: {
   activate?: boolean;
 }): Promise<unknown> {
   const response = await api.post('/review/rubric-versions', payload);
+  return response.data;
+}
+
+/**
+ * 替還沒有標準的一期開一份 v1。內容沿用上一期的啟用版本, 沒有上一期就用規格預設,
+ * 組長不用從零手打二十項。
+ */
+export async function bootstrapRubric(payload: {
+  term_id: string;
+  kind: 'initial' | 'final';
+}): Promise<RubricRow> {
+  const response = await api.post<RubricRow>('/review/rubrics/bootstrap', payload);
   return response.data;
 }
 

@@ -31,8 +31,8 @@ export const MemberTable: React.FC<MemberTableProps> = ({
           <th className="h-[48px] px-4 text-left">成員</th>
           <th className="h-[48px] w-[90px] px-2 text-center">家別</th>
           <th className="h-[48px] px-2 text-left">角色</th>
-          <th className="h-[48px] w-[100px] px-2 text-center">狀態</th>
-          <th className="h-[48px] w-[90px] px-2 text-center">動作</th>
+          <th className="h-[48px] w-[110px] px-2 text-center">本期家別歸屬</th>
+          <th className="h-[48px] w-[110px] px-2 text-center">動作</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-black-200 bg-white">
@@ -72,20 +72,33 @@ export const MemberTable: React.FC<MemberTableProps> = ({
                 )}
               </td>
               <td className="h-[56px] px-2 text-center">
-                <StatusChip
-                  status={row.membership_active ? '啟用中' : '已停用'}
-                  tone={row.membership_active ? 'done' : 'idle'}
-                />
+                {!row.has_membership ? (
+                  <StatusChip status="未分家" tone="idle" />
+                ) : (
+                  <StatusChip
+                    status={row.membership_active ? '在籍' : '已移出'}
+                    tone={row.membership_active ? 'done' : 'idle'}
+                  />
+                )}
               </td>
               <td className="h-[56px] px-2 text-center">
-                <button
-                  type="button"
-                  disabled={working}
-                  onClick={() => onToggleActive(row)}
-                  className="text-[13px] text-primary-900 hover:opacity-80 hover:cursor-pointer"
-                >
-                  {row.membership_active ? '停用' : '啟用'}
-                </button>
+                {!row.has_membership ? (
+                  <span
+                    className="text-[13px] text-black-500"
+                    title="這個人本期還沒有家別，請用「新增成員」指定家別後再調整"
+                  >
+                    需先分家
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={working}
+                    onClick={() => onToggleActive(row)}
+                    className="text-[13px] text-primary-900 hover:opacity-80 hover:cursor-pointer"
+                  >
+                    {row.membership_active ? '移出本期' : '加回本期'}
+                  </button>
+                )}
               </td>
             </tr>
           ))
