@@ -19,10 +19,10 @@ import {
 } from '@/services/review';
 
 const ROLES = [
-  { value: 'leader', label: '組長（期別）' },
-  { value: 'reviewer', label: '驗收者（期別）' },
-  { value: 'parent', label: '家長（家別）' },
-  { value: 'writer', label: '撰寫者（家別）' },
+  { value: 'reviewer', label: '驗收者' },
+  { value: 'leader', label: '組長' },
+  { value: 'writer', label: '撰寫者' },
+  { value: 'parent', label: '家長' },
 ];
 
 const FAMILY_SCOPED = new Set(['parent', 'writer']);
@@ -45,6 +45,7 @@ export default function AdminMembersPage() {
   const [name, setName] = useState('');
   const [familyId, setFamilyId] = useState('');
   const [roles, setRoles] = useState<Set<string>>(new Set());
+  const requiresFamily = [...roles].some((role) => FAMILY_SCOPED.has(role));
   const [cloneFrom, setCloneFrom] = useState('');
 
   const reload = useCallback(async () => {
@@ -87,7 +88,7 @@ export default function AdminMembersPage() {
   };
 
   const handleAdd = () => {
-    if (!termId || !email.trim()) return;
+    if (!termId || !email.trim() || (requiresFamily && !familyId)) return;
     void run(
       () =>
         upsertMembers(termId, [
@@ -97,7 +98,7 @@ export default function AdminMembersPage() {
             family_id: familyId || null,
             roles: [...roles].map((role) => ({
               role,
-              family_id: FAMILY_SCOPED.has(role) ? familyId || null : null,
+              family_id: familyId || null,
             })),
           },
         ]),
@@ -218,6 +219,9 @@ export default function AdminMembersPage() {
                   </option>
                 ))}
               </select>
+              {requiresFamily && !familyId && (
+                <p className="text-[13px] text-status-alert">家長與撰寫者必須選擇家別。</p>
+              )}
               <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {ROLES.map((role) => (
                   <Checkbox
@@ -245,7 +249,7 @@ export default function AdminMembersPage() {
               </Button>
               <Button
                 onClick={handleAdd}
-                disabled={!email.trim() || working}
+                disabled={!email.trim() || (requiresFamily && !familyId) || working}
                 className="w-[110px] rounded-lg bg-primary-900 py-2 font-bold text-white"
               >
                 加入

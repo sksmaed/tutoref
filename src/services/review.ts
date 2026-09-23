@@ -244,7 +244,7 @@ export interface MemberRow {
   /** 本期有沒有這個人的家別歸屬紀錄; false 代表他只有角色、還沒分家 */
   has_membership: boolean;
   membership_active: boolean;
-  roles: { role: string; scope_type: string; family_id?: string | null; family_name?: string | null }[];
+  roles: { role: string; family_id?: string | null; family_name?: string | null }[];
 }
 
 export interface ReviewerLoadRow {
@@ -525,7 +525,7 @@ export interface MemberUpsertInput {
 export interface MemberPatchInput {
   user_id: string;
   membership_active?: boolean | null;
-  revoke_roles?: string[];
+  revoke_roles?: { role: string; family_id?: string | null }[];
 }
 
 export async function fetchTerms(): Promise<TermRow[]> {

@@ -15,7 +15,7 @@ interface MemberTableProps {
   rows: MemberRow[];
   working: boolean;
   onToggleActive: (row: MemberRow) => void;
-  onRevokeRole: (row: MemberRow, role: string) => void;
+  onRevokeRole: (row: MemberRow, role: MemberRow['roles'][number]) => void;
 }
 
 export const MemberTable: React.FC<MemberTableProps> = ({
@@ -60,12 +60,12 @@ export const MemberTable: React.FC<MemberTableProps> = ({
                         key={`${role.role}-${role.family_id ?? 'term'}`}
                         type="button"
                         disabled={working}
-                        onClick={() => onRevokeRole(row, role.role)}
+                        onClick={() => onRevokeRole(row, role)}
                         title="點一下撤銷這個角色"
                         className="rounded-lg bg-black-100 px-2 py-[2px] text-[13px] text-black-700 hover:bg-status-alert-bg hover:text-status-alert hover:cursor-pointer"
                       >
                         {ROLE_LABEL[role.role] ?? role.role}
-                        {role.family_name ? `・${role.family_name}` : ''} ✕
+                        {' ✕'}
                       </button>
                     ))}
                   </span>
