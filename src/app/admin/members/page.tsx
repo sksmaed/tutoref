@@ -25,8 +25,6 @@ const ROLES = [
   { value: 'parent', label: '家長' },
 ];
 
-const FAMILY_SCOPED = new Set(['parent', 'writer']);
-
 export default function AdminMembersPage() {
   const { context } = useTermContext();
   const termId = context?.current_term?.id ?? null;
@@ -45,7 +43,6 @@ export default function AdminMembersPage() {
   const [name, setName] = useState('');
   const [familyId, setFamilyId] = useState('');
   const [roles, setRoles] = useState<Set<string>>(new Set());
-  const requiresFamily = [...roles].some((role) => FAMILY_SCOPED.has(role));
   const [cloneFrom, setCloneFrom] = useState('');
 
   const reload = useCallback(async () => {
@@ -88,17 +85,17 @@ export default function AdminMembersPage() {
   };
 
   const handleAdd = () => {
-    if (!termId || !email.trim() || (requiresFamily && !familyId)) return;
+    if (!termId || !email.trim() || !familyId) return;
     void run(
       () =>
         upsertMembers(termId, [
           {
             email: email.trim(),
             name: name.trim(),
-            family_id: familyId || null,
+            family_id: familyId,
             roles: [...roles].map((role) => ({
               role,
-              family_id: familyId || null,
+              family_id: familyId,
             })),
           },
         ]),
@@ -154,7 +151,7 @@ export default function AdminMembersPage() {
         以 email 為準；沒有帳號的人會建立一個尚未設定密碼的帳號，之後由本人設定密碼。
       </p>
       <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-500">
-        「本期家別歸屬」講的是這個人這一期算哪一家的人，跟帳號能不能登入無關；移出本期不會停用帳號，也不會動到他的角色。
+        每位成員都必須指定本期家別；帳戶不提供啟用或停用設定。
       </p>
 
       {loading ? (
@@ -165,12 +162,6 @@ export default function AdminMembersPage() {
         <MemberTable
           rows={rows}
           working={working}
-          onToggleActive={(row) =>
-            void run(
-              () => patchMembers(termId!, [{ user_id: row.user_id, membership_active: !row.membership_active }]),
-              row.membership_active ? '已移出本期' : '已加回本期'
-            )
-          }
           onRevokeRole={(row, role) =>
             void run(
               () => patchMembers(termId!, [{ user_id: row.user_id, revoke_roles: [role] }]),
@@ -212,15 +203,15 @@ export default function AdminMembersPage() {
                 onChange={(event) => setFamilyId(event.target.value)}
                 className="rounded-lg border border-black-200 px-3 py-2 text-[14px]"
               >
-                <option value="">選擇家別</option>
+                <option value="">選擇家別（必填）</option>
                 {families.map((family) => (
                   <option key={family.id} value={family.id}>
                     {family.name}
                   </option>
                 ))}
               </select>
-              {requiresFamily && !familyId && (
-                <p className="text-[13px] text-status-alert">家長與撰寫者必須選擇家別。</p>
+              {!familyId && (
+                <p className="text-[13px] text-status-alert">所有成員都必須選擇家別。</p>
               )}
               <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {ROLES.map((role) => (
@@ -249,7 +240,7 @@ export default function AdminMembersPage() {
               </Button>
               <Button
                 onClick={handleAdd}
-                disabled={!email.trim() || (requiresFamily && !familyId) || working}
+                disabled={!email.trim() || !familyId || working}
                 className="w-[110px] rounded-lg bg-primary-900 py-2 font-bold text-white"
               >
                 加入

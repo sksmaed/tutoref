@@ -107,7 +107,7 @@ export const ResultConfirmModal: React.FC<ResultConfirmModalProps> = ({
                   className="mt-[3px]"
                 />
                 <span>
-                  兩位 reviewer 尚未齊備時仍強制套用（需填理由；系統會記錄是誰強制的）
+                  已指派 reviewer 尚未全數完成時仍強制套用（需填理由；系統會記錄是誰強制的）
                 </span>
               </label>
             </>

@@ -302,6 +302,8 @@ export default function AdminReviewPage() {
               reviewers={board.reviewers}
               editing={editing}
               onSetSlot={board.setSlot}
+              onAddSlot={board.addSlot}
+              onRemoveSlot={board.removeSlot}
             />
           )}
 
@@ -310,7 +312,7 @@ export default function AdminReviewPage() {
             <BulkActionBar
               summary={
                 <>
-                  未填滿 <span className="font-bold">{board.incomplete.length}</span> 份
+                  已分配 <span className="font-bold">{board.assignmentCount}</span> 人次
                   {editing && (
                     <>
                       ｜未儲存{' '}
@@ -358,7 +360,6 @@ export default function AdminReviewPage() {
                   disabled={
                     board.saving ||
                     board.jobs.length === 0 ||
-                    board.incomplete.length > 0 ||
                     board.changes.length > 0
                   }
                   className="bg-secondary-700 px-4 py-1 font-bold text-white"

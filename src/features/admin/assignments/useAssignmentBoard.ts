@@ -15,19 +15,28 @@ import {
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import type { Round } from '@/features/review-shared/types';
 
-export type SlotMap = Record<string, { A: string; B: string }>;
+export type SlotMap = Record<string, Record<string, string>>;
 
 function slotsFromJobs(jobs: ReviewJobRow[]): SlotMap {
   const map: SlotMap = {};
   for (const job of jobs) {
-    map[job.id] = { A: '', B: '' };
+    map[job.id] = {};
     for (const assignment of job.assignments) {
-      if (assignment.slot_label === 'A' || assignment.slot_label === 'B') {
-        map[job.id][assignment.slot_label] = assignment.reviewer_id;
-      }
+      map[job.id][assignment.slot_label] = assignment.reviewer_id;
     }
   }
   return map;
+}
+
+function slotLabel(index: number): string {
+  let value = index + 1;
+  let label = '';
+  while (value > 0) {
+    value -= 1;
+    label = String.fromCharCode(65 + (value % 26)) + label;
+    value = Math.floor(value / 26);
+  }
+  return label;
 }
 
 /** 大堂 2 分、小堂 1 分，與後端 reviewer-load 的算法一致。 */
@@ -83,8 +92,36 @@ export function useAssignmentBoard(round: Round) {
     [reviewers]
   );
 
-  const setSlot = useCallback((jobId: string, slot: 'A' | 'B', reviewerId: string) => {
-    setSlots((prev) => ({ ...prev, [jobId]: { ...prev[jobId], [slot]: reviewerId } }));
+  const setSlot = useCallback((jobId: string, slot: string, reviewerId: string) => {
+    setSlots((prev) => {
+      const nextJob = { ...(prev[jobId] ?? {}) };
+      // 同一人重複被選時移到最新選擇的列，實際仍只算一位 reviewer。
+      if (reviewerId) {
+        for (const [otherSlot, currentReviewerId] of Object.entries(nextJob)) {
+          if (otherSlot !== slot && currentReviewerId === reviewerId) delete nextJob[otherSlot];
+        }
+      }
+      nextJob[slot] = reviewerId;
+      return { ...prev, [jobId]: nextJob };
+    });
+  }, []);
+
+  const addSlot = useCallback((jobId: string) => {
+    setSlots((prev) => {
+      const nextJob = { ...(prev[jobId] ?? {}) };
+      let index = 0;
+      while (slotLabel(index) in nextJob) index += 1;
+      nextJob[slotLabel(index)] = '';
+      return { ...prev, [jobId]: nextJob };
+    });
+  }, []);
+
+  const removeSlot = useCallback((jobId: string, slot: string) => {
+    setSlots((prev) => {
+      const nextJob = { ...(prev[jobId] ?? {}) };
+      delete nextJob[slot];
+      return { ...prev, [jobId]: nextJob };
+    });
   }, []);
 
   /** 與伺服器上的分配相比，有哪些格子被改過。 */
@@ -92,9 +129,14 @@ export function useAssignmentBoard(round: Round) {
     const original = slotsFromJobs(jobs);
     const items: AssignmentInput[] = [];
     for (const [jobId, current] of Object.entries(slots)) {
-      for (const slot of ['A', 'B'] as const) {
-        const value = current[slot];
-        if (value && value !== original[jobId]?.[slot]) {
+      const slotLabels = new Set([
+        ...Object.keys(original[jobId] ?? {}),
+        ...Object.keys(current),
+      ]);
+      for (const slot of slotLabels) {
+        const value = current[slot] || null;
+        const originalValue = original[jobId]?.[slot] || null;
+        if (value !== originalValue) {
           items.push({ job_id: jobId, slot_label: slot, reviewer_id: value });
         }
       }
@@ -104,10 +146,9 @@ export function useAssignmentBoard(round: Round) {
 
   /** I1：reviewer 分到自家教案要警示（後端在提交時才硬擋）。 */
   const conflicts = useMemo(() => {
-    const rows: { jobId: string; slot: 'A' | 'B'; reviewerName: string; family: string }[] = [];
+    const rows: { jobId: string; slot: string; reviewerName: string; family: string }[] = [];
     for (const job of jobs) {
-      for (const slot of ['A', 'B'] as const) {
-        const reviewerId = slots[job.id]?.[slot];
+      for (const [slot, reviewerId] of Object.entries(slots[job.id] ?? {})) {
         const reviewer = reviewerId ? reviewerById.get(reviewerId) : undefined;
         if (reviewer?.family_name && reviewer.family_name === job.family) {
           rows.push({ jobId: job.id, slot, reviewerName: reviewer.name || reviewer.email, family: job.family });
@@ -117,9 +158,12 @@ export function useAssignmentBoard(round: Round) {
     return rows;
   }, [jobs, reviewerById, slots]);
 
-  const incomplete = useMemo(
-    () => jobs.filter((job) => !slots[job.id]?.A || !slots[job.id]?.B),
-    [jobs, slots]
+  const assignmentCount = useMemo(
+    () => Object.values(slots).reduce(
+      (total, jobSlots) => total + Object.values(jobSlots).filter(Boolean).length,
+      0
+    ),
+    [slots]
   );
 
   const save = useCallback(async () => {
@@ -154,9 +198,11 @@ export function useAssignmentBoard(round: Round) {
     reviewerById,
     slots,
     setSlot,
+    addSlot,
+    removeSlot,
     changes,
     conflicts,
-    incomplete,
+    assignmentCount,
     loading,
     error,
     saving,

@@ -241,9 +241,6 @@ export interface MemberRow {
   name: string;
   family_id: string | null;
   family_name: string | null;
-  /** 本期有沒有這個人的家別歸屬紀錄; false 代表他只有角色、還沒分家 */
-  has_membership: boolean;
-  membership_active: boolean;
   roles: { role: string; family_id?: string | null; family_name?: string | null }[];
 }
 
@@ -258,7 +255,7 @@ export interface ReviewerLoadRow {
 export interface AssignmentInput {
   job_id: string;
   slot_label: string;
-  reviewer_id: string;
+  reviewer_id: string | null;
 }
 
 export async function fetchSchedules(termId: string): Promise<ScheduleRow[]> {
@@ -352,13 +349,14 @@ export interface FinalRecord {
 
 export interface ResultRow {
   /** 總驗才有：教案紙 / 投影片各自的判定。 */
-  records?: { A: FinalRecord | null; B: FinalRecord | null };
+  records?: Record<string, FinalRecord>;
   job_id: string;
   plan_id: string;
   tp_name: string;
   family: string;
   score_a: string | null;
   score_b: string | null;
+  scores: Record<string, string>;
   average: string | null;
   band: string | null;
   job_state: string;
@@ -518,13 +516,12 @@ export interface FamilyRow {
 export interface MemberUpsertInput {
   email: string;
   name?: string;
-  family_id?: string | null;
+  family_id: string;
   roles?: { role: string; family_id?: string | null }[];
 }
 
 export interface MemberPatchInput {
   user_id: string;
-  membership_active?: boolean | null;
   revoke_roles?: { role: string; family_id?: string | null }[];
 }
 
@@ -696,7 +693,7 @@ export interface JobReviewRow {
   record: FinalRecord | null;
 }
 
-/** 教案組看兩位 reviewer 各自寫了什麼；作者端不會用到這支。 */
+/** 教案組查看所有 reviewer 各自寫了什麼；作者端不會用到這支。 */
 export async function fetchJobReviews(jobId: string): Promise<JobReviewRow[]> {
   const response = await api.get<JobReviewRow[]>(`/review/jobs/${jobId}/reviews`);
   return Array.isArray(response.data) ? response.data : [];
