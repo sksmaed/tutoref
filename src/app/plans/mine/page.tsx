@@ -30,6 +30,8 @@ const mapMyPlanToRow = (plan: TeachingPlanDetail): Row => ({
   viewCount: typeof plan.view_count === 'number' ? plan.view_count : undefined,
   createdAt: plan.created_at ? Date.parse(plan.created_at) : undefined,
   hashtags: Array.isArray(plan.hashtags) ? plan.hashtags : [],
+  editingStatus: plan.editing_status,
+  visibilityStatus: plan.visibility_status,
 });
 
 export default function MineAllPage() {

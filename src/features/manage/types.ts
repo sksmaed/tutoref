@@ -1,3 +1,8 @@
+import type {
+  TeachingPlanEditingStatus,
+  TeachingPlanVisibilityStatus,
+} from '@/services/teaching-plan';
+
 export type Row = {
   id: string;
   family: string;
@@ -10,6 +15,8 @@ export type Row = {
   grade?: string;
   duration?: number;
   hashtags?: string[];
+  editingStatus?: TeachingPlanEditingStatus;
+  visibilityStatus?: TeachingPlanVisibilityStatus;
 };
 
 export type MyTeachingPlanItem = {
@@ -24,6 +31,8 @@ export type MyTeachingPlanItem = {
   duration?: number;
   is_excellent?: boolean;
   hashtags?: string[];
+  editing_status?: TeachingPlanEditingStatus;
+  visibility_status?: TeachingPlanVisibilityStatus;
 };
 
 export type FavoriteItem = {

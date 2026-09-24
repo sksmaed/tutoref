@@ -209,6 +209,7 @@ export default function EditTeachingPlanPage() {
         onSave={handleSubmit}
         onCancel={() => router.back()}
         onSlideFileSelect={handleSlideFileSelect}
+        onSheetReupload={() => router.push(`/upload?replacePlanId=${planId}`)}
       />
       <div className="mt-6 flex gap-4">
         <button

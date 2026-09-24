@@ -2,6 +2,7 @@
 
 import { goodTint, type Row } from './types';
 import { SectionHeader, viewAllBtnClass } from './shared';
+import { PlanStatusBadges } from '@/features/teaching-plan/PlanStatusBadges';
 
 interface MyPlansSectionProps {
   myPlans: Row[];
@@ -37,17 +38,18 @@ export default function MyPlansSection({
       <div className="mt-2 hidden md:block rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] bg-white overflow-hidden">
         <table className="w-full border-collapse">
           <colgroup>
-            <col style={{ width: '9.4%' }} />
-            <col style={{ width: '9.4%' }} />
-            <col style={{ width: '9.4%' }} />
-            <col style={{ width: '36.1%' }} />
-            <col style={{ width: '16.8%' }} />
-            <col style={{ width: '9.4%' }} />
-            <col style={{ width: '9.4%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '27%' }} />
+            <col style={{ width: '13%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '9%' }} />
           </colgroup>
           <thead>
             <tr className="bg-primary-100 text-[14px] font-bold font-['Noto_Sans_TC'] text-black-900">
-              {['家別', '期數', '類別', '教案名稱', '撰寫者', '編輯', '刪除'].map((col, i, arr) => (
+              {['家別', '期數', '類別', '教案名稱', '撰寫者', '狀態', '編輯', '刪除'].map((col, i, arr) => (
                 <th key={col} className={['h-[48px] border border-black-200 px-2 text-center font-bold whitespace-nowrap', i === 0 ? 'rounded-tl-lg' : '', i === arr.length - 1 ? 'rounded-tr-lg' : ''].filter(Boolean).join(' ')}>
                   {col}
                 </th>
@@ -56,9 +58,9 @@ export default function MyPlansSection({
           </thead>
           <tbody>
             {plansLoading ? (
-              <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700">資料載入中...</td></tr>
+              <tr><td colSpan={8} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700">資料載入中...</td></tr>
             ) : plansError ? (
-              <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700">{plansError}</td></tr>
+              <tr><td colSpan={8} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700">{plansError}</td></tr>
             ) : hasPlans ? (
               myPlans.map((r) => (
                 <tr key={r.id} className="text-[14px]">
@@ -73,6 +75,12 @@ export default function MyPlansSection({
                   </td>
                   <td className="h-[48px] border border-black-200 px-2 text-center">{r.author}</td>
                   <td className="h-[48px] border border-black-200 px-2 text-center">
+                    <PlanStatusBadges
+                      editingStatus={r.editingStatus}
+                      visibilityStatus={r.visibilityStatus}
+                    />
+                  </td>
+                  <td className="h-[48px] border border-black-200 px-2 text-center">
                     <button type="button" aria-label="編輯" onClick={() => onEdit(r)} disabled={plansLoading || deletingId === r.id} className={plansLoading || deletingId === r.id ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
                       <img src="/icons/edit.svg" alt="" width={20} height={20} />
                     </button>
@@ -85,7 +93,7 @@ export default function MyPlansSection({
                 </tr>
               ))
             ) : (
-              <tr><td colSpan={7} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700 px-4">你還沒上傳任何教案唷，快點擊下方按鈕上傳第一份教案吧！</td></tr>
+              <tr><td colSpan={8} className="h-[48px] border border-black-200 text-center text-[16px] text-black-700 px-4">你還沒上傳任何教案唷，快點擊下方按鈕上傳第一份教案吧！</td></tr>
             )}
           </tbody>
         </table>
@@ -124,6 +132,11 @@ export default function MyPlansSection({
                   </div>
                 </div>
                 <p className="text-[16px] font-bold font-['Noto_Sans_TC'] text-black-900 leading-snug">{r.title}</p>
+                <PlanStatusBadges
+                  editingStatus={r.editingStatus}
+                  visibilityStatus={r.visibilityStatus}
+                  compact
+                />
               </div>
               {/* 下區塊：期數/類別、家別/撰寫者 */}
               <div className="px-4 py-2 flex flex-col gap-1">
