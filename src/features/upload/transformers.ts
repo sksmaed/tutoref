@@ -2,6 +2,7 @@ import { TeachingPlan } from '@/types/api';
 import { filterOptions } from '@/types/filter';
 import { DURATION_INVERSE_MAP, DURATION_MAP } from '@/lib/constants';
 import { normalizeCategory } from '@/lib/categories';
+import type { UploadMode } from './types';
 
 export const formatDurationLabel = (value: number | string | null | undefined): string => {
   if (typeof value === 'number') {
@@ -50,6 +51,7 @@ export const normalizeTeachingPlan = (plan: any): TeachingPlan => {
     objectives: plan?.objectives ?? '',
     outline: plan?.outline ?? '',
     completion_notes: plan?.post_class_notes ?? plan?.completion_notes ?? '',
+    sheet_pdf: plan?.sheet_pdf ?? '',
     slide_pdf: slidePdfName,
     content: plan?.content ?? '',
   };
@@ -87,7 +89,7 @@ export const toUpdatePayload = (plan: TeachingPlan) => {
 };
 
 /** 前端 TeachingPlan → POST /upload-file 的建立 payload。 */
-export const toCreatePayload = (plan: TeachingPlan) => {
+export const toCreatePayload = (plan: TeachingPlan, uploadMode?: UploadMode) => {
   const { academicYear, semesterPeriod } = splitSemester(plan.semester ?? '');
   const duration = inferDurationValue(plan.duration) ?? 0;
 
@@ -104,6 +106,7 @@ export const toCreatePayload = (plan: TeachingPlan) => {
     outline: plan.outline ?? '',
     content: plan.content ?? '',
     post_class_notes: plan.completion_notes ?? '',
+    ...(uploadMode ? { upload_mode: uploadMode } : {}),
     // slide_pdf 改為透過 FormData 中的 slide_pdf_file 處理
   };
 };

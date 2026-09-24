@@ -201,3 +201,15 @@
 .custom-scroll { scrollbar-width: thin; scrollbar-color: #9C9C9C #EDEDED; } /* Firefox */
 
 
+
+/* Edge / Chrome 會在密碼欄自己加一顆「顯示密碼」的眼睛, 跟我們 Input 的眼睛重疊 */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}

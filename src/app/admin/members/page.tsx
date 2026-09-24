@@ -19,13 +19,11 @@ import {
 } from '@/services/review';
 
 const ROLES = [
-  { value: 'leader', label: '組長（期別）' },
-  { value: 'reviewer', label: '驗收者（期別）' },
-  { value: 'parent', label: '家長（家別）' },
-  { value: 'writer', label: '撰寫者（家別）' },
+  { value: 'reviewer', label: '驗收者' },
+  { value: 'leader', label: '組長' },
+  { value: 'writer', label: '撰寫者' },
+  { value: 'parent', label: '家長' },
 ];
-
-const FAMILY_SCOPED = new Set(['parent', 'writer']);
 
 export default function AdminMembersPage() {
   const { context } = useTermContext();
@@ -87,17 +85,17 @@ export default function AdminMembersPage() {
   };
 
   const handleAdd = () => {
-    if (!termId || !email.trim()) return;
+    if (!termId || !email.trim() || !familyId) return;
     void run(
       () =>
         upsertMembers(termId, [
           {
             email: email.trim(),
             name: name.trim(),
-            family_id: familyId || null,
+            family_id: familyId,
             roles: [...roles].map((role) => ({
               role,
-              family_id: FAMILY_SCOPED.has(role) ? familyId || null : null,
+              family_id: familyId,
             })),
           },
         ]),
@@ -152,6 +150,9 @@ export default function AdminMembersPage() {
       <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-700">
         以 email 為準；沒有帳號的人會建立一個尚未設定密碼的帳號，之後由本人設定密碼。
       </p>
+      <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-500">
+        每位成員都必須指定本期家別；帳戶不提供啟用或停用設定。
+      </p>
 
       {loading ? (
         <div className="flex min-h-[30vh] items-center justify-center">
@@ -161,12 +162,6 @@ export default function AdminMembersPage() {
         <MemberTable
           rows={rows}
           working={working}
-          onToggleActive={(row) =>
-            void run(
-              () => patchMembers(termId!, [{ user_id: row.user_id, membership_active: !row.membership_active }]),
-              row.membership_active ? '已停用' : '已啟用'
-            )
-          }
           onRevokeRole={(row, role) =>
             void run(
               () => patchMembers(termId!, [{ user_id: row.user_id, revoke_roles: [role] }]),
@@ -208,13 +203,16 @@ export default function AdminMembersPage() {
                 onChange={(event) => setFamilyId(event.target.value)}
                 className="rounded-lg border border-black-200 px-3 py-2 text-[14px]"
               >
-                <option value="">選擇家別</option>
+                <option value="">選擇家別（必填）</option>
                 {families.map((family) => (
                   <option key={family.id} value={family.id}>
                     {family.name}
                   </option>
                 ))}
               </select>
+              {!familyId && (
+                <p className="text-[13px] text-status-alert">所有成員都必須選擇家別。</p>
+              )}
               <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {ROLES.map((role) => (
                   <Checkbox
@@ -242,7 +240,7 @@ export default function AdminMembersPage() {
               </Button>
               <Button
                 onClick={handleAdd}
-                disabled={!email.trim() || working}
+                disabled={!email.trim() || !familyId || working}
                 className="w-[110px] rounded-lg bg-primary-900 py-2 font-bold text-white"
               >
                 加入

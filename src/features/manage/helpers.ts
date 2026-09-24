@@ -33,6 +33,8 @@ export const mapPlanToRow = (plan: MyTeachingPlanItem): Row => ({
   duration: typeof plan.duration === 'number' ? plan.duration : undefined,
   good: plan.is_excellent,
   hashtags: Array.isArray(plan.hashtags) ? plan.hashtags : [],
+  editingStatus: plan.editing_status,
+  visibilityStatus: plan.visibility_status,
 });
 
 export const mapFavoriteToRow = (plan: FavoriteItem): Row => ({

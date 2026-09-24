@@ -66,8 +66,7 @@ export default function AdminAnnouncementsPage() {
   const impact = useMemo(() => {
     const reviewerIds = new Set<string>();
     board.jobs.forEach((job) => {
-      (['A', 'B'] as const).forEach((slot) => {
-        const id = board.slots[job.id]?.[slot];
+      Object.values(board.slots[job.id] ?? {}).forEach((id) => {
         if (id) reviewerIds.add(id);
       });
     });
@@ -79,11 +78,9 @@ export default function AdminAnnouncementsPage() {
       ? null
       : board.jobs.length === 0
         ? '本輪還沒有任何送件，沒有可發布的任務。'
-        : board.incomplete.length > 0
-          ? `還有 ${board.incomplete.length} 份教案沒有填滿 A / B 兩位 reviewer。`
-          : board.changes.length > 0
-            ? '分配有未儲存的改動，請先回「驗收分配」儲存草稿。'
-            : null;
+        : board.changes.length > 0
+          ? '分配有未儲存的改動，請先回「驗收分配」儲存草稿。'
+          : null;
 
   const submit = async () => {
     if (!termId || !title.trim()) return;

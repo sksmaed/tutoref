@@ -113,14 +113,10 @@ export const ResultTable: React.FC<ResultTableProps> = ({
             <th className="h-[48px] px-4 text-left">教案</th>
             <th className="h-[48px] w-[80px] px-2 text-center">家別</th>
             {round === 'final' ? (
-              <>
-                <th className="h-[48px] w-[110px] px-2 text-center">A 判定</th>
-                <th className="h-[48px] w-[110px] px-2 text-center">B 判定</th>
-              </>
+              <th className="h-[48px] w-[220px] px-2 text-center">驗收判定</th>
             ) : (
               <>
-                <th className="h-[48px] w-[70px] px-2 text-center">A</th>
-                <th className="h-[48px] w-[70px] px-2 text-center">B</th>
+                <th className="h-[48px] w-[180px] px-2 text-center">驗收分數</th>
                 <th className="h-[48px] w-[80px] px-2 text-center">平均</th>
                 <th className="h-[48px] w-[100px] px-2 text-center">系統訊號</th>
               </>
@@ -133,7 +129,7 @@ export const ResultTable: React.FC<ResultTableProps> = ({
         <tbody className="divide-y divide-black-200 bg-white">
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={round === 'final' ? 8 : 10} className="h-[80px] text-center text-black-700">
+              <td colSpan={round === 'final' ? 7 : 9} className="h-[80px] text-center text-black-700">
                 本輪還沒有任何驗收任務。
               </td>
             </tr>
@@ -167,18 +163,31 @@ export const ResultTable: React.FC<ResultTableProps> = ({
                     </td>
                     <td className="h-[56px] px-2 text-center">{row.family}</td>
                     {round === 'final' ? (
-                      <>
-                        <td className="h-[56px] px-2 text-center">
-                          <RecordCell record={row.records?.A} />
-                        </td>
-                        <td className="h-[56px] px-2 text-center">
-                          <RecordCell record={row.records?.B} />
-                        </td>
-                      </>
+                      <td className="h-[56px] px-2 text-center">
+                        {Object.keys(row.records ?? {}).length === 0 ? (
+                          <span className="text-status-idle">未提交</span>
+                        ) : (
+                          <div className="flex flex-wrap justify-center gap-2">
+                            {Object.entries(row.records ?? {}).map(([slot, record]) => (
+                              <div key={slot} className="rounded-lg border border-black-200 px-2 py-1">
+                                <span className="text-[12px] text-black-500">{slot}</span>
+                                <RecordCell record={record} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </td>
                     ) : (
                       <>
-                        <td className="h-[56px] px-2 text-center">{row.score_a ?? '—'}</td>
-                        <td className="h-[56px] px-2 text-center">{row.score_b ?? '—'}</td>
+                        <td className="h-[56px] px-2 text-center">
+                          {Object.keys(row.scores ?? {}).length === 0
+                            ? '—'
+                            : Object.entries(row.scores).map(([slot, score]) => (
+                                <span key={slot} className="mr-2 inline-block whitespace-nowrap">
+                                  {slot}：{score}
+                                </span>
+                              ))}
+                        </td>
                         <td className="h-[56px] px-2 text-center font-bold">{row.average ?? '—'}</td>
                         <td className="h-[56px] px-2 text-center">
                           {row.band ? BAND_LABEL[row.band] ?? row.band : '—'}
@@ -207,16 +216,14 @@ export const ResultTable: React.FC<ResultTableProps> = ({
                   </tr>
                   {expanded === row.job_id && (
                     <tr className="bg-black-100">
-                      <td colSpan={round === 'final' ? 8 : 10} className="px-6 py-4">
+                      <td colSpan={round === 'final' ? 7 : 9} className="px-6 py-4">
                         {row.final_decision?.reason && (
                           <p className="mb-2 text-[13px] text-black-700">
                             判定理由：{row.final_decision.reason}
                           </p>
                         )}
                         {round === 'final' &&
-                          (['A', 'B'] as const).map((slot) => {
-                            const record = row.records?.[slot];
-                            if (!record) return null;
+                          Object.entries(row.records ?? {}).map(([slot, record]) => {
                             const reasons = [
                               record.sheet_result === 'failed' ? `教案紙：${record.sheet_failed_reason}` : null,
                               record.slide_result === 'failed' ? `投影片：${record.slide_failed_reason}` : null,

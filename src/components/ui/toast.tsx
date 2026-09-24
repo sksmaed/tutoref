@@ -1,12 +1,13 @@
 'use client';
+import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 // 若全站已載入 Noto Sans TC 可忽略；否則建議用 next/font 在 layout 設定。
 
 type Props = {
   open: boolean;
   type?: 'success' | 'error' | 'info';
-  title: string;
-  message?: string;
+  title: ReactNode;
+  message?: ReactNode;
   timeout?: number; // ms
   onClose: () => void;
 };
@@ -44,13 +45,23 @@ export function Toast({
           <div className="flex items-start flex-1 gap-[15px] text-white pr-4">
             {/* icon：24×28（不再加 padding-top，避免把內容往下推） */}
             <div className="pt-1 shrink-0">
-              <img
-                src="/icons/check-circle.svg"
-                alt=""
-                width={24}
-                height={24}
-                className="w-[24px] h-[24px]"
-              />
+              {type === 'error' ? (
+                // 沒有現成的錯誤 icon, 用同尺寸的圓形驚嘆號頂著
+                <div
+                  aria-hidden
+                  className="w-[24px] h-[24px] rounded-full bg-[#E5484D] text-white text-[15px] font-bold flex items-center justify-center"
+                >
+                  !
+                </div>
+              ) : (
+                <img
+                  src={type === 'info' ? '/icons/info.svg' : '/icons/check-circle.svg'}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="w-[24px] h-[24px]"
+                />
+              )}
             </div>
 
             {/* 文字：使用 flex-1 讓文字佔據剩餘空間 */}

@@ -5,7 +5,8 @@ import { Toast } from '@/components/ui/toast';
 import { Tab } from '@/components/ui/Tab';
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import { RubricEditor } from '@/features/admin/rubric/RubricEditor';
-import { createRubricVersion, fetchRubrics, type RubricRow } from '@/services/review';
+import { Button } from '@/components/ui/Button';
+import { bootstrapRubric, createRubricVersion, fetchRubrics, type RubricRow } from '@/services/review';
 
 type Kind = 'initial' | 'final';
 
@@ -51,6 +52,28 @@ export default function AdminRubricPage() {
   const activeVersion =
     current?.versions.find((version) => version.status === 'active') ?? current?.versions[0] ?? null;
 
+  const handleBootstrap = async () => {
+    if (!termId) return;
+    setWorking(true);
+    try {
+      await bootstrapRubric({ term_id: termId, kind });
+      await reload();
+      setNotice({
+        type: 'success',
+        title: '已建立本期標準',
+        message: '內容沿用上一期（沒有的話用規格預設），可以直接往下編輯。',
+      });
+    } catch (err) {
+      setNotice({
+        type: 'error',
+        title: '建立失敗',
+        message: err instanceof Error ? err.message : '請稍後再試。',
+      });
+    } finally {
+      setWorking(false);
+    }
+  };
+
   const handleCreate = async (payload: Parameters<typeof createRubricVersion>[0]) => {
     setWorking(true);
     try {
@@ -92,6 +115,22 @@ export default function AdminRubricPage() {
           <p className="font-['Noto_Sans_TC'] text-[15px] text-black-700">
             本期還沒有{kind === 'initial' ? '初驗' : '總驗'}標準。
           </p>
+          {canEdit ? (
+            <>
+              <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-500">
+                建立後會帶入上一期的標準（沒有上一期就用規格預設的項目），再照本期需要調整就好。
+              </p>
+              <div className="mt-4 flex justify-center">
+                <Button onClick={handleBootstrap} disabled={working || !termId}>
+                  {working ? '建立中…' : `建立本期${kind === 'initial' ? '初驗' : '總驗'}標準`}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-500">
+              本期未開放組長編輯驗收標準，請聯絡負責人建立。
+            </p>
+          )}
         </div>
       ) : (
         <div className="mt-4 rounded-lg bg-white px-5 py-4 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">

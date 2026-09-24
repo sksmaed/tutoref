@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import { compareIssues } from '@/lib/issues';
 import IssueSortDropdown, { ISSUE_SORT_OPTIONS } from '@/features/teaching-plan/IssueSortDropdown';
 import { readSessionJson, writeSessionJson } from '@/lib/session-cache';
+import { PlanStatusBadges } from '@/features/teaching-plan/PlanStatusBadges';
+import type {
+  TeachingPlanEditingStatus,
+  TeachingPlanVisibilityStatus,
+} from '@/services/teaching-plan';
 
 export type Row = {
   id: string;
@@ -21,6 +26,8 @@ export type Row = {
   searchScore?: number;
   createdAt?: number;
   hashtags?: string[];
+  editingStatus?: TeachingPlanEditingStatus;
+  visibilityStatus?: TeachingPlanVisibilityStatus;
 };
 
 const goodTint = {
@@ -90,6 +97,7 @@ export function AllPlansTable({
   const isFirstRender = useRef(true);
   const pageSize = 8;
   const router = useRouter();
+  const columnCount = mode === 'mine' ? 8 : 7;
 
   useEffect(() => {
     if (!uiStateStorageKey) return;
@@ -242,12 +250,23 @@ export function AllPlansTable({
         <table className="w-full border-collapse text-[14px] font-['Noto_Sans_TC']">
           <colgroup>
             <col className="w-[9%]" /><col className="w-[9%]" /><col className="w-[9%]" />
-            <col /><col className="w-[14%]" /><col className="w-[7%]" /><col className="w-[7%]" />
+            <col /><col className="w-[12%]" />
+            {mode === 'mine' && <col className="w-[14%]" />}
+            <col className="w-[7%]" /><col className="w-[7%]" />
           </colgroup>
           <thead>
             <tr className="bg-primary-100 text-black-900 font-bold">
-              {['家別','期數','類別','教案名稱','撰寫者', mode === 'mine' ? '編輯' : '查看', mode === 'mine' ? '刪除' : '收藏'].map((h, i) => (
-                <th key={h} className={`h-[48px] px-3 text-center border border-black-200 whitespace-nowrap ${i === 0 ? 'rounded-tl-lg' : ''} ${i === 6 ? 'rounded-tr-lg' : ''}`}>
+              {[
+                '家別',
+                '期數',
+                '類別',
+                '教案名稱',
+                '撰寫者',
+                ...(mode === 'mine' ? ['狀態'] : []),
+                mode === 'mine' ? '編輯' : '查看',
+                mode === 'mine' ? '刪除' : '收藏',
+              ].map((h, i) => (
+                <th key={h} className={`h-[48px] px-3 text-center border border-black-200 whitespace-nowrap ${i === 0 ? 'rounded-tl-lg' : ''} ${i === columnCount - 1 ? 'rounded-tr-lg' : ''}`}>
                   {h}
                 </th>
               ))}
@@ -255,7 +274,7 @@ export function AllPlansTable({
           </thead>
           <tbody className="bg-white divide-y divide-black-200">
             {pageRows.length === 0 ? (
-              <tr><td colSpan={7} className="h-[48px] text-center text-black-700 border-x border-b border-black-200">
+              <tr><td colSpan={columnCount} className="h-[48px] text-center text-black-700 border-x border-b border-black-200">
                 查無符合條件的教案，請調整檢索條件後再試。
               </td></tr>
             ) : pageRows.map((r) => (
@@ -270,6 +289,14 @@ export function AllPlansTable({
                   </div>
                 </td>
                 <td className="h-[48px] px-2 text-center border-x border-black-200">{r.author}</td>
+                {mode === 'mine' && (
+                  <td className="h-[48px] px-2 text-center border-x border-black-200">
+                    <PlanStatusBadges
+                      editingStatus={r.editingStatus}
+                      visibilityStatus={r.visibilityStatus}
+                    />
+                  </td>
+                )}
                 <td className="h-[48px] text-center border-x border-black-200">
                   {mode === 'mine' ? (
                     <button type="button" onClick={() => onEdit?.(r)} aria-label="編輯" disabled={!onEdit}
@@ -343,6 +370,13 @@ export function AllPlansTable({
                 )}
               </div>
               <p className="text-[16px] font-bold font-['Noto_Sans_TC'] text-black-900 leading-snug">{r.title}</p>
+              {mode === 'mine' && (
+                <PlanStatusBadges
+                  editingStatus={r.editingStatus}
+                  visibilityStatus={r.visibilityStatus}
+                  compact
+                />
+              )}
             </div>
             {/* 下區塊 */}
             <div className="px-4 py-2 flex items-center gap-3">

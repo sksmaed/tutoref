@@ -7,7 +7,10 @@ import { TeachingPlanEditorRef } from '@/features/teaching-plan/TeachingPlanEdit
 import { useToast } from '@/hooks/use-toast';
 import { setFlash } from '@/lib/flash';
 import { CSRF_HEADER_NAME, ensureCsrfToken } from '@/lib/csrf';
-import { normalizeTeachingPlan, toUpdatePayload, toCreatePayload } from './transformers';
+import { updateManageCachesAfterEdit } from '@/features/manage/cache';
+import { useTermContext } from '@/features/review-shared/useTermContext';
+import { normalizeTeachingPlan, splitSemester, toUpdatePayload, toCreatePayload } from './transformers';
+import type { UploadMode } from './types';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
@@ -20,6 +23,11 @@ const API_PREFIX = BACKEND_URL ? `${BACKEND_URL}/teaching-plan` : '';
 export function useUploadFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const planIdFromQuery = searchParams?.get('planId');
+  const replacePlanIdFromQuery = searchParams?.get('replacePlanId');
+  const isReplacingSheet = Boolean(replacePlanIdFromQuery);
+  const isCreatingPlan = !planIdFromQuery && !replacePlanIdFromQuery;
+  const [uploadMode, setUploadMode] = useState<UploadMode | null>(null);
   const [parsedPlans, setParsedPlans] = useState<TeachingPlan[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -32,9 +40,22 @@ export function useUploadFlow() {
   const [preEditSlideFile, setPreEditSlideFile] = useState<string>(''); // 編輯前的slide檔案狀態，用於取消編輯時恢復
   const [slidePdfFile, setSlidePdfFile] = useState<File | null>(null); // 儲存選中的PDF檔案對象
   const [tempFileId, setTempFileId] = useState<string>('');
+  const [replacementBasePlan, setReplacementBasePlan] = useState<TeachingPlan | null>(null);
   const editorRef = useRef<TeachingPlanEditorRef>(null);
   const loadedPlanIdRef = useRef<string | null>(null);
   const { toast } = useToast();
+  const { context: termContext, loading: currentTermLoading, error: currentTermError } = useTermContext();
+  const currentTerm = termContext?.current_term ?? null;
+  const uploadModeModalOpen = isCreatingPlan && uploadMode === null;
+
+  const handleSelectUploadMode = (mode: UploadMode) => {
+    if (mode === 'current' && !currentTerm) return;
+    setUploadMode(mode);
+  };
+
+  const handleCancelUploadMode = () => {
+    router.push('/manage');
+  };
 
   const currentPlan = useMemo(() => {
     if (!parsedPlans.length) return null;
@@ -71,10 +92,8 @@ export function useUploadFlow() {
     setTempFileId('');
   };
 
-  const planIdFromQuery = searchParams?.get('planId');
-
   useEffect(() => {
-    if (!API_PREFIX || !planIdFromQuery) {
+    if (!API_PREFIX || !planIdFromQuery || isReplacingSheet) {
       return;
     }
 
@@ -134,10 +153,69 @@ export function useUploadFlow() {
     };
 
     fetchExistingPlan();
-  }, [API_PREFIX, planIdFromQuery, toast]);
+  }, [API_PREFIX, isReplacingSheet, planIdFromQuery, toast]);
+
+  useEffect(() => {
+    if (!API_PREFIX || !replacePlanIdFromQuery) {
+      setReplacementBasePlan(null);
+      return;
+    }
+
+    let mounted = true;
+    const fetchReplacementBase = async () => {
+      setIsUploading(true);
+      try {
+        const res = await fetch(`${API_PREFIX}/detail/${replacePlanIdFromQuery}`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        const contentType = res.headers.get('content-type') || '';
+        const raw = await res.text();
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
+        }
+        if (!contentType.includes('application/json')) {
+          throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
+        }
+
+        const detail = JSON.parse(raw);
+        if (detail?.in_review_pipeline) {
+          throw new Error('這份教案已進入驗收，請到「本期教案」上傳修改版。');
+        }
+        if (mounted) {
+          setReplacementBasePlan(normalizeTeachingPlan(detail));
+        }
+      } catch (error: any) {
+        console.error('Load replacement base error:', error);
+        toast({
+          title: '❌ 無法重新上傳',
+          description: String(error?.message || '無法載入原教案，請稍後再試。'),
+          variant: 'destructive',
+        });
+        router.replace(`/plans/${replacePlanIdFromQuery}/edit`);
+      } finally {
+        if (mounted) setIsUploading(false);
+      }
+    };
+
+    fetchReplacementBase();
+    return () => {
+      mounted = false;
+    };
+  }, [replacePlanIdFromQuery, router, toast]);
 
   const handleSubmit = async () => {
     if (!uploadedFile) return;
+
+    if (isCreatingPlan && !uploadMode) {
+      toast({
+        title: '請先選擇上傳方式',
+        description: '請選擇上傳本期教案或歸檔過去教案。',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     if (uploadedFile.type !== 'application/pdf' && !uploadedFile.name.toLowerCase().endsWith('.pdf')) {
       setShowErrorModal(true);
@@ -183,7 +261,25 @@ export function useUploadFlow() {
         throw new Error('解析成功但未取得暫存檔 ID');
       }
 
-      const normalizedPlan = normalizeTeachingPlan(data);
+      const extractedPlan =
+        uploadMode === 'current' && currentTerm
+          ? {
+              ...data,
+              academic_year: currentTerm.academic_year,
+              semester_period: currentTerm.semester_period,
+            }
+          : data;
+      const normalizedPlan = normalizeTeachingPlan({
+        ...extractedPlan,
+        ...(isReplacingSheet && replacementBasePlan
+          ? {
+              id: replacePlanIdFromQuery,
+              post_class_notes: replacementBasePlan.completion_notes ?? '',
+              sheet_pdf: replacementBasePlan.sheet_pdf ?? '',
+              slide_pdf: replacementBasePlan.slide_pdf ?? '',
+            }
+          : {}),
+      });
       setParsedPlans([normalizedPlan]);
       setTempFileId(data.temp_file_id);
 
@@ -242,8 +338,8 @@ export function useUploadFlow() {
       setShowCancelConfirm(false);
     };
 
-    if (!updatedPlan?.id) {
-      // 尚未建立於後端，純本地更新
+    if (!updatedPlan?.id || isReplacingSheet) {
+      // 新教案與教案紙替換都等到最後確認才一次寫入後端。
       applyLocalUpdate(updatedPlan);
       toast({
         title: '✅ 編輯完成',
@@ -407,6 +503,65 @@ export function useUploadFlow() {
 
     const plan = currentPlan;
 
+    if (isReplacingSheet) {
+      if (!replacePlanIdFromQuery || !tempFileId) {
+        toast({
+          title: '❌ 缺少資料',
+          description: '找不到替換教案或暫存檔，請重新選擇教案紙。',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const payload = toCreatePayload(plan);
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append('teaching_plan_temp_file_id', tempFileId);
+        Object.entries(payload).forEach(([key, value]) => {
+          formData.append(key, value != null ? String(value) : '');
+        });
+
+        const csrfToken = await ensureCsrfToken();
+        const res = await fetch(`${API_PREFIX}/detail/${replacePlanIdFromQuery}/replace-sheet`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+          headers: csrfToken ? { [CSRF_HEADER_NAME]: csrfToken } : undefined,
+        });
+        const contentType = res.headers.get('content-type') || '';
+        const raw = await res.text();
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status} ${res.statusText} — ${raw.slice(0, 200)}`);
+        }
+        if (!contentType.includes('application/json')) {
+          throw new Error(`Unexpected content-type: ${contentType} — ${raw.slice(0, 200)}`);
+        }
+
+        const detail = JSON.parse(raw);
+        updateManageCachesAfterEdit(detail);
+        setFlash({
+          type: 'success',
+          title: '教案紙更新已送出！',
+          message: '欄位與教案紙正在背景替換；公開教案才會同步更新搜尋索引。',
+          timeout: 5000,
+        });
+        handlePreviewReset();
+        router.push('/plans/mine');
+      } catch (error: any) {
+        console.error('Replace sheet error:', error);
+        toast({
+          title: '❌ 教案紙更新失敗',
+          description: String(error?.message || '請稍後再試。'),
+          variant: 'destructive',
+        });
+      } finally {
+        setIsUploading(false);
+      }
+      return;
+    }
+
     if (!tempFileId) {
       if (plan?.id) {
         toast({
@@ -424,7 +579,21 @@ export function useUploadFlow() {
       return;
     }
 
-    const payload = toCreatePayload(plan);
+    const payload = toCreatePayload(plan, uploadMode ?? undefined);
+    const selectedPeriod = splitSemester(plan.semester ?? '');
+    if (
+      uploadMode === 'archive' &&
+      currentTerm &&
+      selectedPeriod.academicYear === currentTerm.academic_year &&
+      selectedPeriod.semesterPeriod === currentTerm.semester_period
+    ) {
+      toast({
+        title: '❌ 期數不符合歸檔條件',
+        description: `${currentTerm.label} 是本期教案，請返回並選擇「上傳本期教案」。`,
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsUploading(true);
     try {
@@ -463,7 +632,10 @@ export function useUploadFlow() {
       setFlash({
         type: 'success',
         title: '教案上傳成功！',
-        message: '感謝你願意跟大家分享教案～',
+        message:
+          uploadMode === 'archive'
+            ? '過去教案已公開，搜尋索引正在背景建立。'
+            : '本期教案已存入教案管理，總驗通過並公告後才會開放檢索。',
         timeout: 5000,
       });
 
@@ -492,10 +664,18 @@ export function useUploadFlow() {
     showCancelConfirm,
     showErrorModal,
     setShowErrorModal,
+    isReplacingSheet,
+    uploadMode,
+    uploadModeModalOpen,
+    currentTerm,
+    currentTermLoading,
+    currentTermError,
     currentPlan,
     editorRef,
     // 事件
     handleFileUpload,
+    handleSelectUploadMode,
+    handleCancelUploadMode,
     handleSubmit,
     handleEditorSave,
     handleValidationChange,
