@@ -233,6 +233,14 @@ export default function AdminReviewPage() {
 
   return (
     <div>
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-['Noto_Sans_TC'] text-[18px] font-bold text-black-900">本期驗收管理</h2>
+        {context?.current_term && (
+          <span className="font-['Noto_Sans_TC'] text-[13px] text-black-700">
+            {context.current_term.label}
+          </span>
+        )}
+      </div>
       <Tab tabs={TABS} active={tab} onChange={(next) => setQuery({ tab: next })} />
 
       <div className="mt-4">

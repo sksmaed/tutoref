@@ -81,6 +81,8 @@
   --color-status-alert-bg: #faf0f0;
   --color-status-locked: var(--color-black-500);      /* 已鎖定 / 唯讀 */
   --color-status-locked-bg: var(--color-black-100);
+  --color-status-info: var(--color-category-info);    /* 待驗收（尚未開始的任務） */
+  --color-status-info-bg: #edf4fb;
 }
 
 /*
