@@ -22,7 +22,7 @@ function StartHereCard({ label, count, icon, onClick }: StartHereItem & { onClic
     <button
       type="button"
       onClick={onClick}
-      className="w-full h-[56px] flex items-center justify-between rounded-lg px-5 py-4 bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] hover:-translate-y-px active:translate-y-0 transition-transform hover:cursor-pointer"
+      className="w-full h-[56px] flex items-center justify-between rounded-[10px] px-5 py-4 bg-white border border-black-200 shadow-[0_3px_12px_rgba(0,0,0,0.045)] hover:-translate-y-px active:translate-y-0 transition-transform hover:cursor-pointer"
       aria-label={`${label}，共 ${formattedCount} 筆`}
     >
       <span className="flex items-center gap-3 h-6">
@@ -38,7 +38,7 @@ function StartHereCard({ label, count, icon, onClick }: StartHereItem & { onClic
 
 function StartHereSkeleton() {
   return (
-    <div className="h-[56px] rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] px-5 py-4 flex items-center justify-between animate-pulse">
+    <div className="h-[56px] rounded-[10px] bg-white border border-black-200 shadow-[0_3px_12px_rgba(0,0,0,0.045)] px-5 py-4 flex items-center justify-between animate-pulse">
       <span className="flex flex-col gap-1">
         <span className="flex items-center gap-3">
           <span className="h-5 w-5 rounded-full bg-black-100" />
@@ -55,11 +55,11 @@ export default function StartHere({ items, loading = false, error, onSelect }: S
   const hasData = items.length > 0;
 
   return (
-    <section className="w-full max-w-[976px] mx-auto px-4 sm:px-6 lg:px-0" aria-label="或是從這裡下手">
+    <section className="w-full" aria-label="或是從這裡下手">
       <div className="mt-10">
-        <span className="inline-block h-6 text-[16px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black">
+        <h2 className="text-[17px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black-900">
           或是從這裡下手...
-        </span>
+        </h2>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-[19px] mt-4 mb-10 min-h-[56px]">
@@ -68,7 +68,7 @@ export default function StartHere({ items, loading = false, error, onSelect }: S
           : hasData
             ? items.map((item) => <StartHereCard key={item.id} {...item} onClick={() => onSelect?.(item.id)} />)
             : (
-                <div className="col-span-1 sm:col-span-3 flex h-[56px] items-center justify-center rounded-lg bg-white text-[14px] text-black-500 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+                <div className="col-span-1 sm:col-span-3 flex h-[56px] items-center justify-center rounded-[10px] bg-white text-[14px] text-black-500 border border-black-200 shadow-[0_3px_12px_rgba(0,0,0,0.045)]">
                   {error || '目前尚無推薦內容。'}
                 </div>
               )}
