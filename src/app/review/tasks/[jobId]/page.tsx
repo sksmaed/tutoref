@@ -83,7 +83,7 @@ export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobI
 
   return (
     <div className="mb-16">
-      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 md:pr-16">
         <div>
           <Link href="/review/tasks" className="text-[14px] text-primary-900 hover:opacity-80">
             ← 我的驗收任務

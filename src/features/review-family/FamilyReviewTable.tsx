@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Checkbox } from '@/components/ui/Checkbox';
 import { StatusChip } from '@/features/review-shared/StatusChip';
-import { SnapshotBox } from '@/features/review-shared/SnapshotBox';
+import { formatDateTime } from '@/features/review-shared/format';
+import { TABLE, TABLE_WRAP, TD, TH, TR } from '@/lib/table-styles';
 import type { FamilyPlan } from '@/services/review';
 
 /** 檔案完整性的判準寫在畫面上——prototype 回饋直接問了「系統怎麼判斷」（§6.1）。 */
@@ -32,117 +32,100 @@ interface FamilyReviewTableProps {
   locked: boolean;
   selected: Set<string>;
   onToggle: (planId: string, checked: boolean) => void;
-  onToggleAll: (checked: boolean) => void;
 }
 
-const FileMark: React.FC<{ label: string; present: boolean }> = ({ label, present }) => (
-  <span className={present ? 'text-status-done' : 'text-status-alert'}>
-    {present ? '✓' : '✗'} {label}
-  </span>
-);
-
+/** 家內教案清單（v13 `renderReviewMyLessons()` 家長分支）。 */
 export const FamilyReviewTable: React.FC<FamilyReviewTableProps> = ({
   plans,
   locked,
   selected,
   onToggle,
-  onToggleAll,
-}) => {
-  const allChecked = plans.length > 0 && plans.every((plan) => selected.has(plan.plan_id));
-
-  return (
-    <div className="mt-4 w-full overflow-x-auto rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-      <table className="w-full min-w-[860px] border-collapse text-[14px] font-['Noto_Sans_TC']">
-        <thead>
-          <tr className="bg-primary-100 text-black-900 font-bold">
-            <th className="h-[48px] w-[56px] px-2 text-center">
-              {!locked && (
-                <span className="inline-flex justify-center">
-                  <Checkbox checked={allChecked} onChange={onToggleAll} label="" />
-                </span>
-              )}
-            </th>
-            <th className="h-[48px] px-4 text-left">教案名稱</th>
-            <th className="h-[48px] w-[110px] px-2 text-center">撰寫者</th>
-            <th className="h-[48px] w-[80px] px-2 text-center">類別</th>
-            <th className="h-[48px] w-[150px] px-2 text-center">
-              <span className="inline-flex items-center gap-1">
-                檔案完整性
-                <span
-                  title={FILE_COMPLETENESS_HINT}
-                  aria-label={FILE_COMPLETENESS_HINT}
-                  className="inline-flex h-[16px] w-[16px] cursor-help items-center justify-center rounded-full border border-black-400 text-[11px] font-normal text-black-500"
-                >
-                  ?
-                </span>
+}) => (
+  <div className={TABLE_WRAP}>
+    <table className={`${TABLE} min-w-[860px]`}>
+      <thead>
+        <tr>
+          <th className={TH}>教案名稱</th>
+          <th className={TH}>撰寫者</th>
+          <th className={TH}>類別</th>
+          <th className={TH}>
+            <span className="inline-flex items-center gap-1">
+              檔案完整性
+              <span
+                title={FILE_COMPLETENESS_HINT}
+                aria-label={FILE_COMPLETENESS_HINT}
+                className="inline-flex h-[16px] w-[16px] cursor-help items-center justify-center rounded-full border border-black-400 text-[11px] font-normal text-black-500"
+              >
+                ?
               </span>
-            </th>
-            <th className="h-[48px] w-[110px] px-2 text-center">納入本輪</th>
-            <th className="h-[48px] w-[160px] px-2 text-center">送出快照</th>
-            <th className="h-[48px] w-[110px] px-2 text-center">目前狀態</th>
+            </span>
+          </th>
+          <th className={TH}>納入本輪驗收</th>
+          <th className={TH}>送出快照</th>
+          <th className={TH}>目前狀態</th>
+        </tr>
+      </thead>
+      <tbody>
+        {plans.length === 0 ? (
+          <tr>
+            <td colSpan={7} className="py-12 text-center text-[15px] text-black-500">
+              本期這一家還沒有教案。
+            </td>
           </tr>
-        </thead>
-        <tbody className="divide-y divide-black-200 bg-white">
-          {plans.length === 0 ? (
-            <tr>
-              <td colSpan={8} className="h-[80px] text-center text-black-700">
-                本期這一家還沒有教案。
-              </td>
-            </tr>
-          ) : (
-            plans.map((plan) => {
-              const checked = locked ? plan.included : selected.has(plan.plan_id);
-              return (
-                <tr key={plan.plan_id} className="hover:bg-primary-100 transition-colors">
-                  <td className="h-[56px] px-2 text-center">
-                    <span className="inline-flex justify-center">
-                      <Checkbox
-                        checked={checked}
-                        onChange={(next) => !locked && onToggle(plan.plan_id, next)}
-                        label=""
-                        className={locked ? 'pointer-events-none opacity-60' : ''}
-                      />
-                    </span>
-                  </td>
-                  <td className="h-[56px] px-4">
-                    <span className="block truncate" title={plan.tp_name}>
-                      {plan.tp_name}
-                    </span>
-                    <span className="text-[12px] text-black-500">
-                      {plan.grade}・{plan.duration} 分鐘
-                    </span>
-                  </td>
-                  <td className="h-[56px] px-2 text-center">{plan.writer_names.join('、') || '—'}</td>
-                  <td className="h-[56px] px-2 text-center">{plan.category}</td>
-                  <td className="h-[56px] px-2 text-center">
-                    <span className="flex items-center justify-center gap-2 text-[13px]">
-                      <FileMark label="教案紙" present={plan.sheet_present} />
-                      <FileMark label="投影片" present={plan.slide_present} />
-                    </span>
-                  </td>
-                  <td className="h-[56px] px-2 text-center">
-                    <StatusChip
-                      status={checked ? '納入' : '未納入本輪'}
-                      tone={checked ? 'active' : 'idle'}
-                    />
-                  </td>
-                  <td className="h-[56px] px-2 text-center">
-                    <SnapshotBox
-                      compact
-                      submittedAt={plan.snapshot?.submitted_at}
-                      sheetPresent={plan.snapshot?.sheet_present}
-                      slidePresent={plan.snapshot?.slide_present}
-                    />
-                  </td>
-                  <td className="h-[56px] px-2 text-center">
-                    <StatusChip status={planStatusLabel(plan, locked)} />
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+        ) : (
+          plans.map((plan) => {
+            const checked = locked ? plan.included : selected.has(plan.plan_id);
+            const complete = plan.sheet_present && plan.slide_present;
+            return (
+              <tr key={plan.plan_id} className={`${TR} ${locked ? 'bg-black-100/40' : ''}`}>
+                <td className={TD}>
+                  <p className="font-bold">{plan.tp_name}</p>
+                  <p className="mt-[2px] text-[12px] text-black-500">
+                    {plan.grade}・{plan.duration} 分鐘
+                  </p>
+                </td>
+                <td className={TD}>{plan.writer_names.join('、') || '—'}</td>
+                <td className={TD}>{plan.category}</td>
+                <td className={TD}>
+                  <StatusChip status={complete ? '完整' : '缺附件'} tone={complete ? 'done' : 'active'} />
+                  {!complete && (
+                    <p className="mt-1 text-[12px] text-black-500">
+                      缺{!plan.sheet_present && '教案紙'}
+                      {!plan.sheet_present && !plan.slide_present && '、'}
+                      {!plan.slide_present && '投影片'}
+                    </p>
+                  )}
+                </td>
+                <td className={TD}>
+                  <select
+                    value={checked ? 'yes' : 'no'}
+                    disabled={locked}
+                    onChange={(event) => onToggle(plan.plan_id, event.target.value === 'yes')}
+                    aria-label={`${plan.tp_name} 是否納入本輪驗收`}
+                    className="min-w-[96px] rounded-[10px] border border-black-200 bg-white px-[10px] py-[7px] text-[14px] text-black-900 disabled:cursor-not-allowed disabled:bg-black-100 disabled:text-black-500"
+                  >
+                    <option value="yes">是</option>
+                    <option value="no">否</option>
+                  </select>
+                </td>
+                <td className={TD}>
+                  {plan.snapshot?.submitted_at ? (
+                    <>
+                      <StatusChip status="已凍結" />
+                      <p className="mt-1 text-[12px] text-black-500">{formatDateTime(plan.snapshot.submitted_at)}</p>
+                    </>
+                  ) : (
+                    <span className="text-black-500">—</span>
+                  )}
+                </td>
+                <td className={TD}>
+                  <StatusChip status={planStatusLabel(plan, locked)} />
+                </td>
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </table>
+  </div>
+);

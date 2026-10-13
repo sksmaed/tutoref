@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import { RoundTabs, useRound } from '@/features/review-shared/RoundTabs';
 import { TaskList } from '@/features/review-tasks/TaskList';
+import { TermPageHead } from '@/features/review-shared/TermPageHead';
 import { useReviewTasks } from '@/features/review-tasks/useReviewTasks';
 
 export default function ReviewTasksPage() {
@@ -23,9 +24,8 @@ export default function ReviewTasksPage() {
 
   return (
     <div className="mb-16">
-      <div className="mt-4">
-        <RoundTabs />
-      </div>
+      <TermPageHead title="我的驗收任務" description="分配給我驗收的教案。" />
+      <RoundTabs />
 
       {loading ? (
         <div className="flex min-h-[30vh] items-center justify-center">

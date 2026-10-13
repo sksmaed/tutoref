@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Toast } from '@/components/ui/toast';
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import { RoundTabs, useRound } from '@/features/review-shared/RoundTabs';
+import { TermPageHead } from '@/features/review-shared/TermPageHead';
 import { AuthorPlanList } from '@/features/review-author/AuthorPlanList';
 import { FinalRevisionUploadModal } from '@/features/review-author/FinalRevisionUploadModal';
 import { useAuthorReview } from '@/features/review-author/useAuthorReview';
@@ -70,9 +71,8 @@ export default function MyPlansPage() {
 
   return (
     <div className="mb-16">
-      <div className="mt-4">
-        <RoundTabs />
-      </div>
+      <TermPageHead title="我的驗收任務" description="查看本期教案的送件、回饋處理與結果。" />
+      <RoundTabs />
 
       {progress.total > 0 && (
         <p className="mt-4 font-['Noto_Sans_TC'] text-[15px] text-black-900">
