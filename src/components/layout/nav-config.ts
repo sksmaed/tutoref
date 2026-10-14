@@ -174,12 +174,3 @@ export function visibleGroups(ctx: NavContext): NavGroup[] {
     items: group.items.filter((item) => !item.visible || item.visible(ctx)),
   })).filter((group) => group.items.length > 0);
 }
-
-/** 找出目前路徑對應的導覽項目（給頁面標題等用）。 */
-export function findActiveItem(ctx: NavContext, pathname: string | null): NavItem | null {
-  for (const group of visibleGroups(ctx)) {
-    const hit = group.items.find((item) => isItemActive(item, ctx, pathname));
-    if (hit) return hit;
-  }
-  return null;
-}

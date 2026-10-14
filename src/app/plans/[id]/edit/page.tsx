@@ -7,7 +7,7 @@ import TeachingPlanEditor, { TeachingPlanEditorRef } from '@/features/teaching-p
 import { TeachingPlan } from '@/types/api';
 import { api } from '@/lib/api';
 import { DURATION_MAP, DURATION_INVERSE_MAP } from '@/lib/constants';
-import { updateManageCachesAfterEdit } from '@/features/manage/cache';
+import { updateMineCacheAfterEdit } from '@/features/manage/cache';
 import Link from 'next/link';
 
 const normalizePlan = (detail: any): TeachingPlan => {
@@ -128,7 +128,7 @@ export default function EditTeachingPlanPage() {
         setPlan((prev) => (prev ? { ...prev, slide_pdf: '' } : prev));
       }
 
-      updateManageCachesAfterEdit(data);
+      updateMineCacheAfterEdit(data);
 
       toast({
         title: '✅ 教案已更新',

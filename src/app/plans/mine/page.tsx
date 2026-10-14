@@ -14,11 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { popFlash, Flash } from '@/lib/flash';
 import { Toast } from '@/components/ui/toast';
 import { readSessionJson, writeSessionJson } from '@/lib/session-cache';
-import {
-  MINE_PLANS_CACHE_KEY,
-  MINE_TABLE_UI_CACHE_KEY,
-  removePlanIdFromManageCaches,
-} from '@/features/manage/cache';
+import { MINE_PLANS_CACHE_KEY, MINE_TABLE_UI_CACHE_KEY } from '@/features/manage/cache';
 
 const mapMyPlanToRow = (plan: TeachingPlanDetail): Row => ({
   id: plan.id,
@@ -146,7 +142,6 @@ export default function MineAllPage() {
         writeSessionJson(MINE_PLANS_CACHE_KEY, nextRows);
         return nextRows;
       });
-      removePlanIdFromManageCaches(deleteTarget.id);
       toast({
         title: '✅ 已刪除教案',
         description: '教案已成功移除。',

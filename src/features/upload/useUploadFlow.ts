@@ -7,7 +7,7 @@ import { TeachingPlanEditorRef } from '@/features/teaching-plan/TeachingPlanEdit
 import { useToast } from '@/hooks/use-toast';
 import { setFlash } from '@/lib/flash';
 import { CSRF_HEADER_NAME, ensureCsrfToken } from '@/lib/csrf';
-import { updateManageCachesAfterEdit } from '@/features/manage/cache';
+import { updateMineCacheAfterEdit } from '@/features/manage/cache';
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import { normalizeTeachingPlan, splitSemester, toUpdatePayload, toCreatePayload } from './transformers';
 import type { UploadMode } from './types';
@@ -540,7 +540,7 @@ export function useUploadFlow() {
         }
 
         const detail = JSON.parse(raw);
-        updateManageCachesAfterEdit(detail);
+        updateMineCacheAfterEdit(detail);
         setFlash({
           type: 'success',
           title: '教案紙更新已送出！',
