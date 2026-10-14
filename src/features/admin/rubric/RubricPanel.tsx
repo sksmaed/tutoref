@@ -5,7 +5,7 @@ import { Toast } from '@/components/ui/toast';
 import { Tab } from '@/components/ui/Tab';
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import { RubricEditor } from '@/features/admin/rubric/RubricEditor';
-import { Button } from '@/components/ui/Button';
+import { BTN_PRIMARY } from '@/lib/button-styles';
 import { bootstrapRubric, createRubricVersion, fetchRubrics, type RubricRow } from '@/services/review';
 
 type Kind = 'initial' | 'final';
@@ -121,9 +121,9 @@ export function RubricPanel() {
                 建立後會帶入上一期的標準（沒有上一期就用規格預設的項目），再照本期需要調整就好。
               </p>
               <div className="mt-4 flex justify-center">
-                <Button onClick={handleBootstrap} disabled={working || !termId}>
+                <button type="button" className={BTN_PRIMARY} onClick={handleBootstrap} disabled={working || !termId}>
                   {working ? '建立中…' : `建立本期${kind === 'initial' ? '初驗' : '總驗'}標準`}
-                </Button>
+                </button>
               </div>
             </>
           ) : (
@@ -133,7 +133,7 @@ export function RubricPanel() {
           )}
         </div>
       ) : (
-        <div className="rounded-[10px] border border-black-200 bg-white px-5 py-4 shadow-[0_3px_12px_rgba(0,0,0,0.045)]">
+        <div>
           {canEdit ? (
             <RubricEditor
               rubric={current}

@@ -35,5 +35,5 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!authenticated || !allowed) return null;
 
-  return <section className="w-full pb-16 md:pt-12">{children}</section>;
+  return <section className="w-full pb-16">{children}</section>;
 }

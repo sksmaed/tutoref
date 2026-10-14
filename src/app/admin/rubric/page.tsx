@@ -1,11 +1,12 @@
 'use client';
 
+import { PageHead } from '@/components/layout/PageHead';
 import { RubricPanel } from '@/features/admin/rubric/RubricPanel';
 
 export default function AdminRubricPage() {
   return (
     <div>
-      <h2 className="mb-2 font-['Noto_Sans_TC'] text-[18px] font-bold text-black-900">驗收標準</h2>
+      <PageHead title="驗收標準" subtitle="初驗與總驗的驗收標準；驗收者介面採用同一份標準。" />
       <RubricPanel />
     </div>
   );

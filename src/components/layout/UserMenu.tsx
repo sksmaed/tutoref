@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/features/auth/useAuth';
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import { ROLE_LABEL, displayName } from './user-display';
@@ -82,7 +82,15 @@ export default function UserMenu() {
               {roles.length ? roles.join('＋') : user?.email}
             </p>
           </div>
-          {/* TODO(M10)：設定頁完成後在這裡加「設定」→ /account */}
+          <Link
+            href="/account"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center gap-[9px] rounded-[9px] px-[11px] py-[10px] font-['Noto_Sans_TC'] text-[14px] font-medium text-black-700 hover:bg-black-100"
+          >
+            <Settings size={16} aria-hidden />
+            設定
+          </Link>
           <button
             type="button"
             role="menuitem"

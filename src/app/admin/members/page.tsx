@@ -1,11 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Toast } from '@/components/ui/toast';
-import { Checkbox } from '@/components/ui/Checkbox';
+import { PageHead } from '@/components/layout/PageHead';
 import { useTermContext } from '@/features/review-shared/useTermContext';
+import { BulkActionBar } from '@/features/review-shared/BulkActionBar';
 import { MemberTable } from '@/features/admin/members/MemberTable';
+import {
+  MemberBatchDialog,
+  MemberEditDialog,
+  type BatchValue,
+  type MemberFormValue,
+} from '@/features/admin/members/MemberDialogs';
+import { BTN, BTN_PRIMARY, BTN_SM } from '@/lib/button-styles';
 import {
   cloneMembersFromTerm,
   fetchFamilies,
@@ -15,16 +22,16 @@ import {
   upsertMembers,
   type FamilyRow,
   type MemberRow,
+  type MemberUpsertInput,
   type TermRow,
 } from '@/services/review';
 
-const ROLES = [
-  { value: 'reviewer', label: '驗收者' },
-  { value: 'leader', label: '組長' },
-  { value: 'writer', label: '撰寫者' },
-  { value: 'parent', label: '家長' },
-];
+type Notice = { type: 'success' | 'error'; title: string; message?: string };
 
+const CONTROL =
+  "rounded-[10px] border border-black-200 bg-white px-[10px] py-[9px] font-['Noto_Sans_TC'] text-[14px] text-black-900";
+
+/** 成員管理（v13 `renderAdminMembers()`）：依期別與家別管理身分，同一人可有多個角色。 */
 export default function AdminMembersPage() {
   const { context } = useTermContext();
   const termId = context?.current_term?.id ?? null;
@@ -34,15 +41,13 @@ export default function AdminMembersPage() {
   const [terms, setTerms] = useState<TermRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
-  const [notice, setNotice] = useState<{ type: 'success' | 'error'; title: string; message?: string } | null>(
-    null
-  );
+  const [notice, setNotice] = useState<Notice | null>(null);
 
-  const [addOpen, setAddOpen] = useState(false);
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [familyId, setFamilyId] = useState('');
-  const [roles, setRoles] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState('');
+  const [familyFilter, setFamilyFilter] = useState('');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [editing, setEditing] = useState<MemberRow | 'new' | null>(null);
+  const [batchOpen, setBatchOpen] = useState(false);
   const [cloneFrom, setCloneFrom] = useState('');
 
   const reload = useCallback(async () => {
@@ -51,11 +56,7 @@ export default function AdminMembersPage() {
     try {
       setRows(await fetchMembers(termId));
     } catch (err) {
-      setNotice({
-        type: 'error',
-        title: '無法取得成員',
-        message: err instanceof Error ? err.message : '請稍後再試。',
-      });
+      setNotice({ type: 'error', title: '無法取得成員', message: err instanceof Error ? err.message : '請稍後再試。' });
     } finally {
       setLoading(false);
     }
@@ -67,58 +68,126 @@ export default function AdminMembersPage() {
     void fetchTerms().then(setTerms).catch(() => setTerms([]));
   }, [reload]);
 
-  const run = async (action: () => Promise<unknown>, success: string) => {
+  const visible = useMemo(() => {
+    const keyword = query.trim().toLowerCase();
+    return rows.filter((row) => {
+      if (familyFilter && row.family_id !== familyFilter) return false;
+      return !keyword || `${row.name} ${row.email}`.toLowerCase().includes(keyword);
+    });
+  }, [familyFilter, query, rows]);
+
+  /** 執行一個寫入動作；成功回傳 true。 */
+  const run = async (action: () => Promise<unknown>, success: string, message?: string) => {
     setWorking(true);
     try {
       await action();
       await reload();
-      setNotice({ type: 'success', title: success });
+      setNotice({ type: 'success', title: success, message });
+      return true;
     } catch (err) {
-      setNotice({
-        type: 'error',
-        title: '操作失敗',
-        message: err instanceof Error ? err.message : '請稍後再試。',
-      });
+      setNotice({ type: 'error', title: '操作失敗', message: err instanceof Error ? err.message : '請稍後再試。' });
+      return false;
     } finally {
       setWorking(false);
     }
   };
 
-  const handleAdd = () => {
-    if (!termId || !email.trim() || !familyId) return;
-    void run(
-      () =>
-        upsertMembers(termId, [
+  /**
+   * 後端的 upsert 只會新增角色、更換家別，不會撤銷角色，所以：
+   * 新勾的角色走 upsert，取消勾選的走 patch revoke_roles。
+   */
+  const handleSave = async (value: MemberFormValue) => {
+    if (!termId) return;
+    const member = editing === 'new' ? null : editing;
+    const existing = new Set(member?.roles.map((role) => role.role) ?? []);
+    const added = [...value.roles].filter((role) => !existing.has(role));
+    const revoked = member?.roles.filter((role) => !value.roles.has(role.role)) ?? [];
+
+    const ok = await run(async () => {
+      if (!member || added.length > 0 || member.family_id !== value.familyId) {
+        await upsertMembers(termId, [
           {
-            email: email.trim(),
-            name: name.trim(),
-            family_id: familyId,
-            roles: [...roles].map((role) => ({
-              role,
-              family_id: familyId,
-            })),
+            email: value.email.trim(),
+            name: value.name.trim(),
+            family_id: value.familyId,
+            roles: added.map((role) => ({ role, family_id: value.familyId })),
           },
-        ]),
-      '已加入成員'
-    ).then(() => {
-      setAddOpen(false);
-      setEmail('');
-      setName('');
-      setFamilyId('');
-      setRoles(new Set());
-    });
+        ]);
+      }
+      if (member && revoked.length > 0) {
+        await patchMembers(termId, [
+          { user_id: member.user_id, revoke_roles: revoked.map((role) => ({ role: role.role, family_id: role.family_id ?? null })) },
+        ]);
+      }
+    }, member ? '成員已更新' : '已加入成員');
+    if (ok) setEditing(null);
+  };
+
+  const handleBatch = async (value: BatchValue) => {
+    if (!termId) return;
+    const targets = rows.filter((row) => selected.has(row.user_id));
+    const items: MemberUpsertInput[] = [];
+    let skipped = 0;
+    for (const row of targets) {
+      const familyId = value.familyId || row.family_id;
+      if (!familyId) {
+        skipped += 1;
+        continue;
+      }
+      const addRole = value.addRole && !row.roles.some((role) => role.role === value.addRole) ? [value.addRole] : [];
+      if (familyId === row.family_id && addRole.length === 0) continue;
+      items.push({
+        email: row.email,
+        name: row.name,
+        family_id: familyId,
+        roles: addRole.map((role) => ({ role, family_id: familyId })),
+      });
+    }
+    if (items.length === 0) {
+      setBatchOpen(false);
+      setNotice({ type: 'error', title: '沒有需要變更的成員', message: skipped ? `${skipped} 位沒有本期家別，已略過。` : undefined });
+      return;
+    }
+    const ok = await run(
+      () => upsertMembers(termId, items),
+      `已更新 ${items.length} 位成員`,
+      skipped ? `${skipped} 位沒有本期家別，已略過。` : undefined
+    );
+    if (ok) {
+      setBatchOpen(false);
+      setSelected(new Set());
+    }
   };
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-['Noto_Sans_TC'] text-[18px] font-bold text-black-900">成員管理</h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={cloneFrom}
-            onChange={(event) => setCloneFrom(event.target.value)}
-            className="rounded-lg border border-black-200 px-2 py-1 text-[14px]"
-          >
+      <PageHead
+        title="成員管理"
+        subtitle={`${context?.current_term?.label ? `${context.current_term.label}・` : ''}依期別與家別管理成員身份；同一位成員可以同時擁有多個角色。`}
+        actions={
+          <button type="button" className={BTN_PRIMARY} onClick={() => setEditing('new')}>
+            ＋ 新增成員
+          </button>
+        }
+      />
+
+      <div className="mb-4 flex flex-wrap items-center gap-[10px]">
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="搜尋姓名或信箱…"
+          className={`${CONTROL} min-w-[240px] flex-1 outline-none focus:border-primary-700`}
+        />
+        <select value={familyFilter} onChange={(event) => setFamilyFilter(event.target.value)} className={CONTROL}>
+          <option value="">全部家別</option>
+          {families.map((family) => (
+            <option key={family.id} value={family.id}>
+              {family.name}
+            </option>
+          ))}
+        </select>
+        <span className="ml-auto flex flex-wrap items-center gap-2">
+          <select value={cloneFrom} onChange={(event) => setCloneFrom(event.target.value)} className={CONTROL}>
             <option value="">複製哪一期的角色…</option>
             {terms
               .filter((term) => term.id !== termId)
@@ -128,31 +197,43 @@ export default function AdminMembersPage() {
                 </option>
               ))}
           </select>
-          <Button
-            onClick={() =>
-              cloneFrom && termId
-                ? void run(() => cloneMembersFromTerm(cloneFrom, termId), '已複製上期角色')
-                : undefined
-            }
-            disabled={!cloneFrom || working}
-            className="border border-primary-900 bg-white px-4 py-1 text-primary-900"
+          <button
+            type="button"
+            className={BTN}
+            disabled={!cloneFrom || !termId || working}
+            onClick={() => cloneFrom && termId && void run(() => cloneMembersFromTerm(cloneFrom, termId), '已複製上期角色')}
           >
             複製到本期
-          </Button>
-          <Button
-            onClick={() => setAddOpen(true)}
-            className="bg-primary-900 px-4 py-1 font-bold text-white"
-          >
-            新增成員
-          </Button>
-        </div>
+          </button>
+        </span>
       </div>
-      <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-700">
-        以 email 為準；沒有帳號的人會建立一個尚未設定密碼的帳號，之後由本人設定密碼。
-      </p>
-      <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-500">
-        每位成員都必須指定本期家別；帳戶不提供啟用或停用設定。
-      </p>
+
+      <BulkActionBar
+        variant="inline"
+        summary={
+          <>
+            <span className="font-bold text-black-900">已選 {selected.size} 位成員</span>
+            <span className="ml-2 text-[12px]">可批量調整家別與新增角色</span>
+          </>
+        }
+      >
+        <button
+          type="button"
+          className={`${BTN} ${BTN_SM}`}
+          onClick={() => setSelected(new Set())}
+          disabled={selected.size === 0}
+        >
+          取消選取
+        </button>
+        <button
+          type="button"
+          className={`${BTN_PRIMARY} ${BTN_SM}`}
+          onClick={() => setBatchOpen(true)}
+          disabled={selected.size === 0}
+        >
+          批量編輯
+        </button>
+      </BulkActionBar>
 
       {loading ? (
         <div className="flex min-h-[30vh] items-center justify-center">
@@ -160,95 +241,40 @@ export default function AdminMembersPage() {
         </div>
       ) : (
         <MemberTable
-          rows={rows}
-          working={working}
-          onRevokeRole={(row, role) =>
-            void run(
-              () => patchMembers(termId!, [{ user_id: row.user_id, revoke_roles: [role] }]),
-              '已撤銷角色'
-            )
+          rows={visible}
+          selected={selected}
+          onToggle={(userId, checked) =>
+            setSelected((prev) => {
+              const next = new Set(prev);
+              if (checked) next.add(userId);
+              else next.delete(userId);
+              return next;
+            })
           }
+          onToggleAll={(checked) => setSelected(checked ? new Set(visible.map((row) => row.user_id)) : new Set())}
+          onEdit={setEditing}
         />
       )}
+      <p className="mt-2 font-['Noto_Sans_TC'] text-[12px] text-black-500">
+        每位成員都必須指定本期家別；帳戶不提供啟用或停用設定。
+      </p>
 
-      {addOpen && (
-        <div className="fixed inset-0 z-1000">
-          <div
-            className="absolute inset-0"
-            style={{ backgroundColor: '#0D0D0DB2' }}
-            onClick={() => setAddOpen(false)}
-            aria-hidden
-          />
-          <div className="absolute left-1/2 top-1/2 w-[min(460px,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-[8px] bg-white px-8 py-6 shadow-xl">
-            <h3 className="text-center font-['Noto_Sans_TC'] text-[18px] font-medium text-black-900">
-              新增成員
-            </h3>
-            <div className="mt-4 flex flex-col gap-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="email（必填）"
-                className="rounded-lg border border-black-200 px-3 py-2 text-[14px]"
-              />
-              <input
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="姓名"
-                className="rounded-lg border border-black-200 px-3 py-2 text-[14px]"
-              />
-              <select
-                value={familyId}
-                onChange={(event) => setFamilyId(event.target.value)}
-                className="rounded-lg border border-black-200 px-3 py-2 text-[14px]"
-              >
-                <option value="">選擇家別（必填）</option>
-                {families.map((family) => (
-                  <option key={family.id} value={family.id}>
-                    {family.name}
-                  </option>
-                ))}
-              </select>
-              {!familyId && (
-                <p className="text-[13px] text-status-alert">所有成員都必須選擇家別。</p>
-              )}
-              <div className="flex flex-wrap gap-x-4 gap-y-2">
-                {ROLES.map((role) => (
-                  <Checkbox
-                    key={role.value}
-                    checked={roles.has(role.value)}
-                    onChange={(next) =>
-                      setRoles((prev) => {
-                        const updated = new Set(prev);
-                        if (next) updated.add(role.value);
-                        else updated.delete(role.value);
-                        return updated;
-                      })
-                    }
-                    label={role.label}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="mt-5 flex justify-center gap-[10px]">
-              <Button
-                onClick={() => setAddOpen(false)}
-                className="w-[110px] rounded-lg border border-primary-900 bg-white py-2 text-primary-900"
-              >
-                取消
-              </Button>
-              <Button
-                onClick={handleAdd}
-                disabled={!email.trim() || !familyId || working}
-                className="w-[110px] rounded-lg bg-primary-900 py-2 font-bold text-white"
-              >
-                加入
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <MemberEditDialog
+        open={editing !== null}
+        member={editing === 'new' ? null : editing}
+        families={families}
+        working={working}
+        onClose={() => setEditing(null)}
+        onSave={(value) => void handleSave(value)}
+      />
+      <MemberBatchDialog
+        open={batchOpen}
+        count={selected.size}
+        families={families}
+        working={working}
+        onClose={() => setBatchOpen(false)}
+        onApply={(value) => void handleBatch(value)}
+      />
 
       <Toast
         open={!!notice}
