@@ -52,14 +52,6 @@ export const ADMIN_SECTIONS: ReviewSection[] = [
     available: true,
   },
   {
-    key: 'announcements',
-    label: '驗收公告',
-    href: '/admin/announcements',
-    capability: 'announcement.publish',
-    description: '發布驗收時程與結果公告。',
-    available: true,
-  },
-  {
     key: 'members',
     label: '成員管理',
     href: '/admin/members',

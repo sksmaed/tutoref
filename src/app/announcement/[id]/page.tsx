@@ -31,9 +31,9 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
   }, [id]);
 
   return (
-    <section className="mx-auto mt-10 mb-16 w-full max-w-[976px] px-4 sm:px-6 lg:px-0">
+    <section className="pb-16 md:pt-3">
       <Link href="/announcement" className="font-['Noto_Sans_TC'] text-[14px] text-primary-900 hover:opacity-80">
-        ← 公告列表
+        ← 訊息公告
       </Link>
 
       {loading ? (
@@ -41,11 +41,11 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-900" />
         </div>
       ) : error || !announcement ? (
-        <div className="mt-4 rounded-lg bg-white px-6 py-12 text-center shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+        <div className="mt-4 rounded-[10px] border border-black-200 bg-white px-6 py-12 text-center">
           <p className="font-['Noto_Sans_TC'] text-[16px] text-status-alert">{error ?? '找不到這則公告'}</p>
         </div>
       ) : (
-        <article className="mt-4 rounded-lg bg-white px-6 py-6 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+        <article className="mt-4 rounded-[13px] border border-black-200 bg-white px-6 py-6 shadow-[0_3px_12px_rgba(0,0,0,0.045)]">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h1 className="font-['Noto_Sans_TC'] text-[22px] font-bold text-black-900">{announcement.title}</h1>
             <StatusChip

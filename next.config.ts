@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
     return [
       // 教案管理總覽拆成側欄的「已上傳教案」「已收藏教案」
       { source: '/manage', destination: '/plans/mine', permanent: false },
+      // 公告撰寫器併入訊息公告頁
+      { source: '/admin/announcements', destination: '/announcement', permanent: false },
     ];
   },
 };

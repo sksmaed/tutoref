@@ -111,14 +111,6 @@ export const NAV_GROUPS: NavGroup[] = [
         href: '/admin/review',
         visible: (ctx) => has(ctx, 'review.manage'),
       },
-      // TODO(M5)：公告撰寫器併入 /announcement 後移除這一項
-      {
-        key: 'admin-announcements',
-        label: '驗收公告',
-        icon: Megaphone,
-        href: '/admin/announcements',
-        visible: (ctx) => has(ctx, 'announcement.publish'),
-      },
     ],
   },
   {
