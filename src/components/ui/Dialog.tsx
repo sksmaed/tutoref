@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+const openStack: symbol[] = [];
 
 const SIZE_CLASS = {
   sm: 'max-w-[500px]',
@@ -36,14 +38,25 @@ export function Dialog({
   busy = false,
   children,
 }: DialogProps) {
+  // 疊兩層 Dialog 時（例如上傳視窗開在教案視窗上），Esc 只關最上層
+  // onClose / busy 放 ref：父層每次 render 都給新的 onClose，不能因此重排堆疊順序
+  const [id] = useState(() => Symbol('dialog'));
+  const latest = useRef({ onClose, busy });
+  latest.current = { onClose, busy };
   useEffect(() => {
     if (!open) return;
+    openStack.push(id);
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !busy) onClose();
+      if (event.key !== 'Escape' || latest.current.busy) return;
+      if (openStack[openStack.length - 1] === id) latest.current.onClose();
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, busy, onClose]);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      const index = openStack.lastIndexOf(id);
+      if (index >= 0) openStack.splice(index, 1);
+    };
+  }, [open, id]);
 
   if (!open) return null;
 

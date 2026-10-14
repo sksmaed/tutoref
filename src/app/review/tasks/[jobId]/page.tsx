@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Toast } from '@/components/ui/toast';
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import { LockBanner } from '@/features/review-shared/LockBanner';
+import { formatDateTime } from '@/features/review-shared/format';
 import { ReviewWorkspace } from '@/features/review-tasks/ReviewWorkspace';
 import { InitialReviewForm } from '@/features/review-tasks/InitialReviewForm';
 import { FinalReviewForm } from '@/features/review-tasks/FinalReviewForm';
@@ -67,7 +68,7 @@ export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobI
 
   if (error || !workspace) {
     return (
-      <div className="mt-6 mb-16 rounded-lg bg-white px-6 py-10 text-center shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+      <div className="mb-16 rounded-[10px] border border-black-200 bg-white px-6 py-10 text-center">
         <p className="font-['Noto_Sans_TC'] text-[16px] text-status-alert">{error ?? '找不到這個驗收任務'}</p>
         <Link href="/review/tasks" className="mt-4 inline-block text-[15px] text-primary-900 hover:opacity-80">
           ← 回到我的驗收任務
@@ -80,18 +81,24 @@ export default function ReviewWorkspacePage({ params }: { params: Promise<{ jobI
   const editable = context?.policy?.reviewer_can_edit_after_submit ?? false;
   // 總驗記在 ReviewRecord，初驗記在 ReviewSubmission，兩邊都要算「已提交」
   const alreadySubmitted = submitted || !!workspace.my_record;
+  const roundKey = workspace.job.job_type === 'final_review' ? 'final' : 'initial';
+  const dueAt = context?.stage_state?.[roundKey]?.review_due_at;
+  const dueText = dueAt ? `截止 ${formatDateTime(dueAt)}` : '';
 
   return (
     <div className="mb-16">
       <div className="flex flex-wrap items-baseline justify-between gap-2 md:pr-16">
         <div>
-          <Link href="/review/tasks" className="text-[14px] text-primary-900 hover:opacity-80">
+          <Link href={`/review/tasks?round=${roundKey}`} className="font-['Noto_Sans_TC'] text-[13px] font-bold text-primary-900 hover:opacity-80">
             ← 我的驗收任務
           </Link>
-          <h2 className="mt-1 font-['Noto_Sans_TC'] text-[20px] font-bold text-black-900">
+          <p className="mt-2 font-['Noto_Sans_TC'] text-[12px] text-black-500">
+            {[context?.current_term?.label, roundKey === 'final' ? '總驗' : '初驗', dueText].filter(Boolean).join('・')}
+          </p>
+          <h1 className="font-['Noto_Sans_TC'] text-[21px] font-bold leading-[150%] text-black-900">
             {String(metadata.tp_name ?? '')}
-          </h2>
-          <p className="font-['Noto_Sans_TC'] text-[14px] text-black-700">
+          </h1>
+          <p className="font-['Noto_Sans_TC'] text-[13px] text-black-500">
             {String(metadata.team ?? '')}・{String(metadata.category ?? '')}・
             {String(metadata.grade ?? '')}・{String(metadata.duration ?? '')} 分鐘
             {workspace.my_slot && `・Slot ${workspace.my_slot}`}

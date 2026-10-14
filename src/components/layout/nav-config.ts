@@ -99,9 +99,7 @@ export const NAV_GROUPS: NavGroup[] = [
         key: 'review-tasks',
         label: '我的驗收任務',
         icon: ClipboardCheck,
-        // TODO(M7)：本期教案併入 /review/tasks 前，只有撰寫者身分的人要導到 /review/my-plans
-        href: (ctx) => (has(ctx, 'review.submit') ? '/review/tasks' : '/review/my-plans'),
-        match: ['/review/tasks', '/review/my-plans'],
+        href: '/review/tasks',
         visible: (ctx) => has(ctx, 'plan.author', 'review.submit'),
       },
       {

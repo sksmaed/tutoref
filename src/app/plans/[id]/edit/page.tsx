@@ -189,7 +189,7 @@ export default function EditTeachingPlanPage() {
               返回
             </button>
             <Link
-              href="/review/my-plans"
+              href="/review/tasks"
               className="flex h-[44px] w-[160px] items-center justify-center rounded-[8px] bg-primary-900 font-bold text-white"
             >
               前往本期教案

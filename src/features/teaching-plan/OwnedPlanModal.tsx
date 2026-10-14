@@ -7,8 +7,7 @@ import { BTN, BTN_DANGER, BTN_PRIMARY } from '@/lib/button-styles';
 import { PlanStatusBadges } from './PlanStatusBadges';
 import { formatShortDateTime, type Row } from './AllPlansTable';
 
-// TODO(M7)：本期教案併入「我的驗收任務」後改成 /review/tasks
-const REVIEW_AUTHOR_HREF = '/review/my-plans';
+const REVIEW_AUTHOR_HREF = '/review/tasks';
 
 interface OwnedPlanModalProps {
   row: Row | null;

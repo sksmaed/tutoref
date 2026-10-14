@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import PreviewPDF from '@/features/teaching-plan/PdfPreview';
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import type { ReviewWorkspace as Workspace } from '@/services/review';
 
 type PreviewKind = 'sheet' | 'slide';
@@ -30,27 +31,26 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({ workspace, chi
   const url = kind === 'sheet' ? snapshot.sheet_drive_url : snapshot.slide_drive_url;
   const present = kind === 'sheet' ? snapshot.sheet_present : snapshot.slide_present;
 
-  const tabClass = (active: boolean) =>
-    `rounded-lg px-3 py-1 font-['Noto_Sans_TC'] text-[14px] ${
-      active ? 'bg-primary-900 text-white' : 'bg-white text-black-700 hover:bg-primary-100'
-    }`;
 
   return (
     <div className="mt-4 flex flex-col gap-6 lg:flex-row">
-      <div className="lg:sticky lg:top-4 lg:h-[calc(100vh-6rem)] lg:w-1/2">
+      <div className="lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)] lg:w-[52%]">
         <div className="flex items-center gap-2">
-          <button type="button" className={tabClass(kind === 'sheet')} onClick={() => setKind('sheet')}>
-            教案紙
-          </button>
-          <button type="button" className={tabClass(kind === 'slide')} onClick={() => setKind('slide')}>
-            投影片
-          </button>
+          <SegmentedTabs
+            variant="soft"
+            tabs={[
+              { key: 'sheet' as PreviewKind, label: '教案紙' },
+              { key: 'slide' as PreviewKind, label: '投影片' },
+            ]}
+            active={kind}
+            onChange={setKind}
+          />
           {present && (
             <>
               <button
                 type="button"
                 onClick={() => setEnlarged(true)}
-                className="ml-auto font-['Noto_Sans_TC'] text-[14px] text-primary-900 hover:opacity-80"
+                className="ml-auto cursor-pointer font-['Noto_Sans_TC'] text-[13px] font-bold text-primary-900 hover:opacity-80"
               >
                 放大
               </button>
@@ -58,7 +58,7 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({ workspace, chi
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-['Noto_Sans_TC'] text-[14px] text-primary-900 hover:opacity-80"
+                className="font-['Noto_Sans_TC'] text-[13px] font-bold text-primary-900 hover:opacity-80"
               >
                 新分頁開啟
               </a>
@@ -66,7 +66,7 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({ workspace, chi
           )}
         </div>
 
-        <div className="mt-2 h-[60vh] overflow-hidden rounded-lg bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] lg:h-[calc(100%-2.5rem)]">
+        <div className="mt-2 h-[60vh] overflow-hidden rounded-[14px] border border-black-200 bg-black-100 lg:h-[calc(100%-3rem)]">
           {present ? (
             <iframe
               src={driveEmbedUrl(url)}
@@ -85,7 +85,7 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({ workspace, chi
         </div>
       </div>
 
-      <div className="min-w-0 lg:w-1/2">{children}</div>
+      <div className="min-w-0 lg:w-[48%]">{children}</div>
 
       <PreviewPDF isOpen={enlarged} fileUrl={present ? driveEmbedUrl(url) : null} onClose={() => setEnlarged(false)} />
     </div>

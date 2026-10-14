@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
       { source: '/manage', destination: '/plans/mine', permanent: false },
       // 公告撰寫器併入訊息公告頁
       { source: '/admin/announcements', destination: '/announcement', permanent: false },
+      // 本期教案併入我的驗收任務
+      { source: '/review/my-plans', destination: '/review/tasks', permanent: false },
     ];
   },
 };
