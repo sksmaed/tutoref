@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { StatusChip } from '@/features/review-shared/StatusChip';
+import { StatusChip, type StatusTone } from '@/features/review-shared/StatusChip';
+import { TABLE, TABLE_WRAP, TD, TH } from '@/lib/table-styles';
 import {
   fetchFeedbackItems,
   fetchJobReviews,
@@ -31,16 +32,25 @@ export function decisionLabel(row: ResultRow): string {
   return name;
 }
 
+/** 系統篩選（分數區間）對應的 chip 顏色。 */
+const BAND_TONE: Record<string, StatusTone> = {
+  potential_excellent: 'done',
+  pass: 'done',
+  discussion: 'active',
+  fail: 'alert',
+};
+
 /** 總驗沒有分數，看的是教案紙 / 投影片各自通過與否。 */
 const RecordCell: React.FC<{ record: FinalRecord | null | undefined }> = ({ record }) => {
   if (!record) return <span className="text-status-idle">未提交</span>;
   const mark = (label: string, result: string) => (
-    <span className={result === 'passed' ? 'text-status-done' : 'text-status-alert'}>
-      {result === 'passed' ? '✓' : '✗'} {label}
+    <span className="flex items-center gap-[5px]">
+      <span className="text-[12px] text-black-500">{label}</span>
+      <StatusChip status={result === 'passed' ? '通過' : '未通過'} tone={result === 'passed' ? 'done' : 'alert'} />
     </span>
   );
   return (
-    <span className="flex flex-col items-center text-[13px]">
+    <span className="flex flex-col gap-[5px] text-[13px]">
       {mark('教案紙', record.sheet_result)}
       {mark('投影片', record.slide_result)}
     </span>
@@ -101,35 +111,35 @@ export const ResultTable: React.FC<ResultTableProps> = ({
   };
 
   return (
-    <div className="mt-4 w-full overflow-x-auto rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-      <table className="w-full min-w-[900px] border-collapse text-[14px] font-['Noto_Sans_TC']">
+    <div className={TABLE_WRAP}>
+      <table className={`${TABLE} min-w-[920px]`}>
         <thead>
-          <tr className="bg-primary-100 font-bold text-black-900">
-            <th className="h-[48px] w-[52px] px-2 text-center">
+          <tr>
+            <th className={`${TH} w-[52px] text-center`}>
               <span className="inline-flex justify-center">
                 <Checkbox checked={allChecked} onChange={onToggleAll} label="" />
               </span>
             </th>
-            <th className="h-[48px] px-4 text-left">教案</th>
-            <th className="h-[48px] w-[80px] px-2 text-center">家別</th>
+            <th className={TH}>教案</th>
+            <th className={TH}>家別</th>
             {round === 'final' ? (
-              <th className="h-[48px] w-[220px] px-2 text-center">驗收判定</th>
+              <th className={TH}>驗收者判定（教案紙 / 投影片）</th>
             ) : (
               <>
-                <th className="h-[48px] w-[180px] px-2 text-center">驗收分數</th>
-                <th className="h-[48px] w-[80px] px-2 text-center">平均</th>
-                <th className="h-[48px] w-[100px] px-2 text-center">系統訊號</th>
+                <th className={TH}>驗收分數</th>
+                <th className={TH}>平均加權分數</th>
+                <th className={TH}>系統篩選</th>
               </>
             )}
-            <th className="h-[48px] w-[110px] px-2 text-center">Feedback</th>
-            <th className="h-[48px] w-[120px] px-2 text-center">最終結果</th>
-            <th className="h-[48px] w-[80px] px-2 text-center" />
+            <th className={TH}>回饋處理</th>
+            <th className={TH}>最終結果</th>
+            <th className={TH} aria-label="動作" />
           </tr>
         </thead>
         <tbody className="divide-y divide-black-200 bg-white">
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={round === 'final' ? 7 : 9} className="h-[80px] text-center text-black-700">
+              <td colSpan={round === 'final' ? 7 : 9} className="py-10 text-center text-[14px] text-black-500">
                 本輪還沒有任何驗收任務。
               </td>
             </tr>
@@ -140,8 +150,8 @@ export const ResultTable: React.FC<ResultTableProps> = ({
               const reviewRows = reviews[row.job_id];
               return (
                 <React.Fragment key={row.job_id}>
-                  <tr className={`transition-colors hover:bg-primary-100 ${locked ? 'bg-status-locked-bg' : ''}`}>
-                    <td className="h-[56px] px-2 text-center">
+                  <tr className={`transition-colors hover:bg-primary-100/40 ${locked ? 'bg-status-locked-bg' : ''}`}>
+                    <td className={`${TD} text-center`}>
                       <span className={`inline-flex justify-center ${locked ? 'pointer-events-none opacity-50' : ''}`}>
                         <Checkbox
                           checked={selected.has(row.job_id)}
@@ -150,26 +160,26 @@ export const ResultTable: React.FC<ResultTableProps> = ({
                         />
                       </span>
                     </td>
-                    <td className="h-[56px] px-4">
+                    <td className={TD}>
                       <button
                         type="button"
                         onClick={() => void toggleExpand(row)}
-                        className="block max-w-full truncate text-left hover:text-primary-900 hover:cursor-pointer"
+                        className="block max-w-full cursor-pointer text-left font-bold hover:text-primary-900"
                         title={row.tp_name}
                       >
                         {expanded === row.job_id ? '▾ ' : '▸ '}
                         {row.tp_name}
                       </button>
                     </td>
-                    <td className="h-[56px] px-2 text-center">{row.family}</td>
+                    <td className={TD}>{row.family}</td>
                     {round === 'final' ? (
-                      <td className="h-[56px] px-2 text-center">
+                      <td className={TD}>
                         {Object.keys(row.records ?? {}).length === 0 ? (
-                          <span className="text-status-idle">未提交</span>
+                          <StatusChip status="待完成" tone="idle" />
                         ) : (
-                          <div className="flex flex-wrap justify-center gap-2">
+                          <div className="flex flex-wrap gap-2">
                             {Object.entries(row.records ?? {}).map(([slot, record]) => (
-                              <div key={slot} className="rounded-lg border border-black-200 px-2 py-1">
+                              <div key={slot} className="rounded-lg border border-black-200 px-2 py-[6px]">
                                 <span className="text-[12px] text-black-500">{slot}</span>
                                 <RecordCell record={record} />
                               </div>
@@ -179,35 +189,47 @@ export const ResultTable: React.FC<ResultTableProps> = ({
                       </td>
                     ) : (
                       <>
-                        <td className="h-[56px] px-2 text-center">
-                          {Object.keys(row.scores ?? {}).length === 0
-                            ? '—'
-                            : Object.entries(row.scores).map(([slot, score]) => (
-                                <span key={slot} className="mr-2 inline-block whitespace-nowrap">
-                                  {slot}：{score}
-                                </span>
-                              ))}
+                        <td className={TD}>
+                          {Object.keys(row.scores ?? {}).length === 0 ? (
+                            <StatusChip status="待完成" tone="idle" />
+                          ) : (
+                            Object.entries(row.scores).map(([slot, score]) => (
+                              <span key={slot} className="mr-3 inline-block whitespace-nowrap">
+                                <span className="text-[12px] text-black-500">{slot} </span>
+                                <span className="font-bold">{score}</span>
+                              </span>
+                            ))
+                          )}
                         </td>
-                        <td className="h-[56px] px-2 text-center font-bold">{row.average ?? '—'}</td>
-                        <td className="h-[56px] px-2 text-center">
-                          {row.band ? BAND_LABEL[row.band] ?? row.band : '—'}
+                        <td className={`${TD} font-bold`}>{row.average ?? '—'}</td>
+                        <td className={TD}>
+                          {row.band ? (
+                            <StatusChip status={BAND_LABEL[row.band] ?? row.band} tone={BAND_TONE[row.band] ?? 'idle'} />
+                          ) : (
+                            '—'
+                          )}
                         </td>
                       </>
                     )}
-                    <td className="h-[56px] px-2 text-center text-[13px]">
-                      {row.feedback_progress.total === 0
-                        ? '尚未產生'
-                        : `${row.feedback_progress.done} / ${row.feedback_progress.total}`}
+                    <td className={TD}>
+                      {row.feedback_progress.total === 0 ? (
+                        <span className="text-[12px] text-black-500">尚未產生</span>
+                      ) : (
+                        <StatusChip
+                          status={`${row.feedback_progress.done}/${row.feedback_progress.total}`}
+                          tone={row.feedback_progress.todo > 0 ? 'active' : 'done'}
+                        />
+                      )}
                     </td>
-                    <td className="h-[56px] px-2 text-center">
+                    <td className={TD}>
                       <StatusChip status={decisionLabel(row)} />
                     </td>
-                    <td className="h-[56px] px-2 text-center">
+                    <td className={`${TD} text-right`}>
                       {locked && !row.result_published && canUnlock && (
                         <button
                           type="button"
                           onClick={() => onUnlock(row)}
-                          className="text-[13px] text-primary-900 hover:opacity-80 hover:cursor-pointer"
+                          className="cursor-pointer text-[13px] font-bold text-primary-900 hover:opacity-80"
                         >
                           解鎖
                         </button>
@@ -215,7 +237,7 @@ export const ResultTable: React.FC<ResultTableProps> = ({
                     </td>
                   </tr>
                   {expanded === row.job_id && (
-                    <tr className="bg-black-100">
+                    <tr className="bg-black-100/60">
                       <td colSpan={round === 'final' ? 7 : 9} className="px-6 py-4">
                         {row.final_decision?.reason && (
                           <p className="mb-2 text-[13px] text-black-700">
