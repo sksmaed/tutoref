@@ -79,10 +79,10 @@ export function MemberEditDialog({ open, member, families, working, onClose, onS
           <input
             className={INPUT}
             value={value.name}
-            disabled={!!member}
+            maxLength={255}
             onChange={(event) => setValue((prev) => ({ ...prev, name: event.target.value }))}
           />
-          {member && <span className="mt-1 block text-[11px] text-black-500">已有帳號的成員，姓名無法在這裡修改。</span>}
+          {member && <span className="mt-1 block text-[11px] text-black-500">清空不會刪除姓名，會維持原本的值。</span>}
         </label>
         <label className="block">
           <span className={LABEL}>信箱（必填）</span>

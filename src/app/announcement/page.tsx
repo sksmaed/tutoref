@@ -200,7 +200,8 @@ export default function AnnouncementPage() {
             setNotice({ type: 'success', title: '公告已發布', message });
             void reload();
           }}
-          onError={(message) => setNotice({ type: 'error', title: '發布失敗', message })}
+          onError={(message) => setNotice({ type: 'error', title: '操作失敗', message })}
+          onDraftSaved={(message) => setNotice({ type: 'success', title: message })}
         />
       )}
 

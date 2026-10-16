@@ -11,12 +11,10 @@ import type { ReviewerLoadRow } from '@/services/review';
 interface AssignmentByReviewerProps {
   round: Round;
   rows: ReviewerLoadRow[];
-  /** 某份教案的某個 slot 是否已提交（從驗收結果推得）。 */
-  isSlotDone: (jobId: string, slot: string) => boolean;
 }
 
 /** 從驗收者檢視（v13 `assignmentReviewerView()`）：份數、點數與完成進度，看工作量是否平均。 */
-export const AssignmentByReviewer: React.FC<AssignmentByReviewerProps> = ({ round, rows, isSlotDone }) => {
+export const AssignmentByReviewer: React.FC<AssignmentByReviewerProps> = ({ round, rows }) => {
   const [openId, setOpenId] = useState<string | null>(null);
   const open = rows.find((row) => row.reviewer_id === openId) ?? null;
 
@@ -48,7 +46,7 @@ export const AssignmentByReviewer: React.FC<AssignmentByReviewerProps> = ({ roun
           </thead>
           <tbody>
             {sorted.map((row) => {
-              const done = row.jobs.filter((job) => isSlotDone(job.job_id, job.slot_label)).length;
+              const done = row.jobs.filter((job) => job.submitted).length;
               const total = row.jobs.length;
               const percent = total ? Math.round((done / total) * 100) : 0;
               return (
@@ -105,7 +103,7 @@ export const AssignmentByReviewer: React.FC<AssignmentByReviewerProps> = ({ roun
             </p>
             <ul className="flex flex-col gap-[10px]">
               {open.jobs.map((job) => {
-                const done = isSlotDone(job.job_id, job.slot_label);
+                const done = !!job.submitted;
                 return (
                   <li
                     key={`${job.job_id}-${job.slot_label}`}

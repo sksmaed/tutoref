@@ -63,14 +63,13 @@ function RoundPanel({ round, view, onViewChange, onNotice }: {
     };
   }, [round]);
 
-  // 「已完成」以驗收結果裡有沒有該 slot 的分數（初驗）或判定（總驗）為準
+  // 「已完成」看後端給的 submitted（該 slot 已提交或提交後修改過）
   const isSlotDone = useCallback(
-    (jobId: string, slot: string) => {
-      const row = results.rows.find((item) => item.job_id === jobId);
-      if (!row) return false;
-      return round === 'final' ? !!row.records?.[slot] : row.scores?.[slot] != null;
-    },
-    [results.rows, round]
+    (jobId: string, slot: string) =>
+      !!board.jobs
+        .find((job) => job.id === jobId)
+        ?.assignments.find((assignment) => assignment.slot_label === slot)?.submitted,
+    [board.jobs]
   );
 
   const roundLabel = round === 'final' ? '總驗' : '初驗';

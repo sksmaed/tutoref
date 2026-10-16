@@ -6,7 +6,7 @@ import { StatusChip } from '@/features/review-shared/StatusChip';
 import { formatDateTime } from '@/features/review-shared/format';
 import type { Round } from '@/features/review-shared/types';
 import { TABLE, TABLE_WRAP, TD, TH, TR } from '@/lib/table-styles';
-import { fetchFamilyPlansFor, type FamilyPlan, type FamilySubmissionProgress } from '@/services/review';
+import { fetchAllFamilyPlans, type FamilyPlan, type FamilySubmissionProgress } from '@/services/review';
 
 type Filter = 'all' | 'submitted' | 'not_submitted' | 'missing_file';
 
@@ -31,34 +31,32 @@ interface SubmissionsViewProps {
 
 /** 教案清單（v13 `adminSubmissions()`）：各家送件進度 + 全團本輪教案。 */
 export const SubmissionsView: React.FC<SubmissionsViewProps> = ({ round, progress }) => {
-  const [rows, setRows] = useState<Row[]>([]);
+  const [plans, setPlans] = useState<FamilyPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
 
-  // 後端沒有全團清單，逐家撈（六家，平行）
-  const familyKey = progress.map((family) => `${family.family_id}:${family.submitted}`).join('|');
   useEffect(() => {
-    if (progress.length === 0) return;
     let cancelled = false;
     setLoading(true);
-    Promise.all(
-      progress.map((family) =>
-        fetchFamilyPlansFor(family.family_id, round)
-          .then((plans) =>
-            plans.map((plan) => ({ ...plan, family: family.family_name, familySubmitted: family.submitted }))
-          )
-          .catch(() => [] as Row[])
-      )
-    )
-      .then((lists) => !cancelled && setRows(lists.flat()))
+    fetchAllFamilyPlans(round)
+      .then((data) => !cancelled && setPlans(data))
+      .catch(() => !cancelled && setPlans([]))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-    // familyKey 已涵蓋 progress 的內容
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [familyKey, round]);
+  }, [round]);
+
+  // 家長確認狀態看該家有沒有送出本輪
+  const rows = useMemo<Row[]>(() => {
+    const submittedById = new Map(progress.map((family) => [family.family_id, family.submitted]));
+    return plans.map((plan) => ({
+      ...plan,
+      family: plan.family_name ?? '—',
+      familySubmitted: !!(plan.family_id && submittedById.get(plan.family_id)),
+    }));
+  }, [plans, progress]);
 
   const visible = useMemo(() => {
     const keyword = query.trim().toLowerCase();

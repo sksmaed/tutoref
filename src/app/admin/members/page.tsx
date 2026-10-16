@@ -103,8 +103,11 @@ export default function AdminMembersPage() {
     const added = [...value.roles].filter((role) => !existing.has(role));
     const revoked = member?.roles.filter((role) => !value.roles.has(role.role)) ?? [];
 
+    // 後端：既有成員的 name 去空白後非空且不同才會更新，空字串視為不變更
+    const nameChanged = !!member && !!value.name.trim() && value.name.trim() !== member.name;
+
     const ok = await run(async () => {
-      if (!member || added.length > 0 || member.family_id !== value.familyId) {
+      if (!member || added.length > 0 || nameChanged || member.family_id !== value.familyId) {
         await upsertMembers(termId, [
           {
             email: value.email.trim(),

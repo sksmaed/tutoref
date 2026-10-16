@@ -21,7 +21,7 @@ interface AssignmentByPlanProps {
   slots: SlotMap;
   reviewers: MemberRow[];
   editing: boolean;
-  /** 某份教案的某個 slot 是否已提交（從驗收結果推得）。 */
+  /** 某份教案的某個 slot 是否已提交（後端 assignments[].submitted）。 */
   isSlotDone: (jobId: string, slot: string) => boolean;
   onSetSlot: (jobId: string, slot: string, reviewerId: string) => void;
   onAddSlot: (jobId: string) => void;

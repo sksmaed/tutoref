@@ -181,7 +181,7 @@ export const AssignmentsView: React.FC<AssignmentsViewProps> = ({
       ) : board.error ? (
         <p className="font-['Noto_Sans_TC'] text-[14px] text-status-alert">{board.error}</p>
       ) : view === 'reviewer' ? (
-        <AssignmentByReviewer round={round} rows={board.load} isSlotDone={isSlotDone} />
+        <AssignmentByReviewer round={round} rows={board.load} />
       ) : (
         <AssignmentByPlan
           jobs={board.jobs}

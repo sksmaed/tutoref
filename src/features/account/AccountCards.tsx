@@ -3,25 +3,59 @@
 import React from 'react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { KeyValueList } from '@/components/ui/Dialog';
-import { ROLE_LABEL, displayName } from '@/components/layout/user-display';
+import { ROLE_LABEL } from '@/components/layout/user-display';
 import { StatusChip } from '@/features/review-shared/StatusChip';
 import type { TermContext } from '@/features/review-shared/types';
 import type { UserResp } from '@/services/auth';
 
-/** 基本資訊（v13 `renderAccount()`）。後端尚未提供修改個人資料的 API，先做唯讀。 */
-export function ProfileCard({ user }: { user: UserResp | null }) {
+/** 基本資訊（v13 `renderAccount()`）。姓名可改，email 不開放自行修改。 */
+export function ProfileCard({
+  user,
+  editing,
+  name,
+  onNameChange,
+  error,
+}: {
+  user: UserResp | null;
+  editing: boolean;
+  name: string;
+  onNameChange: (value: string) => void;
+  error: string | null;
+}) {
   return (
     <Card>
       <CardHeader title="基本資訊" />
-      <KeyValueList
-        items={[
-          { label: '姓名', value: displayName(user) || '—' },
-          { label: '信箱', value: user?.email ?? '—' },
-        ]}
-      />
-      <p className="mt-4 font-['Noto_Sans_TC'] text-[12px] text-black-500">
-        目前還不能在網站上修改個人資料；如需更正姓名，請聯絡教案組。
-      </p>
+      {editing ? (
+        <div className="grid grid-cols-1 gap-[14px]">
+          <label className="block">
+            <span className="mb-[6px] block font-['Noto_Sans_TC'] text-[12px] font-bold text-black-700">姓名</span>
+            <input
+              autoFocus
+              value={name}
+              maxLength={255}
+              onChange={(event) => onNameChange(event.target.value)}
+              className="w-full rounded-[10px] border border-black-200 bg-white px-[10px] py-[9px] font-['Noto_Sans_TC'] text-[14px] outline-none focus:border-primary-700"
+            />
+            {error && <span className="mt-1 block text-[12px] text-status-alert">{error}</span>}
+          </label>
+          <label className="block">
+            <span className="mb-[6px] block font-['Noto_Sans_TC'] text-[12px] font-bold text-black-700">信箱</span>
+            <input
+              value={user?.email ?? ''}
+              disabled
+              className="w-full rounded-[10px] border border-black-200 bg-black-100 px-[10px] py-[9px] font-['Noto_Sans_TC'] text-[14px] text-black-500"
+            />
+            <span className="mt-1 block text-[11px] text-black-500">信箱不開放自行修改。</span>
+          </label>
+        </div>
+      ) : (
+        <KeyValueList
+          items={[
+            { label: '姓名', value: user?.name?.trim() || <span className="text-black-500">尚未填寫</span> },
+            { label: '信箱', value: user?.email ?? '—' },
+          ]}
+        />
+      )}
     </Card>
   );
 }

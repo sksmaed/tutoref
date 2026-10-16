@@ -25,7 +25,7 @@ src/
 │   ├── plans/likes/        # 已收藏教案
 │   ├── plans/[id]/edit/    # 教案編輯
 │   ├── upload/             # 上傳流程
-│   ├── account/            # 設定（個人資料與本期身份，唯讀）
+│   ├── account/            # 設定（修改姓名、檢視本期身份）
 │   ├── review/             # 教案驗收：family/（家內教案）、tasks/（我的驗收任務＋工作區 [jobId]）
 │   └── admin/              # review/（本期驗收管理）、members/、plans/、rubric/
 ├── features/       # 依領域劃分的功能模組（元件 + hooks + helpers 就近放）
@@ -35,7 +35,7 @@ src/
 │   ├── teaching-plan/      # 教案編輯器、AllPlansTable、詳情 modal、OwnedPlanModal
 │   ├── upload/             # 上傳 dropzone 與流程 hook
 │   ├── announcement/       # 公告撰寫器、模板、驗收時程 timeline
-│   ├── account/            # 設定頁卡片
+│   ├── account/            # 設定頁卡片與姓名編輯 hook
 │   ├── review-shared/      # useTermContext、StatusChip、LockBanner、RoundTabs、TermPageHead…
 │   ├── review-family/      # 家內教案
 │   ├── review-author/      # 我的驗收任務 → 我的教案（回饋處理、總驗修改版上傳）

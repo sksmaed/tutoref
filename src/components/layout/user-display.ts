@@ -8,9 +8,8 @@ export const ROLE_LABEL: Record<string, string> = {
   leader: '教案組長',
 };
 
-/** 中文姓名習慣「姓＋名」；沒有填姓名就用 email 的帳號部分。 */
+/** 顯示用姓名；沒有填姓名就用 email 的帳號部分。 */
 export function displayName(user: UserResp | null | undefined): string {
   if (!user) return '';
-  const name = `${user.last_name ?? ''}${user.first_name ?? ''}`.trim();
-  return name || user.email.split('@')[0];
+  return user.name?.trim() || user.email.split('@')[0];
 }

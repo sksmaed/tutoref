@@ -10,9 +10,9 @@ import { useRound } from '@/features/review-shared/RoundTabs';
 import { BTN, BTN_PRIMARY, BTN_SM } from '@/lib/button-styles';
 import { TABLE, TABLE_WRAP, TD, TD_CHECKBOX, TH, TH_CHECKBOX, TR } from '@/lib/table-styles';
 import {
+  fetchAllFamilyPlans,
   fetchFamilies,
-  fetchFamilyPlansFor,
-  setPlanExcellent,
+  setPlansExcellent,
   type FamilyPlan,
   type FamilyRow,
 } from '@/services/review';
@@ -33,12 +33,15 @@ const EDITING_STATUS_LABEL: Record<string, string> = {
   locked: '已鎖定',
 };
 
+/** 後端批量端點的單次上限。 */
+const BATCH_LIMIT = 200;
+
 const CONTROL =
   "rounded-[10px] border border-black-200 bg-white px-[10px] py-[9px] font-['Noto_Sans_TC'] text-[14px] text-black-900";
 
 /**
  * 教案管理（v13 `renderAdminLessons()`）：全團本期教案與優良標記。
- * 後端目前只開放「優良教案」這一個可批量改的欄位。
+ * 後端目前只開放「優良教案」這一個可批量改的欄位（PATCH /review/plans/excellent）。
  */
 export default function AdminPlansPage() {
   const round = useRound();
@@ -57,14 +60,10 @@ export default function AdminPlansPage() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const familyRows: FamilyRow[] = await fetchFamilies();
+      const [familyRows, plans] = await Promise.all([fetchFamilies(), fetchAllFamilyPlans(round)]);
       setFamilies(familyRows);
-      // family-plans 是一次一家，六家就六個請求；一期只有 60–100 份，值不回票價的是快取
-      const lists = await Promise.all(familyRows.map((family) => fetchFamilyPlansFor(family.id, round)));
       setRows(
-        familyRows.flatMap((family, index) =>
-          lists[index].map((plan) => ({ ...plan, family_id: family.id, family_name: family.name }))
-        )
+        plans.map((plan) => ({ ...plan, family_id: plan.family_id ?? '', family_name: plan.family_name ?? '—' }))
       );
     } catch (err) {
       setNotice({ type: 'error', title: '無法取得教案', message: err instanceof Error ? err.message : '請稍後再試。' });
@@ -87,7 +86,10 @@ export default function AdminPlansPage() {
     });
   }, [familyFilter, query, rows, statusFilter]);
 
-  /** 逐份呼叫，回傳失敗的教案名稱。 */
+  /**
+   * PATCH /review/plans/excellent：一次最多 200 筆，任一 id 不存在整批不改，
+   * 所以超過 200 筆時分批送，前面成功的批次會保留。
+   */
   const applyExcellent = async (targets: PlanRow[], value: boolean) => {
     const changes = targets.filter((row) => row.is_excellent !== value);
     if (changes.length === 0) {
@@ -95,22 +97,31 @@ export default function AdminPlansPage() {
       return;
     }
     setWorking(true);
-    const failed: string[] = [];
-    for (const row of changes) {
-      try {
-        await setPlanExcellent(row.plan_id, value);
-        setRows((prev) => prev.map((item) => (item.plan_id === row.plan_id ? { ...item, is_excellent: value } : item)));
-      } catch {
-        failed.push(row.tp_name);
+    let updated = 0;
+    try {
+      for (let index = 0; index < changes.length; index += BATCH_LIMIT) {
+        const ids = changes.slice(index, index + BATCH_LIMIT).map((row) => row.plan_id);
+        await setPlansExcellent(ids, value);
+        const done = new Set(ids);
+        setRows((prev) => prev.map((item) => (done.has(item.plan_id) ? { ...item, is_excellent: value } : item)));
+        updated += ids.length;
       }
+      setSelected(new Set());
+      setNotice({
+        type: 'success',
+        title: value ? '已標記為優良教案' : '已取消優良標記',
+        message: changes.length === 1 ? changes[0].tp_name : `共 ${updated} 份。`,
+      });
+    } catch (err) {
+      setNotice({
+        type: 'error',
+        title: updated ? `已更新 ${updated} 份，其餘未更新` : '更新失敗',
+        message: err instanceof Error ? err.message : '請稍後再試。',
+      });
+      if (updated) void reload();
+    } finally {
+      setWorking(false);
     }
-    setWorking(false);
-    setSelected(new Set());
-    setNotice(
-      failed.length
-        ? { type: 'error', title: `${failed.length} 份未更新`, message: failed.join('、') }
-        : { type: 'success', title: value ? '已標記為優良教案' : '已取消優良標記', message: `共 ${changes.length} 份。` }
-    );
   };
 
   const allChecked = visible.length > 0 && visible.every((row) => selected.has(row.plan_id));
