@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/features/auth/useAuth";
 import ClientLayoutWrapper from "@/components/layout/ClientLayoutWrapper";
+import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children }) {
           <Suspense fallback={<LoadingFallback />}>
             <ClientLayoutWrapper children={children} />
           </Suspense>
+          <Toaster />
           <Analytics />
         </AuthProvider>
       </body>

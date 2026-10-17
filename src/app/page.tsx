@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { popFlash, Flash } from '@/lib/flash';
 import { Toast } from '@/components/ui/toast';
 import SearchBar from '@/features/search/SearchBar';
@@ -10,6 +10,7 @@ import SearchResults from '@/features/search/SearchResults';
 import MobileFilterModal from '@/features/search/MobileFilterModal';
 import { consumeHomeResetFlag, HOME_RESET_EVENT } from '@/lib/home-reset';
 import { useAuth } from '@/features/auth/useAuth';
+import { PageHead } from '@/components/layout/PageHead';
 
 type FilterState = {
   categories: Set<string>;
@@ -28,6 +29,16 @@ function createEmptyFilters(): FilterState {
     durations: new Set<string>(),
   };
 }
+
+/** 篩選條件的比對鍵（忽略「全選」這個 UI 用的假選項）。 */
+function filtersKey(source: FilterState): string {
+  const part = (set: Set<string>) => [...set].filter((v) => v !== '全選').sort().join(',');
+  return [source.categories, source.families, source.issues, source.grades, source.durations]
+    .map(part)
+    .join('|');
+}
+
+const EMPTY_FILTERS_KEY = filtersKey(createEmptyFilters());
 
 function cloneFilters(source: FilterState): FilterState {
   return {
@@ -68,6 +79,11 @@ export default function Home() {
   const [submittedQuery, setSubmittedQuery] = useState('');
   const [submittedFilters, setSubmittedFilters] = useState<FilterState>(() => createEmptyFilters());
 
+  // 最近一次送出的條件；篩選一改變就直接套用（v13：篩選即時生效）
+  const submittedKeyRef = useRef(EMPTY_FILTERS_KEY);
+  const queryRef = useRef('');
+  queryRef.current = query;
+
   const handleFiltersChange = useCallback((s: {
     categories: Set<string>;
     families: Set<string>;
@@ -76,14 +92,34 @@ export default function Home() {
     durations: Set<string>;
     hasAny: boolean;
   }) => {
-    setHasFilters(s.hasAny);
-    setFilters({
+    const next: FilterState = {
       categories: s.categories,
       families:   s.families,
       issues:     s.issues,
       grades:     s.grades,
       durations:  s.durations,
-    });
+    };
+    setHasFilters(s.hasAny);
+    setFilters(next);
+
+    const key = filtersKey(next);
+    if (key === submittedKeyRef.current) return;
+    submittedKeyRef.current = key;
+
+    // 清空所有篩選且沒有關鍵字 → 回到熱門分類與 Start Here
+    if (key === EMPTY_FILTERS_KEY && !queryRef.current.trim()) {
+      setSubmittedQuery('');
+      setSubmittedFilters(createEmptyFilters());
+      setHasSearched(false);
+      setSearchTrigger(0);
+      return;
+    }
+    setSubmittedQuery(queryRef.current);
+    setSubmittedFilters(cloneFilters(next));
+    setInitialSort('issue_desc');
+    setInitialOnlyGood(false);
+    setHasSearched(true);
+    setSearchTrigger((n) => n + 1);
   }, []);
 
   // 放大鏡可否點
@@ -113,6 +149,7 @@ export default function Home() {
     if (!canSearch) return;
     setSubmittedQuery(query);
     setSubmittedFilters(cloneFilters(filters));
+    submittedKeyRef.current = filtersKey(filters);
     setInitialSort('issue_desc');
     setInitialOnlyGood(false);
     setHasSearched(true);
@@ -130,6 +167,7 @@ export default function Home() {
       };
       setSubmittedQuery(query);
       setSubmittedFilters(cloneFilters(nextFilters));
+      submittedKeyRef.current = filtersKey(nextFilters);
       return nextFilters;
     });
     setHasFilters(true);
@@ -142,6 +180,7 @@ export default function Home() {
   const handleStartHereSelect = useCallback((id: string) => {
     setSubmittedQuery('');
     setSubmittedFilters(createEmptyFilters());
+    submittedKeyRef.current = EMPTY_FILTERS_KEY;
     if (id === 'good') {
       setInitialSort('issue_desc');
       setInitialOnlyGood(true);
@@ -163,6 +202,7 @@ export default function Home() {
     setFilters(createEmptyFilters());
     setSubmittedQuery('');
     setSubmittedFilters(createEmptyFilters());
+    submittedKeyRef.current = EMPTY_FILTERS_KEY;
     setHasSearched(false);
     setSearchTrigger(0);
   }, []);
@@ -281,7 +321,8 @@ export default function Home() {
 
   return (
     <div>
-      <main className="...">
+      <PageHead title="教案檢索" subtitle="從歷屆教案中快速搜尋與篩選可參考的課程。" />
+      <div>
         <SearchBar
           query={query}
           onQueryChange={setQuery}
@@ -324,8 +365,8 @@ export default function Home() {
               onSelect={handleStartHereSelect}
             />
           </>
-)}
-      </main>
+        )}
+      </div>
 
       <MobileFilterModal
         isOpen={mobileFilterOpen}
@@ -353,6 +394,13 @@ export default function Home() {
             mobileFilters.grades.size > 0 ||
             mobileFilters.durations.size > 0
           );
+          submittedKeyRef.current = filtersKey({
+            categories: mobileFilters.categories,
+            families: mobileFilters.families,
+            issues: mobileFilters.issues,
+            grades: mobileFilters.grades,
+            durations: mobileFilters.durations,
+          });
           setSubmittedFilters((prev) => ({
             ...prev,
             categories: mobileFilters.categories,

@@ -26,11 +26,12 @@ interface TeachingPlanDetailModalProps {
   onToggleFavorite?: (planId: string, nextLiked: boolean) => Promise<void> | void;
 }
 
-const overlayClass = 'fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-[#0d0d0db2] backdrop-blur-[1px]';
+// v13「課程詳細資訊」：高度依內容、最多 88vh，超出時內容區捲動
+const overlayClass = 'fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-[30px] bg-black-900/40';
 const panelClass = [
-  'relative flex w-full sm:w-[960px] flex-col rounded-[16px] sm:rounded-[8px] bg-white',
-  'h-[90dvh] sm:h-[680px]',
-  'px-5 sm:px-[60px] pt-6 sm:pt-[32px] pb-8 sm:pb-[44px] text-black-900 shadow-[0_20px_60px_rgba(0,0,0,0.18)]',
+  'relative flex w-full max-w-[1040px] flex-col rounded-[18px] bg-white',
+  'max-h-[88dvh]',
+  'px-5 sm:px-8 pt-6 sm:pt-7 pb-6 sm:pb-8 text-black-900 shadow-[0_24px_90px_rgba(0,0,0,0.25)]',
 ].join(' ');
 
 type ExpandableKey = 'objectives' | 'outline' | 'notes';
@@ -80,8 +81,18 @@ export function TeachingPlanDetailModal({
       notes: plan?.post_class_notes ?? '',
       sheetPdf: plan?.sheet_pdf ?? null,
       slidePdf: plan?.slide_pdf ?? null,
+      updatedAt: plan?.updated_at ?? null,
     };
   }, [plan, summary]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !favoriteLoading) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, favoriteLoading, onClose]);
 
   const handleToggleField = (key: ExpandableKey) => {
     setExpandedFields((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -95,7 +106,12 @@ export function TeachingPlanDetailModal({
     : '—';
 
   return (
-    <div className={overlayClass}>
+    <div
+      className={overlayClass}
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !favoriteLoading) onClose();
+      }}
+    >
       <div className={panelClass} role="dialog" aria-modal="true" aria-label="教案詳細資訊">
         <button
           type="button"
@@ -104,14 +120,14 @@ export function TeachingPlanDetailModal({
             onClose();
           }}
           aria-label="關閉"
-          className="absolute right-[24px] top-[24px] z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black-100 hover:cursor-pointer"
+          className="absolute right-5 top-5 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-black-100 hover:cursor-pointer"
         >
           <img src="/icons/close.svg" alt="close" width={18} height={18} />
         </button>
 
-        <div className="flex h-full flex-col gap-5 sm:gap-[44px]">
-          <header className="relative flex flex-col items-center gap-3 sm:gap-0">
-            <h2 className="text-center font-['Noto_Sans_TC'] text-[20px] sm:text-[25px] font-bold leading-[150%] text-black-900">
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          <header className="flex flex-col items-center gap-3">
+            <h2 className="text-center font-['Noto_Sans_TC'] text-[20px] sm:text-[24px] font-extrabold leading-[150%] text-black-900">
               課程詳細資訊
             </h2>
 
@@ -133,8 +149,8 @@ export function TeachingPlanDetailModal({
               />
             </div>
 
-            {/* 桌機版：收藏按鈕絕對定位 */}
-            <div className="absolute right-2 top-10 hidden sm:block">
+            {/* 桌機版：收藏按鈕在標題下方靠右 */}
+            <div className="hidden w-full justify-end sm:flex">
               <FavoriteButton
                 liked={liked}
                 disabled={favoriteLoading || !display?.id || !onToggleFavorite}
@@ -146,14 +162,14 @@ export function TeachingPlanDetailModal({
             </div>
           </header>
 
-          <section className="flex-1 overflow-hidden">
+          <section className="min-h-0 flex-1 overflow-y-auto pr-1">
             {showLoading ? (
-              <div className="flex h-full items-center justify-center text-[16px] text-black-500">
+              <div className="flex min-h-[240px] items-center justify-center text-[16px] text-black-500">
                 資料載入中...
               </div>
             ) : display ? (
-              <div className="h-full max-w-[840px] overflow-y-auto pr-2">
-                <div className="overflow-hidden rounded-[8px] border border-black-200">
+              <div>
+                <div className="overflow-hidden rounded-[14px] border border-black-200">
                   <DetailRow label="課程名稱">
                     <div className="flex items-center justify-between gap-4">
                       <p className="text-[16px] font-semibold leading-[150%] text-black-900">{display.title}</p>
@@ -210,13 +226,14 @@ export function TeachingPlanDetailModal({
                     items={[
                       { label: '教案紙', content: <ResourceLink href={display.sheetPdf} /> },
                       { label: '投影片', content: <ResourceLink href={display.slidePdf} /> },
+                      { label: '最後更新', content: formatUpdatedAt(display.updatedAt) },
                     ]}
                     isLast
                   />
                 </div>
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center text-[16px] text-black-500">
+              <div className="flex min-h-[240px] items-center justify-center text-[16px] text-black-500">
                 目前無法載入教案內容。
               </div>
             )}
@@ -237,11 +254,11 @@ function DetailRow({
   isLast?: boolean;
 }) {
   return (
-    <div className={['grid grid-cols-[120px_1fr] bg-white', !isLast ? 'border-b border-black-200' : ''].join(' ')}>
-      <div className="flex min-h-[48px] items-center justify-center border-r border-black-200 bg-primary-100 px-[16px] py-[8px] text-[16px] font-semibold leading-[150%] text-black-900">
+    <div className={['grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] bg-white', !isLast ? 'border-b border-black-200' : ''].join(' ')}>
+      <div className="flex min-h-[48px] items-center border-r border-black-200 bg-primary-100 px-[14px] py-[13px] text-[15px] font-bold leading-[150%] text-black-900">
         {label}
       </div>
-      <div className="px-[24px] py-[12px] text-[16px] leading-[150%] text-black-900 whitespace-pre-line">
+      <div className="min-w-0 px-4 py-[13px] text-[15px] leading-[170%] text-black-900 whitespace-pre-line">
         {children}
       </div>
     </div>
@@ -263,14 +280,14 @@ function DetailRowGroup({
           <div
             key={item.label}
             className={[
-              'flex-1 grid grid-cols-[120px_1fr]',
+              'flex-1 grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr]',
               !isLastItem ? 'border-b border-black-200 sm:border-b-0 sm:border-r' : '',
             ].join(' ')}
           >
-            <div className="flex min-h-[48px] items-center justify-center border-r border-black-200 bg-primary-100 px-[16px] py-[8px] text-[16px] font-semibold leading-[150%] text-black-900">
+            <div className="flex min-h-[48px] items-center border-r border-black-200 bg-primary-100 px-[14px] py-[13px] text-[15px] font-bold leading-[150%] text-black-900">
               {item.label}
             </div>
-            <div className="px-[24px] py-[12px] text-[16px] leading-[150%] text-black-900 whitespace-pre-line">
+            <div className="min-w-0 px-4 py-[13px] text-[15px] leading-[170%] text-black-900 whitespace-pre-line">
               {item.content}
             </div>
           </div>
@@ -341,6 +358,13 @@ function ExpandableField({
 
 
 
+function formatUpdatedAt(value?: string | null): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+
 function ResourceLink({ href }: { href?: string | null }) {
   if (!href || !href.trim()) {
     return <span>—</span>;
@@ -351,9 +375,9 @@ function ResourceLink({ href }: { href?: string | null }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-primary-900 underline decoration-2 underline-offset-4"
+      className="font-semibold text-primary-900 underline underline-offset-4"
     >
-      pdf
+      pdf.
     </a>
   );
 }

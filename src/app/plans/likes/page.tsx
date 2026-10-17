@@ -12,6 +12,7 @@ import {
 } from '@/services/teaching-plan';
 import { useToast } from '@/hooks/use-toast';
 import { TeachingPlanDetailModal } from '@/features/teaching-plan/TeachingPlanDetailModal';
+import { PageHead } from '@/components/layout/PageHead';
 
 const mapFavoriteToRow = (plan: TeachingPlanSummary): Row => ({
   id: plan.id,
@@ -196,8 +197,8 @@ export default function LikesAllPage() {
 
   return (
     <>
+      <PageHead title="已收藏教案" subtitle="集中查看你標記為之後想參考的教案。" />
       <AllPlansTable
-        title="我的收藏"
         rowsInput={rows}
         mode="likes"
         onToggleFavorite={handleToggleFavorite}

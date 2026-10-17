@@ -50,7 +50,7 @@ export default function SearchResults({
 
   return (
     <>
-      <section className="mt-10 mx-auto w-full max-w-[976px] px-4 sm:px-6 lg:px-0">
+      <section className="mt-8 w-full">
         <ResultsToolbar
           searching={searching}
           total={total}

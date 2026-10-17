@@ -12,6 +12,8 @@ interface TeachingPlanEditorProps {
   onCancel: () => void;
   onValidationChange?: (isValid: boolean) => void;
   onSlideFileSelect?: (file: File | null) => void;
+  onSheetReupload?: () => void;
+  showSlideUpload?: boolean;
 }
 
 export interface TeachingPlanEditorRef {
@@ -32,6 +34,8 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
   onCancel: _onCancel,
   onValidationChange,
   onSlideFileSelect,
+  onSheetReupload,
+  showSlideUpload = true,
 }, ref) => {
   const {
     editedPlan,
@@ -272,19 +276,51 @@ const TeachingPlanEditor = forwardRef<TeachingPlanEditorRef, TeachingPlanEditorP
               </td>
             </tr>
 
+            {onSheetReupload && (
+              <tr>
+                <td className={showSlideUpload ? LABEL_CELL_MIDDLE : LABEL_CELL_LAST}>教案紙</td>
+                <td className="border border-black-200 pl-6 pr-10 py-4" colSpan={3}>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {editedPlan.sheet_pdf && (
+                      <a
+                        href={editedPlan.sheet_pdf}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-base text-primary-900 underline underline-offset-2"
+                      >
+                        查看目前教案紙
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={onSheetReupload}
+                      className="rounded-lg border border-primary-900 bg-white px-4 py-2 text-sm font-bold text-primary-900 hover:bg-primary-50"
+                    >
+                      重新上傳教案紙
+                    </button>
+                  </div>
+                  <p className="mt-2 text-sm text-black-500">
+                    新檔案會重新解析，確認欄位後才會替換目前版本。
+                  </p>
+                </td>
+              </tr>
+            )}
+
             {/* 投影片 */}
-            <tr>
-              <td className={LABEL_CELL_LAST}>投影片</td>
-              <td className="border border-black-200 pl-6 pr-10 py-4" colSpan={3}>
-                <SlideUpload
-                  initialFileName={plan.slide_pdf}
-                  selectedFileName={editedPlan.slide_pdf}
-                  onFileChange={handleSlideFileChange}
-                  onFileRemove={handleSlideFileRemove}
-                  onFileSelect={handleSlideFileSelect}
-                />
-              </td>
-            </tr>
+            {showSlideUpload && (
+              <tr>
+                <td className={LABEL_CELL_LAST}>投影片</td>
+                <td className="border border-black-200 pl-6 pr-10 py-4" colSpan={3}>
+                  <SlideUpload
+                    initialFileName={plan.slide_pdf}
+                    selectedFileName={editedPlan.slide_pdf}
+                    onFileChange={handleSlideFileChange}
+                    onFileRemove={handleSlideFileRemove}
+                    onFileSelect={handleSlideFileSelect}
+                  />
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

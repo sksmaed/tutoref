@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { BTN_PRIMARY } from '@/lib/button-styles';
 import { fromDateTimeLocal, toDateTimeLocal } from '@/features/review-shared/format';
 import type { ScheduleItemInput, ScheduleRow } from '@/services/review';
 
@@ -46,7 +46,7 @@ export const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({ schedules, s
     );
 
   return (
-    <section className="rounded-lg bg-white px-5 py-4 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+    <section>
       <h3 className="font-['Noto_Sans_TC'] text-[16px] font-bold text-black-900">時程</h3>
       <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-700">
         改動後前台立即生效。逾期不擋，家長仍可送件、reviewer 仍可提交，畫面只會標記。
@@ -54,7 +54,7 @@ export const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({ schedules, s
 
       <div className="mt-4 flex flex-col gap-4">
         {STAGES.map(({ stage, label }) => (
-          <div key={stage} className="flex flex-wrap items-end gap-4">
+          <div key={stage} className="flex flex-wrap items-end gap-4 rounded-xl border border-black-200 px-4 py-3">
             <span className="w-[48px] font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900">
               {label}
             </span>
@@ -69,7 +69,7 @@ export const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({ schedules, s
                     [stage]: { ...prev[stage], submission: event.target.value },
                   }))
                 }
-                className="mt-1 block rounded-lg border border-black-200 px-3 py-1 text-[14px]"
+                className="mt-1 block rounded-[10px] border border-black-200 px-3 py-[6px] text-[14px]"
               />
             </label>
             <label className="font-['Noto_Sans_TC'] text-[13px] text-black-700">
@@ -83,20 +83,16 @@ export const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({ schedules, s
                     [stage]: { ...prev[stage], review: event.target.value },
                   }))
                 }
-                className="mt-1 block rounded-lg border border-black-200 px-3 py-1 text-[14px]"
+                className="mt-1 block rounded-[10px] border border-black-200 px-3 py-[6px] text-[14px]"
               />
             </label>
           </div>
         ))}
       </div>
 
-      <Button
-        onClick={handleSave}
-        disabled={saving}
-        className="mt-4 bg-primary-900 px-6 py-2 font-bold text-white"
-      >
+      <button type="button" onClick={handleSave} disabled={saving} className={`${BTN_PRIMARY} mt-4`}>
         {saving ? '儲存中…' : '儲存時程'}
-      </Button>
+      </button>
     </section>
   );
 };
