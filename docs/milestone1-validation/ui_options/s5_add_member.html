@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S5 新增成員與帳號認領</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Milestone 1 UI 方案原型：只沿用 tutoref/src/app/globals.css 的色票與 lib/*-styles.ts 的尺寸，不新增品牌色。 */
+:root {
+  --p100: #fef7f1; --p300: #fbcf9e; --p700: #f1994a; --p900: #ed7a13;
+  --s100: #f4f7f0; --s700: #728a47;
+  --b100: #f1f1f1; --b200: #d4d4d4; --b300: #b8b8b8; --b400: #9c9c9c; --b500: #808080; --b700: #474747; --b900: #0d0d0d;
+  --idle: var(--b400); --idle-bg: var(--b100);
+  --active: var(--p900); --active-bg: var(--p100);
+  --done: var(--s700); --done-bg: var(--s100);
+  --alert: #c85f5f; --alert-bg: #faf0f0;
+  --locked: var(--b500); --locked-bg: var(--b100);
+  --info: #6392b5; --info-bg: #edf4fb;
+  --cat-nature: #728a47; --cat-social: #f1994a; --cat-general: #7f478a; --cat-info: #6392b5; --cat-art: #c85f5f;
+  --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); color: var(--b900); background: var(--b100); font-size: 14px; line-height: 1.55; }
+a { color: var(--p900); }
+
+/* ---------- 文件外框（說明區，不是原型本體） ---------- */
+.doc { max-width: 1260px; margin: 0 auto; padding: 28px 16px 80px; }
+.crumb { font-size: 12px; color: var(--b500); margin-bottom: 6px; }
+.crumb a { color: var(--b500); text-decoration: none; }
+.crumb a:hover { color: var(--p900); }
+.doc h1 { font-size: 24px; margin: 0 0 6px; }
+.doc .lead { color: var(--b700); font-size: 14px; margin: 0 0 18px; max-width: 900px; }
+.panel { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 18px 20px; margin-bottom: 16px; }
+.panel h2 { font-size: 16px; margin: 0 0 8px; }
+.panel h3 { font-size: 14px; margin: 14px 0 6px; }
+.panel p, .panel li { font-size: 14px; color: var(--b700); }
+.panel ul { margin: 6px 0 0; padding-left: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.issue-ref { display: inline-block; font-size: 12px; color: var(--alert); background: var(--alert-bg); border-radius: 6px; padding: 0 6px; margin: 0 2px; }
+.decide { border-left: 3px solid var(--p900); background: var(--p100); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 10px; font-size: 13px; color: var(--b700); }
+
+.opt-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 14px; }
+.opt-tab { cursor: pointer; border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 700; color: var(--b900); display: inline-flex; gap: 8px; align-items: center; }
+.opt-tab:hover { border-color: var(--b300); }
+.opt-tab.on { border-color: var(--p900); background: var(--p100); color: var(--p900); }
+.opt-tab .rec { font-size: 11px; font-weight: 700; color: #fff; background: var(--p900); border-radius: 6px; padding: 1px 6px; }
+.opt-tab .rec.codex { background: var(--b700); }
+.opt { display: none; }
+.opt.on { display: block; }
+.opt-meta { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 960px) { .opt-meta { grid-template-columns: 1fr; } }
+.opt-meta .panel { margin: 0; }
+.opt-meta h3 { margin-top: 0; }
+.pros li::marker { color: var(--s700); }
+.cons li::marker { color: var(--alert); }
+.verdict { font-size: 13px; color: var(--b700); background: #fff; border: 1px dashed var(--b300); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+.verdict b { color: var(--b900); }
+
+.stage { overflow-x: auto; padding-bottom: 6px; }
+.stage-cap { font-size: 12px; color: var(--b500); margin: 6px 2px 10px; }
+.pager { display: flex; justify-content: space-between; margin-top: 26px; font-size: 14px; }
+.pager a { text-decoration: none; font-weight: 700; }
+
+/* ---------- 原型：AppShell ---------- */
+.frame { position: relative; width: 1180px; min-height: 660px; display: flex; background: var(--b100); border: 1px solid var(--b200); border-radius: 14px; overflow: hidden; }
+.frame.tall { min-height: 780px; }
+.sb { width: 206px; margin: 20px 0 20px 20px; flex-shrink: 0; background: #fff; border-radius: 10px; box-shadow: 0 5px 16px rgba(0,0,0,.08); padding: 18px 16px; display: flex; flex-direction: column; }
+.sb .logo { font-size: 19px; font-weight: 700; letter-spacing: .5px; padding: 0 8px 16px; border-bottom: 1px solid var(--b100); margin-bottom: 8px; }
+.sb .logo span { color: var(--p900); }
+.sb .grp { font-size: 12px; color: var(--b400); padding: 12px 8px 5px; }
+.sb .it { display: flex; gap: 8px; align-items: center; border-radius: 7px; padding: 8px 9px; font-size: 15px; font-weight: 500; margin: 2px 0; }
+.sb .it i { width: 14px; height: 14px; border: 1.5px solid var(--b500); border-radius: 4px; display: inline-block; }
+.sb .it.on { background: var(--p100); color: var(--b900); }
+.sb .it.on i { border-color: var(--p900); }
+.sb .it .new { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--p900); background: var(--p100); border: 1px solid var(--p300); border-radius: 6px; padding: 0 5px; }
+.sb .spacer { flex: 1; }
+.sb .me { border-top: 1px solid var(--b100); padding: 14px 8px 0; display: flex; gap: 10px; align-items: center; }
+.sb .me .av { width: 29px; height: 29px; border-radius: 50%; background: var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--b700); }
+.sb .me b { display: block; font-size: 12px; }
+.sb .me small { display: block; font-size: 10px; color: var(--b400); }
+/* .main 不設 position，讓彈窗遮罩與抽屜以整個 .frame 為範圍（正式站的 Dialog 會連側欄一起蓋住）。 */
+.main { flex: 1; min-width: 0; padding: 20px 34px 40px 34px; }
+.userbtn { position: absolute; right: 24px; top: 20px; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 3px 10px rgba(0,0,0,.05); }
+.ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; padding-right: 64px; margin-bottom: 22px; }
+.ph h1 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.5; }
+.ph .sub { font-size: 13px; color: var(--b500); margin-top: 2px; }
+.ph .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- 原型：元件 ---------- */
+.card { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 20px; }
+.card + .card { margin-top: 14px; }
+.card .ct { font-size: 15px; font-weight: 700; }
+.card .cd { font-size: 12px; color: var(--b500); margin-top: 3px; line-height: 1.55; }
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.metric { background: #fff; border: 1px solid var(--b200); border-radius: 10px; padding: 16px 18px; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.metric small { font-size: 12px; color: var(--b500); }
+.metric b { display: block; font-size: 28px; font-weight: 800; line-height: 1.2; margin: 3px 0; }
+.metric span { font-size: 12px; color: var(--b500); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.metrics.three { grid-template-columns: repeat(3, 1fr); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 10px; border: 1px solid var(--b200); background: #fff; color: var(--b900); padding: 9px 13px; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: default; }
+.btn.primary { background: var(--p900); border-color: var(--p900); color: #fff; }
+.btn.danger { background: #fff; border-color: var(--alert-bg); color: var(--alert); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--b700); }
+.btn.sm { border-radius: 8px; padding: 6px 9px; font-size: 12px; }
+.btn[disabled] { opacity: .5; }
+.link { color: var(--p900); font-weight: 700; text-decoration: none; }
+.link-file { display: inline-flex; gap: 5px; align-items: center; color: var(--p900); font-weight: 700; font-size: 13px; text-decoration: none; white-space: nowrap; }
+.link-file::before { content: ''; width: 11px; height: 13px; border: 1.5px solid currentColor; border-radius: 2px; display: inline-block; }
+
+.chip { display: inline-flex; align-items: center; border-radius: 8px; padding: 2px 8px; font-size: 13px; font-weight: 500; white-space: nowrap; line-height: 1.5; }
+.chip.idle { background: var(--idle-bg); color: var(--idle); }
+.chip.active { background: var(--active-bg); color: var(--active); }
+.chip.done { background: var(--done-bg); color: var(--done); }
+.chip.alert { background: var(--alert-bg); color: var(--alert); }
+.chip.locked { background: var(--locked-bg); color: var(--locked); }
+.chip.info { background: var(--info-bg); color: var(--info); }
+.role { display: inline-flex; border-radius: 6px; background: var(--b100); color: var(--b700); font-size: 12px; padding: 1px 7px; margin: 1px 3px 1px 0; white-space: nowrap; }
+.variant { display: inline-flex; font-size: 11px; font-weight: 700; color: var(--b700); background: var(--b100); border: 1px solid var(--b200); border-radius: 6px; padding: 0 6px; margin-left: 4px; }
+.tag { display: inline-flex; gap: 4px; align-items: center; border-radius: 999px; border: 1px solid var(--p300); background: var(--p100); color: var(--p900); font-size: 12px; font-weight: 700; padding: 2px 9px; white-space: nowrap; }
+.tag .x { color: var(--b500); font-weight: 400; }
+
+/* 與 lib/table-styles.ts 的 TABLE_WRAP 相同：容器可橫向捲動 */
+.tbl { overflow-x: auto; border: 1px solid var(--b200); border-radius: 10px; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { background: var(--p100); text-align: left; font-size: 13px; font-weight: 700; padding: 13px 14px; border-bottom: 1px solid var(--b100); white-space: nowrap; }
+.tbl td { padding: 13px 14px; border-bottom: 1px solid var(--b100); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tr.hl td { background: rgba(254,247,241,.6); }
+.tbl tr.sel td { background: var(--p100); }
+.tbl td small, .tbl th small { display: block; font-size: 12px; color: var(--b500); font-weight: 400; }
+.tbl .cb { width: 42px; text-align: center; }
+.tbl tr.group td { background: #fafafa; font-size: 12px; font-weight: 700; color: var(--b700); padding: 7px 14px; }
+.tbl.clickable tbody tr:not(.group) { cursor: pointer; }
+.box { width: 15px; height: 15px; border: 1.5px solid var(--b300); border-radius: 4px; display: inline-block; vertical-align: middle; background: #fff; }
+.box.on { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.on::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.box.mixed { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.mixed::after { content: ''; position: absolute; left: 3px; top: 6px; width: 7px; height: 2px; background: #fff; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.tabs span { padding: 10px 16px; font-size: 15px; font-weight: 700; color: var(--b500); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs span.on { color: var(--p900); border-color: var(--p900); }
+.seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 10px; background: #fff; border: 1px solid var(--b200); }
+.seg span { padding: 6px 12px; border-radius: 7px; font-size: 14px; font-weight: 700; color: var(--b700); }
+.seg span.on { background: var(--p900); color: #fff; }
+
+.bulk { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--p300); background: var(--p100); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; color: var(--b700); }
+.bulk b { color: var(--b900); }
+.banner { border-radius: 8px; border: 1px solid; padding: 12px 16px; margin-bottom: 14px; }
+.banner b { display: block; font-size: 15px; }
+.banner p { margin: 3px 0 0; font-size: 14px; }
+.banner.locked { background: var(--locked-bg); border-color: var(--b200); color: var(--b700); }
+.banner.active { background: var(--active-bg); border-color: var(--p300); color: var(--b900); }
+.banner.alert { background: var(--alert-bg); border-color: #efcfcf; color: var(--alert); }
+.banner.done { background: var(--done-bg); border-color: #dbe4cf; color: var(--b900); }
+.banner.info { background: var(--info-bg); border-color: #cfe0ef; color: var(--b900); }
+
+.ctl { border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; color: var(--b900); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.ctl.ph { color: var(--b400); }
+.ctl.sel::after { content: '▾'; margin-left: auto; color: var(--b500); font-size: 12px; padding-left: 8px; }
+.ctl.req { border-color: var(--p700); }
+.ctl.full { width: 100%; }
+.ctl.dis { background: var(--b100); color: var(--b500); }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.toolbar .grow { flex: 1; min-width: 220px; }
+.flabel { display: block; font-size: 12px; font-weight: 700; color: var(--b700); margin-bottom: 6px; }
+.fhint { display: block; font-size: 12px; color: var(--b500); margin-top: 5px; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fgrid .span2 { grid-column: span 2; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { border: 1px solid var(--b200); border-radius: 999px; padding: 4px 11px; font-size: 13px; background: #fff; color: var(--b700); white-space: nowrap; }
+.pill.on { border-color: var(--p900); background: var(--p100); color: var(--p900); font-weight: 700; }
+.pill.dis { color: var(--b400); background: var(--b100); }
+.radio { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; margin-right: 14px; }
+.radio i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--b300); display: inline-block; background: #fff; }
+.radio.on i { border: 5px solid var(--p900); }
+.check { display: inline-flex; gap: 7px; align-items: center; font-size: 14px; margin-right: 14px; white-space: nowrap; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 9px 16px; font-size: 14px; margin: 0; }
+.kv dt { color: var(--b500); }
+.kv dd { margin: 0; font-weight: 500; }
+.muted { color: var(--b500); }
+.small { font-size: 12px; }
+.alert-text { color: var(--alert); }
+.ok-text { color: var(--s700); }
+.row { display: flex; gap: 10px; align-items: center; }
+.row.between { justify-content: space-between; }
+.stack > * + * { margin-top: 12px; }
+.hr { height: 1px; background: var(--b100); margin: 14px 0; }
+.steps { display: flex; gap: 8px; margin-bottom: 16px; }
+.steps span { flex: 1; font-size: 12px; font-weight: 700; color: var(--b400); border-top: 3px solid var(--b200); padding-top: 6px; }
+.steps span.on { color: var(--p900); border-color: var(--p900); }
+.steps span.done { color: var(--s700); border-color: var(--s700); }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 14px 22px; }
+.timeline li::before { content: ''; position: absolute; left: 4px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--p900); }
+.timeline li::after { content: ''; position: absolute; left: 8px; top: 18px; bottom: 2px; width: 1px; background: var(--b200); }
+.timeline li:last-child::after { display: none; }
+.timeline small { display: block; font-size: 12px; color: var(--b500); }
+.drop { border: 1.5px dashed var(--b300); border-radius: 12px; background: #fff; padding: 20px; text-align: center; color: var(--p900); font-weight: 700; font-size: 14px; }
+.drop small { display: block; color: var(--b500); font-weight: 400; font-size: 12px; margin-top: 4px; }
+.drop.filled { border-style: solid; border-color: var(--p300); background: var(--p100); color: var(--b900); text-align: left; }
+.drop.off { color: var(--b400); background: var(--b100); }
+.pdf { background: #fff; border: 1px solid var(--b200); border-radius: 8px; height: 100%; min-height: 380px; padding: 14px; font-size: 11px; color: var(--b500); }
+.pdf .ln { height: 7px; background: var(--b100); border-radius: 3px; margin: 7px 0; }
+.pdf .ln.w6 { width: 60%; } .pdf .ln.w8 { width: 80%; } .pdf .ln.w4 { width: 40%; }
+.cat { font-size: 13px; font-weight: 700; }
+.cat.nature { color: var(--cat-nature); } .cat.social { color: var(--cat-social); } .cat.general { color: var(--cat-general); } .cat.art { color: var(--cat-art); } .cat.info { color: var(--cat-info); }
+.diff { font-size: 13px; }
+.diff s { color: var(--b400); }
+.diff b { color: var(--p900); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--b300); margin-right: 6px; }
+.dot.done { background: var(--s700); } .dot.alert { background: var(--alert); } .dot.active { background: var(--p900); }
+
+/* ---------- 原型：覆蓋層 ---------- */
+.scrim { position: absolute; inset: 0; background: rgba(13,13,13,.4); display: flex; align-items: center; justify-content: center; padding: 30px; z-index: 5; }
+.scrim.light { background: rgba(13,13,13,.25); }
+.dialog { background: #fff; border-radius: 18px; box-shadow: 0 24px 90px rgba(0,0,0,.25); width: 760px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+/* 與 components/ui/Dialog.tsx 的 SIZE_CLASS 相同：sm 500、md 760、lg 1040 */
+.dialog.md { width: 760px; } .dialog.lg { width: 1040px; } .dialog.sm { width: 500px; }
+.dialog .dh { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid var(--b200); padding: 18px 20px; }
+.dialog .dh small { display: block; font-size: 12px; color: var(--b500); }
+.dialog .dh b { display: block; font-size: 17px; }
+.dialog .dh .x { font-size: 22px; color: var(--b500); line-height: 1; }
+.dialog .db { padding: 20px; overflow: auto; }
+.dialog .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+.dialog .df .left { margin-right: auto; font-size: 12px; color: var(--b500); }
+/* 與 components/ui/Drawer.tsx 相同：寬 min(620px, 92vw)，底下有半透明遮罩 */
+.frame:has(.drawer)::before { content: ''; position: absolute; inset: 0; background: rgba(13,13,13,.25); z-index: 5; }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 620px; background: #fff; border-left: 1px solid var(--b200); box-shadow: -20px 0 60px rgba(0,0,0,.12); z-index: 6; display: flex; flex-direction: column; }
+.drawer .dh { border-bottom: 1px solid var(--b200); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+.drawer .dh small { display: block; font-size: 12px; color: var(--b500); }
+.drawer .dh b { font-size: 18px; }
+.drawer .db { padding: 20px; overflow: auto; flex: 1; }
+.drawer .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.menu { position: absolute; right: 24px; top: 66px; width: 220px; background: #fff; border: 1px solid var(--b200); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 8px; z-index: 4; font-size: 14px; }
+.menu .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--b100); margin-bottom: 4px; }
+.menu .who b { display: block; }
+.menu .who small { color: var(--b500); font-size: 12px; }
+.menu .mi { padding: 8px 10px; border-radius: 8px; }
+.menu .mi.on { background: var(--p100); color: var(--p900); font-weight: 700; }
+/* 原型上的編號標記；說明寫在原型下方的 .legend，避免遮住畫面。 */
+.pin { position: absolute; z-index: 9; width: 22px; height: 22px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,0,0,.25); }
+.legend { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--b700); }
+.legend li { display: flex; gap: 6px; align-items: center; }
+.legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S5</div>
+  <h1>S5｜新增成員與帳號認領</h1>
+  <p class="lead">對應 US-02：只新增一位；TBD 的「匯入通訊錄」與兩種認領方式（①組長建帳號、本人登入後改密碼 ②本人註冊後輸入驗證碼認領身份）。</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>情境</h2>
+      <p>新加入的隊輔林小安還沒有 Tutoref 帳號。組長要把她加進 27 冬電光家、角色是撰寫者，並且讓她知道怎麼開始登入。另一位舊成員撰寫者小美已經有帳號，只要加進本期即可。</p>
+    </div>
+    <div class="panel">
+      <h2>目前遇到的問題</h2>
+      <ul>
+        <li><span class="issue-ref">C-19</span> 可以用 email 建立「沒有密碼的帳號」，但本人不會收到通知；用同一個 email 註冊會被拒絕，只能自己想到去按「忘記密碼」。</li>
+        <li>沒有匯入通訊錄，也沒有驗證碼認領。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>需要你決定</h2>
+    <div class="decide">認領方式要二選一，介面才能寫清楚：<b>①組長建帳號＋本人設定密碼</b>（A、B 採用：系統產生「設定密碼連結」或請本人用「忘記密碼」）；<b>②本人自己註冊＋輸入認領碼</b>（C 採用：組長匯入名單時系統產生認領碼，本人註冊後輸入）。②要改註冊流程（同 email 不能被擋），工程量較大。</div>
+  </div>
+
+  <div class="opt-tabs">
+    <button class="opt-tab" data-opt="A">方案 A｜單人新增彈窗＋設定密碼連結 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
+    <button class="opt-tab" data-opt="B">方案 B｜連續新增抽屜</button>
+    <button class="opt-tab" data-opt="C">方案 C｜匯入名單＋認領碼</button>
+  </div>
+
+  <!-- ===================== A ===================== -->
+  <section class="opt" data-opt="A">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動 <span class="variant">假設：設定密碼連結與效期待決定</span></h3><p>「＋ 新增成員」開彈窗。輸入 email 後立刻判斷：已有帳號就顯示「加入本期」，沒有帳號就顯示「建立待認領成員」。家別＋角色用和 S3 相同的「一列一個家別」編輯。儲存後彈窗變成完成畫面，提供「複製設定密碼連結」，組長貼到 LINE 給本人即可。還要處理：信箱已在本期、信箱格式錯誤、連結失效時重新產生。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>完整滿足「只新增一位」</li><li>組長清楚知道對方是新帳號還是舊帳號</li><li>不必依賴寄信（目前寄信設定也不穩）</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>一次只能加一位，開期大量加人時較慢</li><li>後端要新增「產生設定密碼連結」的 API</li></ul></div>
+    </div>
+    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>推薦的是「單人新增＋一條真的能用的認領路徑」；用設定密碼連結只是其中一種做法，選 A 不代表已決定這個機制。匯入名單（C）等格式確定後再做。</div>
+    <div class="stage-cap">畫面 A-1：輸入 email 後，判斷為新帳號</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬</div></div><div class="acts"><span class="btn primary">＋ 新增成員</span></div></div>
+        <div class="scrim">
+          <div class="dialog md">
+            <div class="dh"><div><small>27 冬</small><b>新增成員</b></div><span class="x">×</span></div>
+            <div class="db">
+              <div class="fgrid">
+                <div><span class="flabel">信箱（必填）</span><span class="ctl full">lin.xiaoan@example.com</span></div>
+                <div><span class="flabel">姓名（必填）</span><span class="ctl full">林小安</span></div>
+              </div>
+              <div class="banner info" style="margin:12px 0 0"><b>這是新帳號</b><p>系統會建立「待認領」帳號，儲存後提供設定密碼連結給本人。</p></div>
+              <div class="hr"></div>
+              <span class="flabel">27 冬的身份</span>
+              <div class="tbl" style="margin-top:6px"><table><thead><tr><th style="width:150px">家別</th><th>角色（可複選）</th><th style="width:70px"></th></tr></thead><tbody>
+                <tr><td><span class="ctl sel full">電光</span></td><td><span class="check"><span class="box on"></span>撰寫者</span><span class="check"><span class="box"></span>家長</span></td><td><span class="btn danger sm">移除</span></td></tr>
+              </tbody></table></div>
+              <div style="margin-top:8px"><span class="btn sm">＋ 新增一個家別身份</span></div>
+              <div style="margin-top:10px"><span class="flabel">全期角色（不分家別）</span><span class="check"><span class="box"></span>驗收者</span><span class="check"><span class="box"></span>教案組長</span></div>
+            </div>
+            <div class="df"><span class="btn">取消</span><span class="btn primary">建立並加入 27 冬</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="stage-cap" style="margin-top:22px">畫面 A-2：儲存後的完成畫面</div>
+    <div class="stage"><div class="frame">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
+        <div class="scrim">
+          <div class="dialog sm">
+            <div class="dh"><div><small>新增成員</small><b>已加入林小安</b></div><span class="x">×</span></div>
+            <div class="db">
+              <div class="banner done" style="margin-top:0"><b>電光・撰寫者</b><p>帳號狀態：<span class="chip active">待認領</span></p></div>
+              <p style="margin:0 0 8px"><b>下一步：請把設定密碼連結傳給林小安</b></p>
+              <div class="row"><span class="ctl full" style="font-size:12px">https://tutoref.tw/reset-password/MjY…/c3k…</span><span class="btn primary sm">複製</span></div>
+              <p class="muted small" style="margin:10px 0 0">（假設）連結 7 天內有效、只能用一次，可重新產生。她設定密碼後，狀態會變成「已啟用」。</p>
+            </div>
+            <div class="df"><span class="btn">再新增一位</span><span class="btn primary">完成</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== B ===================== -->
+  <section class="opt" data-opt="B">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>「＋ 新增成員」打開右側抽屜，填一位後按「儲存並新增下一位」：個資清空、家別與角色保留，方便連續加同一家的成員。左邊表格即時多出新的一列，新帳號標示「待認領」，每列都能「複製認領資訊」。認領方式同 A。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>開期時連續加同一家多人最快</li><li>不離開成員表格，加完立刻看得到</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>保留上一位的角色，可能誤加錯角色</li><li>設定密碼連結要逐位到表格裡複製</li></ul></div>
+    </div>
+    <div class="verdict">如果開期時常常一口氣加十幾位新成員、又還沒有通訊錄格式，B 是 A 和 C 之間的折衷。</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph" style="padding-right:600px"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
+        <div class="tbl" style="width:470px"><table><thead><tr><th>姓名</th><th>家別</th><th>帳號狀態</th></tr></thead><tbody>
+          <tr class="hl"><td><b>林小安</b> <span class="chip info" style="font-size:11px">剛新增</span><small><a class="link">複製認領資訊</a></small></td><td>電光</td><td><span class="chip active">待認領</span></td></tr>
+          <tr class="hl"><td><b>周以晴</b> <span class="chip info" style="font-size:11px">剛新增</span><small><a class="link">複製認領資訊</a></small></td><td>電光</td><td><span class="chip active">待認領</span></td></tr>
+          <tr><td>撰寫者小美</td><td>電光</td><td><span class="chip done">已啟用</span></td></tr>
+          <tr><td>電光家長</td><td>電光</td><td><span class="chip done">已啟用</span></td></tr>
+        </tbody></table></div>
+        <div class="drawer">
+          <div class="dh"><div><small>27 冬・本次已新增 2 位</small><b>新增成員</b></div><span style="font-size:22px;color:var(--b500)">×</span></div>
+          <div class="db">
+            <div class="fgrid">
+              <div><span class="flabel">信箱（必填）</span><span class="ctl ph full">輸入信箱</span></div>
+              <div><span class="flabel">姓名</span><span class="ctl ph full">輸入姓名</span></div>
+            </div>
+            <div class="hr"></div>
+            <span class="flabel">27 冬的身份 <span class="muted small" style="font-weight:400">（沿用上一位：電光・撰寫者）</span></span>
+            <div class="tbl" style="margin-top:6px"><table><tbody>
+              <tr><td style="width:150px"><span class="ctl sel full">電光</span></td><td><span class="check"><span class="box on"></span>撰寫者</span><span class="check"><span class="box"></span>家長</span></td></tr>
+            </tbody></table></div>
+            <div style="margin-top:8px"><span class="btn sm">＋ 新增一個家別身份</span></div>
+          </div>
+          <div class="df"><span class="btn">完成</span><span class="btn primary">儲存並新增下一位</span></div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== C ===================== -->
+  <section class="opt" data-opt="C">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動 <span class="variant">變體：把「匯入」和「註冊＋認領碼」綁在一起示範</span></h3><p>「新增成員」彈窗分「單筆／匯入名單」兩個分頁。匯入通訊錄 CSV（姓名、信箱、家別、角色）後先逐列預覽：新帳號、已存在、格式錯誤分開標示，只建立有效的列。新帳號各自產生一組認領碼，本人自行註冊後在設定頁輸入認領碼，就會綁上 27 冬的身份。「匯入名單」是輸入方式、「認領碼」是認領機制，兩者可以分開決定（匯入也可以搭配 A 的設定密碼連結）。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>開期大量加人最快，也能在建立前抓出錯誤</li><li>認領碼不需要組長代管密碼</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>要定 CSV 格式、處理重複與部分成功，屬於 TBD 範圍</li><li>要改註冊流程與新增「輸入認領碼」頁，工程量最大</li></ul></div>
+    </div>
+    <div class="verdict">TBD 的兩個項目都做的話是 C；建議 Milestone 1 先做 A，C 排到之後的里程碑。</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
+        <div class="scrim">
+          <div class="dialog lg">
+            <div class="dh"><div><small>27 冬</small><b>新增成員</b></div><span class="x">×</span></div>
+            <div class="db">
+              <div class="tabs" style="margin-bottom:14px"><span>單筆新增</span><span class="on">匯入名單</span></div>
+              <div class="row between" style="margin-bottom:10px"><span><b>電光家通訊錄.csv</b>　<span class="muted small">5 列：新帳號 3、已存在 1、錯誤 1</span></span><span class="btn sm">重新選擇檔案</span></div>
+              <div class="tbl"><table><thead><tr><th>姓名</th><th>信箱</th><th>家別</th><th>角色</th><th>結果</th><th>認領碼</th></tr></thead><tbody>
+                <tr><td>林小安</td><td class="muted">lin.xiaoan@example.com</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip info">新帳號</span></td><td class="muted small">建立後產生</td></tr>
+                <tr><td>周以晴</td><td class="muted">yiqing@example.com</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip info">新帳號</span></td><td class="muted small">建立後產生</td></tr>
+                <tr><td>黃柏翰</td><td class="muted">bohan@example.com</td><td>電光</td><td><span class="role">家長</span></td><td><span class="chip info">新帳號</span></td><td class="muted small">建立後產生</td></tr>
+                <tr><td>撰寫者小美</td><td class="muted">demo-writer@tutoref.tw</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip done">已有帳號，加入本期身份</span></td><td class="muted">—</td></tr>
+                <tr class="hl"><td>王曉明</td><td class="alert-text">wang@example</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip alert">信箱格式錯誤</span></td><td class="muted">略過</td></tr>
+              </tbody></table></div>
+              <p class="muted small" style="margin:10px 0 0">新成員自行到 Tutoref 註冊，再到「設定 → 認領身份」輸入認領碼，就會綁定上表的家別與角色。</p>
+            </div>
+            <div class="df"><span class="left">只會建立 4 列有效資料</span><span class="btn">取消</span><span class="btn primary">建立 4 位並下載認領碼</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <div class="pager"><a href="s4_batch_edit.html">← S4 批量編輯</a><a href="s6_family_plans.html">S6 家內教案 →</a></div>
+</div>
+<script>
+// 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
+(function () {
+  const PEOPLE = {
+    leader: { name: '組長阿凱', mail: 'demo-leader@tutoref.tw', av: '組' },
+    parent: { name: '電光家長', mail: 'demo-parent-dianguang@…', av: '電' },
+    writer: { name: '撰寫者小美', mail: 'demo-writer@tutoref.tw', av: '撰' },
+    reviewer: { name: '驗收者一', mail: 'demo-reviewer-1@tutoref.tw', av: '驗' },
+  };
+
+  // data-sb="leader|parent|writer|reviewer"、data-on="<key>"、data-archived（改名「已歸檔教案」）、data-family（顯示家內教案）
+  document.querySelectorAll('.sb[data-sb]').forEach((sb) => {
+    const role = sb.dataset.sb;
+    const on = sb.dataset.on || '';
+    // 原型呈現的都是改版後的狀態，預設顯示「已歸檔教案」；data-legacy 才顯示舊名，data-archived 額外標「改名」
+    const archived = !sb.hasAttribute('data-legacy');
+    const family = sb.hasAttribute('data-family') || role === 'parent';
+    // data-name / data-mail / data-av 可覆寫側欄底部顯示的人（例如加拿家長）
+    const base = PEOPLE[role] || PEOPLE.leader;
+    const person = sb.dataset.name ? { name: sb.dataset.name, mail: sb.dataset.mail || '', av: sb.dataset.av || sb.dataset.name[0] } : base;
+    const item = (key, label, extra = '') =>
+      `<div class="it${key === on ? ' on' : ''}"><i></i>${label}${extra}</div>`;
+    let html = '<div class="logo">Tut<span>★</span>ref</div>';
+    html += item('search', '教案檢索') + item('package', '學習資源') + item('news', '訊息公告');
+    html += '<div class="grp">我的教案</div>';
+    html += item('mine', archived ? '已歸檔教案' : '已上傳教案', archived && sb.hasAttribute('data-archived') ? '<span class="new">改名</span>' : '');
+    html += item('likes', '已收藏教案');
+    html += '<div class="grp">教案驗收</div>';
+    if (family) html += item('family', '家內教案', role !== 'parent' && sb.hasAttribute('data-family') ? '<span class="new">開放</span>' : '');
+    html += item('tasks', '我的驗收任務');
+    if (role === 'leader') {
+      html += item('review', '本期驗收管理');
+      html += '<div class="grp">教案組管理</div>';
+      html += item('members', '成員管理') + item('plans', '教案管理') + item('rubric', '驗收標準');
+    }
+    html += '<div class="spacer"></div>';
+    html += `<div class="me"><div class="av">${person.av}</div><div><b>${person.name}</b><small>${person.mail}</small></div></div>`;
+    sb.innerHTML = html;
+  });
+
+  const tabs = Array.from(document.querySelectorAll('.opt-tab'));
+  const opts = Array.from(document.querySelectorAll('.opt'));
+  if (!tabs.length) return;
+  function show(key) {
+    tabs.forEach((t) => t.classList.toggle('on', t.dataset.opt === key));
+    opts.forEach((o) => o.classList.toggle('on', o.dataset.opt === key));
+  }
+  tabs.forEach((t) =>
+    t.addEventListener('click', () => {
+      show(t.dataset.opt);
+      history.replaceState(null, '', '#' + t.dataset.opt);
+    })
+  );
+  const fromHash = location.hash.replace('#', '').toUpperCase();
+  show(tabs.some((t) => t.dataset.opt === fromHash) ? fromHash : tabs[0].dataset.opt);
+})();
+
+</script>
+</body>
+</html>
