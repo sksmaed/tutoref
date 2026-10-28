@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S3 成員資訊與編輯</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Milestone 1 UI 方案原型：只沿用 tutoref/src/app/globals.css 的色票與 lib/*-styles.ts 的尺寸，不新增品牌色。 */
+:root {
+  --p100: #fef7f1; --p300: #fbcf9e; --p700: #f1994a; --p900: #ed7a13;
+  --s100: #f4f7f0; --s700: #728a47;
+  --b100: #f1f1f1; --b200: #d4d4d4; --b300: #b8b8b8; --b400: #9c9c9c; --b500: #808080; --b700: #474747; --b900: #0d0d0d;
+  --idle: var(--b400); --idle-bg: var(--b100);
+  --active: var(--p900); --active-bg: var(--p100);
+  --done: var(--s700); --done-bg: var(--s100);
+  --alert: #c85f5f; --alert-bg: #faf0f0;
+  --locked: var(--b500); --locked-bg: var(--b100);
+  --info: #6392b5; --info-bg: #edf4fb;
+  --cat-nature: #728a47; --cat-social: #f1994a; --cat-general: #7f478a; --cat-info: #6392b5; --cat-art: #c85f5f;
+  --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); color: var(--b900); background: var(--b100); font-size: 14px; line-height: 1.55; }
+a { color: var(--p900); }
+
+/* ---------- 文件外框（說明區，不是原型本體） ---------- */
+.doc { max-width: 1260px; margin: 0 auto; padding: 28px 16px 80px; }
+.crumb { font-size: 12px; color: var(--b500); margin-bottom: 6px; }
+.crumb a { color: var(--b500); text-decoration: none; }
+.crumb a:hover { color: var(--p900); }
+.doc h1 { font-size: 24px; margin: 0 0 6px; }
+.doc .lead { color: var(--b700); font-size: 14px; margin: 0 0 18px; max-width: 900px; }
+.panel { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 18px 20px; margin-bottom: 16px; }
+.panel h2 { font-size: 16px; margin: 0 0 8px; }
+.panel h3 { font-size: 14px; margin: 14px 0 6px; }
+.panel p, .panel li { font-size: 14px; color: var(--b700); }
+.panel ul { margin: 6px 0 0; padding-left: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.issue-ref { display: inline-block; font-size: 12px; color: var(--alert); background: var(--alert-bg); border-radius: 6px; padding: 0 6px; margin: 0 2px; }
+.decide { border-left: 3px solid var(--p900); background: var(--p100); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 10px; font-size: 13px; color: var(--b700); }
+
+.opt-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 14px; }
+.opt-tab { cursor: pointer; border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 700; color: var(--b900); display: inline-flex; gap: 8px; align-items: center; }
+.opt-tab:hover { border-color: var(--b300); }
+.opt-tab.on { border-color: var(--p900); background: var(--p100); color: var(--p900); }
+.opt-tab .rec { font-size: 11px; font-weight: 700; color: #fff; background: var(--p900); border-radius: 6px; padding: 1px 6px; }
+.opt-tab .rec.codex { background: var(--b700); }
+.opt { display: none; }
+.opt.on { display: block; }
+.opt-meta { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 960px) { .opt-meta { grid-template-columns: 1fr; } }
+.opt-meta .panel { margin: 0; }
+.opt-meta h3 { margin-top: 0; }
+.pros li::marker { color: var(--s700); }
+.cons li::marker { color: var(--alert); }
+.verdict { font-size: 13px; color: var(--b700); background: #fff; border: 1px dashed var(--b300); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+.verdict b { color: var(--b900); }
+
+.stage { overflow-x: auto; padding-bottom: 6px; }
+.stage-cap { font-size: 12px; color: var(--b500); margin: 6px 2px 10px; }
+.pager { display: flex; justify-content: space-between; margin-top: 26px; font-size: 14px; }
+.pager a { text-decoration: none; font-weight: 700; }
+
+/* ---------- 原型：AppShell ---------- */
+.frame { position: relative; width: 1180px; min-height: 660px; display: flex; background: var(--b100); border: 1px solid var(--b200); border-radius: 14px; overflow: hidden; }
+.frame.tall { min-height: 780px; }
+.sb { width: 206px; margin: 20px 0 20px 20px; flex-shrink: 0; background: #fff; border-radius: 10px; box-shadow: 0 5px 16px rgba(0,0,0,.08); padding: 18px 16px; display: flex; flex-direction: column; }
+.sb .logo { font-size: 19px; font-weight: 700; letter-spacing: .5px; padding: 0 8px 16px; border-bottom: 1px solid var(--b100); margin-bottom: 8px; }
+.sb .logo span { color: var(--p900); }
+.sb .grp { font-size: 12px; color: var(--b400); padding: 12px 8px 5px; }
+.sb .it { display: flex; gap: 8px; align-items: center; border-radius: 7px; padding: 8px 9px; font-size: 15px; font-weight: 500; margin: 2px 0; }
+.sb .it i { width: 14px; height: 14px; border: 1.5px solid var(--b500); border-radius: 4px; display: inline-block; }
+.sb .it.on { background: var(--p100); color: var(--b900); }
+.sb .it.on i { border-color: var(--p900); }
+.sb .it .new { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--p900); background: var(--p100); border: 1px solid var(--p300); border-radius: 6px; padding: 0 5px; }
+.sb .spacer { flex: 1; }
+.sb .me { border-top: 1px solid var(--b100); padding: 14px 8px 0; display: flex; gap: 10px; align-items: center; }
+.sb .me .av { width: 29px; height: 29px; border-radius: 50%; background: var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--b700); }
+.sb .me b { display: block; font-size: 12px; }
+.sb .me small { display: block; font-size: 10px; color: var(--b400); }
+/* .main 不設 position，讓彈窗遮罩與抽屜以整個 .frame 為範圍（正式站的 Dialog 會連側欄一起蓋住）。 */
+.main { flex: 1; min-width: 0; padding: 20px 34px 40px 34px; }
+.userbtn { position: absolute; right: 24px; top: 20px; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 3px 10px rgba(0,0,0,.05); }
+.ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; padding-right: 64px; margin-bottom: 22px; }
+.ph h1 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.5; }
+.ph .sub { font-size: 13px; color: var(--b500); margin-top: 2px; }
+.ph .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- 原型：元件 ---------- */
+.card { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 20px; }
+.card + .card { margin-top: 14px; }
+.card .ct { font-size: 15px; font-weight: 700; }
+.card .cd { font-size: 12px; color: var(--b500); margin-top: 3px; line-height: 1.55; }
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.metric { background: #fff; border: 1px solid var(--b200); border-radius: 10px; padding: 16px 18px; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.metric small { font-size: 12px; color: var(--b500); }
+.metric b { display: block; font-size: 28px; font-weight: 800; line-height: 1.2; margin: 3px 0; }
+.metric span { font-size: 12px; color: var(--b500); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.metrics.three { grid-template-columns: repeat(3, 1fr); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 10px; border: 1px solid var(--b200); background: #fff; color: var(--b900); padding: 9px 13px; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: default; }
+.btn.primary { background: var(--p900); border-color: var(--p900); color: #fff; }
+.btn.danger { background: #fff; border-color: var(--alert-bg); color: var(--alert); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--b700); }
+.btn.sm { border-radius: 8px; padding: 6px 9px; font-size: 12px; }
+.btn[disabled] { opacity: .5; }
+.link { color: var(--p900); font-weight: 700; text-decoration: none; }
+.link-file { display: inline-flex; gap: 5px; align-items: center; color: var(--p900); font-weight: 700; font-size: 13px; text-decoration: none; white-space: nowrap; }
+.link-file::before { content: ''; width: 11px; height: 13px; border: 1.5px solid currentColor; border-radius: 2px; display: inline-block; }
+
+.chip { display: inline-flex; align-items: center; border-radius: 8px; padding: 2px 8px; font-size: 13px; font-weight: 500; white-space: nowrap; line-height: 1.5; }
+.chip.idle { background: var(--idle-bg); color: var(--idle); }
+.chip.active { background: var(--active-bg); color: var(--active); }
+.chip.done { background: var(--done-bg); color: var(--done); }
+.chip.alert { background: var(--alert-bg); color: var(--alert); }
+.chip.locked { background: var(--locked-bg); color: var(--locked); }
+.chip.info { background: var(--info-bg); color: var(--info); }
+.role { display: inline-flex; border-radius: 6px; background: var(--b100); color: var(--b700); font-size: 12px; padding: 1px 7px; margin: 1px 3px 1px 0; white-space: nowrap; }
+.variant { display: inline-flex; font-size: 11px; font-weight: 700; color: var(--b700); background: var(--b100); border: 1px solid var(--b200); border-radius: 6px; padding: 0 6px; margin-left: 4px; }
+.tag { display: inline-flex; gap: 4px; align-items: center; border-radius: 999px; border: 1px solid var(--p300); background: var(--p100); color: var(--p900); font-size: 12px; font-weight: 700; padding: 2px 9px; white-space: nowrap; }
+.tag .x { color: var(--b500); font-weight: 400; }
+
+/* 與 lib/table-styles.ts 的 TABLE_WRAP 相同：容器可橫向捲動 */
+.tbl { overflow-x: auto; border: 1px solid var(--b200); border-radius: 10px; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { background: var(--p100); text-align: left; font-size: 13px; font-weight: 700; padding: 13px 14px; border-bottom: 1px solid var(--b100); white-space: nowrap; }
+.tbl td { padding: 13px 14px; border-bottom: 1px solid var(--b100); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tr.hl td { background: rgba(254,247,241,.6); }
+.tbl tr.sel td { background: var(--p100); }
+.tbl td small, .tbl th small { display: block; font-size: 12px; color: var(--b500); font-weight: 400; }
+.tbl .cb { width: 42px; text-align: center; }
+.tbl tr.group td { background: #fafafa; font-size: 12px; font-weight: 700; color: var(--b700); padding: 7px 14px; }
+.tbl.clickable tbody tr:not(.group) { cursor: pointer; }
+.box { width: 15px; height: 15px; border: 1.5px solid var(--b300); border-radius: 4px; display: inline-block; vertical-align: middle; background: #fff; }
+.box.on { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.on::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.box.mixed { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.mixed::after { content: ''; position: absolute; left: 3px; top: 6px; width: 7px; height: 2px; background: #fff; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.tabs span { padding: 10px 16px; font-size: 15px; font-weight: 700; color: var(--b500); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs span.on { color: var(--p900); border-color: var(--p900); }
+.seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 10px; background: #fff; border: 1px solid var(--b200); }
+.seg span { padding: 6px 12px; border-radius: 7px; font-size: 14px; font-weight: 700; color: var(--b700); }
+.seg span.on { background: var(--p900); color: #fff; }
+
+.bulk { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--p300); background: var(--p100); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; color: var(--b700); }
+.bulk b { color: var(--b900); }
+.banner { border-radius: 8px; border: 1px solid; padding: 12px 16px; margin-bottom: 14px; }
+.banner b { display: block; font-size: 15px; }
+.banner p { margin: 3px 0 0; font-size: 14px; }
+.banner.locked { background: var(--locked-bg); border-color: var(--b200); color: var(--b700); }
+.banner.active { background: var(--active-bg); border-color: var(--p300); color: var(--b900); }
+.banner.alert { background: var(--alert-bg); border-color: #efcfcf; color: var(--alert); }
+.banner.done { background: var(--done-bg); border-color: #dbe4cf; color: var(--b900); }
+.banner.info { background: var(--info-bg); border-color: #cfe0ef; color: var(--b900); }
+
+.ctl { border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; color: var(--b900); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.ctl.ph { color: var(--b400); }
+.ctl.sel::after { content: '▾'; margin-left: auto; color: var(--b500); font-size: 12px; padding-left: 8px; }
+.ctl.req { border-color: var(--p700); }
+.ctl.full { width: 100%; }
+.ctl.dis { background: var(--b100); color: var(--b500); }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.toolbar .grow { flex: 1; min-width: 220px; }
+.flabel { display: block; font-size: 12px; font-weight: 700; color: var(--b700); margin-bottom: 6px; }
+.fhint { display: block; font-size: 12px; color: var(--b500); margin-top: 5px; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fgrid .span2 { grid-column: span 2; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { border: 1px solid var(--b200); border-radius: 999px; padding: 4px 11px; font-size: 13px; background: #fff; color: var(--b700); white-space: nowrap; }
+.pill.on { border-color: var(--p900); background: var(--p100); color: var(--p900); font-weight: 700; }
+.pill.dis { color: var(--b400); background: var(--b100); }
+.radio { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; margin-right: 14px; }
+.radio i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--b300); display: inline-block; background: #fff; }
+.radio.on i { border: 5px solid var(--p900); }
+.check { display: inline-flex; gap: 7px; align-items: center; font-size: 14px; margin-right: 14px; white-space: nowrap; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 9px 16px; font-size: 14px; margin: 0; }
+.kv dt { color: var(--b500); }
+.kv dd { margin: 0; font-weight: 500; }
+.muted { color: var(--b500); }
+.small { font-size: 12px; }
+.alert-text { color: var(--alert); }
+.ok-text { color: var(--s700); }
+.row { display: flex; gap: 10px; align-items: center; }
+.row.between { justify-content: space-between; }
+.stack > * + * { margin-top: 12px; }
+.hr { height: 1px; background: var(--b100); margin: 14px 0; }
+.steps { display: flex; gap: 8px; margin-bottom: 16px; }
+.steps span { flex: 1; font-size: 12px; font-weight: 700; color: var(--b400); border-top: 3px solid var(--b200); padding-top: 6px; }
+.steps span.on { color: var(--p900); border-color: var(--p900); }
+.steps span.done { color: var(--s700); border-color: var(--s700); }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 14px 22px; }
+.timeline li::before { content: ''; position: absolute; left: 4px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--p900); }
+.timeline li::after { content: ''; position: absolute; left: 8px; top: 18px; bottom: 2px; width: 1px; background: var(--b200); }
+.timeline li:last-child::after { display: none; }
+.timeline small { display: block; font-size: 12px; color: var(--b500); }
+.drop { border: 1.5px dashed var(--b300); border-radius: 12px; background: #fff; padding: 20px; text-align: center; color: var(--p900); font-weight: 700; font-size: 14px; }
+.drop small { display: block; color: var(--b500); font-weight: 400; font-size: 12px; margin-top: 4px; }
+.drop.filled { border-style: solid; border-color: var(--p300); background: var(--p100); color: var(--b900); text-align: left; }
+.drop.off { color: var(--b400); background: var(--b100); }
+.pdf { background: #fff; border: 1px solid var(--b200); border-radius: 8px; height: 100%; min-height: 380px; padding: 14px; font-size: 11px; color: var(--b500); }
+.pdf .ln { height: 7px; background: var(--b100); border-radius: 3px; margin: 7px 0; }
+.pdf .ln.w6 { width: 60%; } .pdf .ln.w8 { width: 80%; } .pdf .ln.w4 { width: 40%; }
+.cat { font-size: 13px; font-weight: 700; }
+.cat.nature { color: var(--cat-nature); } .cat.social { color: var(--cat-social); } .cat.general { color: var(--cat-general); } .cat.art { color: var(--cat-art); } .cat.info { color: var(--cat-info); }
+.diff { font-size: 13px; }
+.diff s { color: var(--b400); }
+.diff b { color: var(--p900); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--b300); margin-right: 6px; }
+.dot.done { background: var(--s700); } .dot.alert { background: var(--alert); } .dot.active { background: var(--p900); }
+
+/* ---------- 原型：覆蓋層 ---------- */
+.scrim { position: absolute; inset: 0; background: rgba(13,13,13,.4); display: flex; align-items: center; justify-content: center; padding: 30px; z-index: 5; }
+.scrim.light { background: rgba(13,13,13,.25); }
+.dialog { background: #fff; border-radius: 18px; box-shadow: 0 24px 90px rgba(0,0,0,.25); width: 760px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+/* 與 components/ui/Dialog.tsx 的 SIZE_CLASS 相同：sm 500、md 760、lg 1040 */
+.dialog.md { width: 760px; } .dialog.lg { width: 1040px; } .dialog.sm { width: 500px; }
+.dialog .dh { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid var(--b200); padding: 18px 20px; }
+.dialog .dh small { display: block; font-size: 12px; color: var(--b500); }
+.dialog .dh b { display: block; font-size: 17px; }
+.dialog .dh .x { font-size: 22px; color: var(--b500); line-height: 1; }
+.dialog .db { padding: 20px; overflow: auto; }
+.dialog .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+.dialog .df .left { margin-right: auto; font-size: 12px; color: var(--b500); }
+/* 與 components/ui/Drawer.tsx 相同：寬 min(620px, 92vw)，底下有半透明遮罩 */
+.frame:has(.drawer)::before { content: ''; position: absolute; inset: 0; background: rgba(13,13,13,.25); z-index: 5; }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 620px; background: #fff; border-left: 1px solid var(--b200); box-shadow: -20px 0 60px rgba(0,0,0,.12); z-index: 6; display: flex; flex-direction: column; }
+.drawer .dh { border-bottom: 1px solid var(--b200); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+.drawer .dh small { display: block; font-size: 12px; color: var(--b500); }
+.drawer .dh b { font-size: 18px; }
+.drawer .db { padding: 20px; overflow: auto; flex: 1; }
+.drawer .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.menu { position: absolute; right: 24px; top: 66px; width: 220px; background: #fff; border: 1px solid var(--b200); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 8px; z-index: 4; font-size: 14px; }
+.menu .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--b100); margin-bottom: 4px; }
+.menu .who b { display: block; }
+.menu .who small { color: var(--b500); font-size: 12px; }
+.menu .mi { padding: 8px 10px; border-radius: 8px; }
+.menu .mi.on { background: var(--p100); color: var(--p900); font-weight: 700; }
+/* 原型上的編號標記；說明寫在原型下方的 .legend，避免遮住畫面。 */
+.pin { position: absolute; z-index: 9; width: 22px; height: 22px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,0,0,.25); }
+.legend { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--b700); }
+.legend li { display: flex; gap: 6px; align-items: center; }
+.legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S3</div>
+  <h1>S3｜成員資訊、歷史紀錄與單人編輯</h1>
+  <p class="lead">對應 US-04（點列看成員資訊＋歷史紀錄）與 US-05 的單人編輯、退團處理。</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>情境</h2>
+      <p>組長點了「陳怡君」，想知道她這期在哪幾家、做什麼角色、以前幾期當過什麼；接著把她 27 冬在新武的撰寫者身份移除（她只留在電光）。另一位成員中途退團，組長要把他本期的角色全部拿掉。</p>
+    </div>
+    <div class="panel">
+      <h2>目前遇到的問題</h2>
+      <ul>
+        <li><span class="issue-ref">C-08</span> 點列沒有反應，只能按「編輯」直接進編輯彈窗；沒有歷史紀錄。</li>
+        <li><span class="issue-ref">C-03</span> 在編輯彈窗改家別，角色不會跟著搬到新家，列表家別變「—」。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>需要你決定</h2>
+    <div class="decide">US-05 寫「可編輯各期家別與角色」，但 Workflow 1 寫「舊期改為唯讀」，兩者衝突。原型的預設是<b>舊期唯讀</b>：歷史紀錄只能看，只有現行期可以改。如果你們確實需要更正舊期資料，建議改成「需填更正原因」的特殊操作，而不是一般編輯。</div>
+  </div>
+
+  <div class="opt-tabs">
+    <button class="opt-tab" data-opt="A">方案 A｜資訊彈窗＋同窗編輯 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
+    <button class="opt-tab" data-opt="B">方案 B｜側邊抽屜連續瀏覽</button>
+    <button class="opt-tab" data-opt="C">方案 C｜大彈窗＋期別時間軸</button>
+  </div>
+
+  <!-- ===================== A ===================== -->
+  <section class="opt" data-opt="A">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>點列開啟「成員資訊」彈窗：上半部是基本資料與帳號狀態，下半部是歷史紀錄表格（期別／家別／角色，同期不同家分列）。按「編輯」在同一個彈窗切換成編輯模式：姓名可改、信箱鎖定；家長、撰寫者以「家別＋角色」一列一列編輯，驗收者、教案組長是全期角色另列一行。退團用獨立的「清空本期角色」，和「移除家別身份」是兩個不同動作。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>完全照需求：點列 → 彈窗 → 編輯按鈕</li><li>歷史表格可以直接檢查「同人同期不同家」</li><li>改家別時角色跟著那一列走，從介面上就避免 C-03</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>期別很多時彈窗內要捲動</li><li>要逐位查看時得一直開關彈窗</li></ul></div>
+    </div>
+    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>把「家別＋角色」綁成同一列編輯，是避免家別和角色分家（C-03）最直接的介面寫法。</div>
+    <div class="stage-cap">畫面 A-1：點列後的成員資訊</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>成員管理</h1><div class="sub">依期別與家別管理成員身份。</div></div></div>
+        <div class="scrim">
+          <div class="dialog md">
+            <div class="dh"><div><small>成員資訊・27 冬</small><b>陳怡君</b></div><span class="x">×</span></div>
+            <div class="db">
+              <dl class="kv"><dt>信箱</dt><dd>yijun@example.com</dd><dt>帳號狀態</dt><dd><span class="chip active">待認領</span> <span class="muted small">組長於 01/02 建立，本人尚未設定密碼</span></dd><dt>本期身份</dt><dd><span class="role">電光・撰寫者</span><span class="role">新武・撰寫者</span></dd></dl>
+              <div class="hr"></div>
+              <div class="row between" style="margin-bottom:8px"><b>歷史紀錄</b><span class="muted small">舊期為唯讀</span></div>
+              <div class="tbl"><table><thead><tr><th>期別</th><th>家別</th><th>角色</th><th></th></tr></thead><tbody>
+                <tr><td><b>27 冬</b></td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip done">現行</span></td></tr>
+                <tr><td><b>27 冬</b></td><td>新武</td><td><span class="role">撰寫者</span></td><td><span class="chip done">現行</span></td></tr>
+                <tr><td>26 夏</td><td>電光</td><td><span class="role">家長</span></td><td><span class="chip locked">唯讀</span></td></tr>
+                <tr><td>25 夏</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip locked">唯讀</span></td></tr>
+              </tbody></table></div>
+            </div>
+            <div class="df"><span class="btn">關閉</span><span class="btn primary">編輯</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="stage-cap" style="margin-top:22px">畫面 A-2：同一個彈窗的編輯模式（家別＋角色一列一列編輯）</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>成員管理</h1><div class="sub">依期別與家別管理成員身份。</div></div></div>
+        <div class="scrim">
+          <div class="dialog md">
+            <div class="dh"><div><small>編輯成員・27 冬</small><b>陳怡君</b></div><span class="x">×</span></div>
+            <div class="db">
+              <div class="fgrid">
+                <div><span class="flabel">姓名</span><span class="ctl full">陳怡君</span></div>
+                <div><span class="flabel">信箱（不可修改）</span><span class="ctl full dis">yijun@example.com</span></div>
+              </div>
+              <div class="hr"></div>
+              <span class="flabel">27 冬的家別身份（每一列＝一個家別與在該家的角色）</span>
+              <div class="tbl" style="margin-top:6px"><table><thead><tr><th style="width:150px">家別</th><th>角色（可複選）</th><th style="width:70px"></th></tr></thead><tbody>
+                <tr><td><span class="ctl sel full">電光</span></td><td><span class="check"><span class="box on"></span>撰寫者</span><span class="check"><span class="box"></span>家長</span></td><td><span class="btn danger sm">移除</span></td></tr>
+                <tr style="opacity:.55"><td><span class="ctl sel full"><s>新武</s></span></td><td><span class="muted">將移除這個家別身份（撰寫者）</span></td><td><span class="btn sm">復原</span></td></tr>
+              </tbody></table></div>
+              <div style="margin-top:8px"><span class="btn sm">＋ 新增一個家別身份</span></div>
+              <div style="margin-top:12px"><span class="flabel">全期角色（不分家別）</span><span class="check"><span class="box"></span>驗收者</span><span class="check"><span class="box"></span>教案組長</span></div>
+              <div class="hr"></div>
+              <div class="row between"><div><b>退團</b><div class="muted small">清空本期所有角色，家別身份保留作紀錄。帳號仍可登入看一般內容，但不能送件、驗收或被分配任務；已上傳的教案留在原家。</div></div><span class="btn danger sm">清空本期角色</span></div>
+              <div class="decide" style="margin-top:10px">待決定：清空角色後，還能不能看到本家的家內教案清單？（Codex 實測目前仍可讀）</div>
+            </div>
+            <div class="df"><span class="left">變更：移除「新武・撰寫者」</span><span class="btn">取消</span><span class="btn primary">儲存</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== B ===================== -->
+  <section class="opt" data-opt="B">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>點列從右側滑出抽屜，表格仍留在左邊可以看到。抽屜上方是摘要，下方用分頁切換「本期身份」與「歷史紀錄」；頂部有「上一位／下一位」，以成員為單位（陳怡君的兩列只算一位），維持目前的篩選順序。本期身份直接在抽屜內編輯；有未儲存的修改時切換上下位，會先詢問要儲存還是捨棄。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>開期後逐人核對名單最快，不用反覆開關</li><li>表格還看得到，知道自己在第幾位</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>需求寫的是「彈窗」，這是抽屜，要團隊接受</li><li>歷史紀錄藏在分頁裡，要多點一下</li></ul></div>
+    </div>
+    <div class="verdict">如果每期開期都要一位一位確認二、三十人，B 的「下一位」會省很多時間。</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph" style="padding-right:600px"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
+        <div class="tbl" style="width:470px"><table><thead><tr><th>姓名</th><th>家別</th><th>角色</th></tr></thead><tbody>
+          <tr><td>撰寫者小美</td><td>電光</td><td><span class="role">撰寫者</span></td></tr>
+          <tr class="sel"><td><b>陳怡君</b></td><td>電光</td><td><span class="role">撰寫者</span></td></tr>
+          <tr class="sel"><td><b>陳怡君</b></td><td>新武</td><td><span class="role">撰寫者</span></td></tr>
+          <tr><td>電光家長</td><td>電光</td><td><span class="role">家長</span></td></tr>
+          <tr><td>驗收者一</td><td>電光</td><td><span class="role">驗收者</span></td></tr>
+        </tbody></table></div>
+        <div class="drawer">
+          <div class="dh"><div><small>成員 2／10　<span class="link">‹ 上一位</span>　<span class="link">下一位 ›</span></small><b>陳怡君</b><div class="muted small">yijun@example.com・<span class="chip active">待認領</span></div></div><span style="font-size:22px;color:var(--b500)">×</span></div>
+          <div class="db">
+            <div class="tabs" style="margin-bottom:14px"><span class="on">本期身份</span><span>歷史紀錄（4）</span></div>
+            <div class="tbl"><table><thead><tr><th>家別</th><th>角色</th><th></th></tr></thead><tbody>
+              <tr><td><span class="ctl sel">電光</span></td><td><span class="pills"><span class="pill on">撰寫者</span><span class="pill">家長</span></span></td><td><span class="btn danger sm">移除</span></td></tr>
+              <tr><td><span class="ctl sel">新武</span></td><td><span class="pills"><span class="pill on">撰寫者</span><span class="pill">家長</span></span></td><td><span class="btn danger sm">移除</span></td></tr>
+            </tbody></table></div>
+            <div style="margin-top:10px" class="row"><span class="btn sm">＋ 新增一個家別身份</span><span class="btn danger sm">清空本期角色</span></div>
+            <div style="margin-top:10px"><span class="flabel">全期角色</span><span class="pills"><span class="pill">驗收者</span><span class="pill">教案組長</span></span></div>
+            <div class="hr"></div>
+            <span class="flabel">姓名</span><span class="ctl full">陳怡君</span>
+          </div>
+          <div class="df"><span class="btn">復原變更</span><span class="btn primary">儲存並看下一位</span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="stage-cap" style="margin-top:22px">畫面 B-2：同一個抽屜切到「歷史紀錄」分頁</div>
+    <div class="stage"><div class="frame">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
+        <div class="drawer">
+          <div class="dh"><div><small>成員 2／10　<span class="link">‹ 上一位</span>　<span class="link">下一位 ›</span></small><b>陳怡君</b><div class="muted small">yijun@example.com・<span class="chip active">待認領</span></div></div><span style="font-size:22px;color:var(--b500)">×</span></div>
+          <div class="db">
+            <div class="tabs" style="margin-bottom:14px"><span>本期身份</span><span class="on">歷史紀錄（4）</span></div>
+            <div class="tbl"><table><thead><tr><th>期別</th><th>家別</th><th>角色</th><th></th></tr></thead><tbody>
+              <tr><td><b>27 冬</b></td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip done">現行</span></td></tr>
+              <tr><td><b>27 冬</b></td><td>新武</td><td><span class="role">撰寫者</span></td><td><span class="chip done">現行</span></td></tr>
+              <tr><td>26 夏</td><td>電光</td><td><span class="role">家長</span></td><td><span class="chip locked">唯讀</span></td></tr>
+              <tr><td>25 夏</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip locked">唯讀</span></td></tr>
+            </tbody></table></div>
+            <p class="muted small" style="margin-top:10px">舊期為唯讀，只能查閱。</p>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== C ===================== -->
+  <section class="opt" data-opt="C">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>點列開大彈窗：左欄是個人摘要與帳號狀態，右欄是依期別排列的時間軸，每一期展開後用小表格列出該期的家別與角色（同期不同家分列，預設展開現行期與上一期）。現行期那一段有「編輯本期身份」按鈕，舊期都標唯讀。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>長期成員（待過很多期）的經歷最好讀</li><li>適合之後延伸「歷年擔任過的職務」</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>多一層展開，跨期比較比平面表格慢</li><li>彈窗較大，小螢幕要捲動</li></ul></div>
+    </div>
+    <div class="verdict">如果成員資訊之後也想拿來看「這個人當過幾次撰寫者、驗收者」，C 的時間軸比較好延伸。</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>成員管理</h1></div></div>
+        <div class="scrim">
+          <div class="dialog lg">
+            <div class="dh"><div><small>成員資訊</small><b>陳怡君</b></div><span class="x">×</span></div>
+            <div class="db" style="display:grid;grid-template-columns:260px 1fr;gap:22px">
+              <div style="background:var(--b100);border-radius:12px;padding:16px">
+                <div style="width:52px;height:52px;border-radius:50%;background:var(--b200);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:var(--b700)">陳</div>
+                <dl class="kv" style="grid-template-columns:70px 1fr;margin-top:12px"><dt>信箱</dt><dd style="word-break:break-all">yijun@example.com</dd><dt>帳號</dt><dd><span class="chip active">待認領</span></dd><dt>加入</dt><dd>25 夏</dd><dt>參與</dt><dd>3 期</dd></dl>
+                <div style="margin-top:14px" class="row"><span class="btn sm">編輯姓名</span><span class="btn danger sm">清空本期角色</span></div>
+              </div>
+              <div>
+                <ul class="timeline">
+                  <li><div class="row between"><b>27 冬（現行）</b><span class="btn primary sm">編輯本期身份</span></div><div class="tbl" style="margin-top:6px;box-shadow:none"><table><thead><tr><th>家別</th><th>角色</th></tr></thead><tbody><tr><td>電光</td><td><span class="role">撰寫者</span></td></tr><tr><td>新武</td><td><span class="role">撰寫者</span></td></tr></tbody></table></div></li>
+                  <li><div class="row between"><b>26 夏</b><span class="chip locked">唯讀</span></div><div class="tbl" style="margin-top:6px;box-shadow:none"><table><tbody><tr><td>電光</td><td><span class="role">家長</span></td></tr></tbody></table></div></li>
+                  <li><div class="row between"><b>25 夏</b><span class="muted small">展開 ▾</span></div></li>
+                </ul>
+              </div>
+            </div>
+            <div class="df"><span class="btn">關閉</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <div class="pager"><a href="s2_member_list.html">← S2 成員搜尋與篩選</a><a href="s4_batch_edit.html">S4 批量編輯 →</a></div>
+</div>
+<script>
+// 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
+(function () {
+  const PEOPLE = {
+    leader: { name: '組長阿凱', mail: 'demo-leader@tutoref.tw', av: '組' },
+    parent: { name: '電光家長', mail: 'demo-parent-dianguang@…', av: '電' },
+    writer: { name: '撰寫者小美', mail: 'demo-writer@tutoref.tw', av: '撰' },
+    reviewer: { name: '驗收者一', mail: 'demo-reviewer-1@tutoref.tw', av: '驗' },
+  };
+
+  // data-sb="leader|parent|writer|reviewer"、data-on="<key>"、data-archived（改名「已歸檔教案」）、data-family（顯示家內教案）
+  document.querySelectorAll('.sb[data-sb]').forEach((sb) => {
+    const role = sb.dataset.sb;
+    const on = sb.dataset.on || '';
+    // 原型呈現的都是改版後的狀態，預設顯示「已歸檔教案」；data-legacy 才顯示舊名，data-archived 額外標「改名」
+    const archived = !sb.hasAttribute('data-legacy');
+    const family = sb.hasAttribute('data-family') || role === 'parent';
+    // data-name / data-mail / data-av 可覆寫側欄底部顯示的人（例如加拿家長）
+    const base = PEOPLE[role] || PEOPLE.leader;
+    const person = sb.dataset.name ? { name: sb.dataset.name, mail: sb.dataset.mail || '', av: sb.dataset.av || sb.dataset.name[0] } : base;
+    const item = (key, label, extra = '') =>
+      `<div class="it${key === on ? ' on' : ''}"><i></i>${label}${extra}</div>`;
+    let html = '<div class="logo">Tut<span>★</span>ref</div>';
+    html += item('search', '教案檢索') + item('package', '學習資源') + item('news', '訊息公告');
+    html += '<div class="grp">我的教案</div>';
+    html += item('mine', archived ? '已歸檔教案' : '已上傳教案', archived && sb.hasAttribute('data-archived') ? '<span class="new">改名</span>' : '');
+    html += item('likes', '已收藏教案');
+    html += '<div class="grp">教案驗收</div>';
+    if (family) html += item('family', '家內教案', role !== 'parent' && sb.hasAttribute('data-family') ? '<span class="new">開放</span>' : '');
+    html += item('tasks', '我的驗收任務');
+    if (role === 'leader') {
+      html += item('review', '本期驗收管理');
+      html += '<div class="grp">教案組管理</div>';
+      html += item('members', '成員管理') + item('plans', '教案管理') + item('rubric', '驗收標準');
+    }
+    html += '<div class="spacer"></div>';
+    html += `<div class="me"><div class="av">${person.av}</div><div><b>${person.name}</b><small>${person.mail}</small></div></div>`;
+    sb.innerHTML = html;
+  });
+
+  const tabs = Array.from(document.querySelectorAll('.opt-tab'));
+  const opts = Array.from(document.querySelectorAll('.opt'));
+  if (!tabs.length) return;
+  function show(key) {
+    tabs.forEach((t) => t.classList.toggle('on', t.dataset.opt === key));
+    opts.forEach((o) => o.classList.toggle('on', o.dataset.opt === key));
+  }
+  tabs.forEach((t) =>
+    t.addEventListener('click', () => {
+      show(t.dataset.opt);
+      history.replaceState(null, '', '#' + t.dataset.opt);
+    })
+  );
+  const fromHash = location.hash.replace('#', '').toUpperCase();
+  show(tabs.some((t) => t.dataset.opt === fromHash) ? fromHash : tabs[0].dataset.opt);
+})();
+
+</script>
+</body>
+</html>

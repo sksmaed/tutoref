@@ -1,9 +1,15 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { StatusChip } from '@/features/review-shared/StatusChip';
+import { LockBanner } from '@/features/review-shared/LockBanner';
+import { BTN_PRIMARY } from '@/lib/button-styles';
+
+const SECTION = 'overflow-hidden rounded-xl border border-black-200 bg-white';
+const SECTION_HEAD = 'flex flex-wrap items-start justify-between gap-3 bg-black-100/60 px-[14px] py-3';
+const SECTION_TITLE = "font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900";
+const PART_TITLE = "mt-2 font-['Noto_Sans_TC'] text-[15px] font-extrabold text-black-900";
 import type {
   FinalCheckItem,
   InitialFeedbackRecap,
@@ -44,12 +50,12 @@ const VerdictPicker: React.FC<{
         key={option}
         type="button"
         onClick={() => onChange(option)}
-        className={`rounded-lg px-3 py-1 font-['Noto_Sans_TC'] text-[14px] ${
+        className={`cursor-pointer rounded-lg border px-3 py-[6px] font-['Noto_Sans_TC'] text-[14px] font-bold ${
           value === option
             ? option === 'passed'
-              ? 'bg-status-done text-white'
-              : 'bg-status-alert text-white'
-            : 'bg-white text-black-700 hover:bg-primary-100'
+              ? 'border-status-done bg-status-done text-white'
+              : 'border-status-alert bg-status-alert text-white'
+            : 'border-black-200 bg-white text-black-700 hover:bg-primary-100'
         }`}
       >
         {option === 'passed' ? '通過' : '未通過'}
@@ -92,17 +98,26 @@ export const FinalReviewForm: React.FC<FinalReviewFormProps> = ({
     (slideResult === 'failed' && !slideReason.trim());
 
   return (
-    <div className="flex flex-col gap-4">
-      <section className="rounded-lg bg-white px-4 py-3 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-        <h3 className="font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900">初驗改善追蹤</h3>
+    <div className="flex flex-col gap-3">
+      <LockBanner
+        tone="active"
+        title="總驗定位：確認初驗問題是否改善，並檢查實際上課用投影片"
+        description="不重新跑初驗計分；分別判定教案紙與投影片是否通過，未通過時理由必填。"
+      />
+      {record && (
+        <p className="font-['Noto_Sans_TC'] text-[12px] text-black-500">你已提交過這份總驗；再次送出會更新判定。</p>
+      )}
+
+      <p className={PART_TITLE}>一、初驗改善追蹤</p>
+      <section className={`${SECTION} px-[14px] py-3`}>
         {initialFeedback.length === 0 ? (
-          <p className="mt-2 font-['Noto_Sans_TC'] text-[13px] text-black-500">
-            這份教案沒有初驗回饋紀錄。
+          <p className="font-['Noto_Sans_TC'] text-[13px] text-black-500">
+            初驗沒有需要追蹤的修改回饋，請直接進行教案紙與投影片檢核。
           </p>
         ) : (
-          <ul className="mt-2 flex flex-col gap-2">
+          <ul className="flex flex-col gap-[10px]">
             {initialFeedback.map((item, index) => (
-              <li key={index} className="border-b border-black-100 pb-2 last:border-b-0 last:pb-0">
+              <li key={index} className="rounded-[10px] border border-black-100 bg-black-100/30 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <p className="min-w-0 flex-1 font-['Noto_Sans_TC'] text-[14px] text-black-900">
                     {item.body}
@@ -112,9 +127,9 @@ export const FinalReviewForm: React.FC<FinalReviewFormProps> = ({
                 {item.responses.map((response, responseIndex) => (
                   <p
                     key={responseIndex}
-                    className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-700"
+                    className="mt-2 rounded-lg bg-black-100 px-[10px] py-[9px] font-['Noto_Sans_TC'] text-[12px] leading-[155%] text-black-700"
                   >
-                    作者：{response}
+                    <span className="font-bold">作者處理說明：</span>{response}
                   </p>
                 ))}
               </li>
@@ -123,10 +138,11 @@ export const FinalReviewForm: React.FC<FinalReviewFormProps> = ({
         )}
       </section>
 
+      {sections.length > 0 && <p className={PART_TITLE}>二、投影片與教案紙檢核</p>}
       {sections.map(([section, items]) => (
-        <section key={section} className="rounded-lg bg-white px-4 py-3 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900">{section}</h3>
+        <section key={section} className={SECTION}>
+          <div className={SECTION_HEAD}>
+            <h3 className={SECTION_TITLE}>{section}</h3>
             <button
               type="button"
               onClick={() =>
@@ -141,10 +157,10 @@ export const FinalReviewForm: React.FC<FinalReviewFormProps> = ({
               本區全部通過
             </button>
           </div>
-          <p className="mt-1 font-['Noto_Sans_TC'] text-[12px] text-black-500">
+          <p className="px-[14px] pt-2 font-['Noto_Sans_TC'] text-[12px] text-black-500">
             檢核清單只是對照用，系統記錄的是下方的教案紙 / 投影片判定。
           </p>
-          <div className="mt-2 flex flex-col gap-1">
+          <div className="flex flex-col gap-1 px-[14px] pb-[14px] pt-2">
             {items.map((item) => (
               <Checkbox
                 key={item.id}
@@ -165,36 +181,41 @@ export const FinalReviewForm: React.FC<FinalReviewFormProps> = ({
         </section>
       ))}
 
+      <p className={PART_TITLE}>{sections.length > 0 ? '三' : '二'}、本輪驗收判定</p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {(
         [
           { key: 'sheet', title: '教案紙判定', value: sheetResult, set: setSheetResult, reason: sheetReason, setReason: setSheetReason },
           { key: 'slide', title: '投影片判定', value: slideResult, set: setSlideResult, reason: slideReason, setReason: setSlideReason },
         ] as const
       ).map((block) => (
-        <section key={block.key} className="rounded-lg bg-white px-4 py-3 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+        <section key={block.key} className={`${SECTION} px-[14px] py-3`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900">{block.title}</h3>
+            <h3 className={SECTION_TITLE}>{block.title}</h3>
             <VerdictPicker value={block.value} onChange={block.set} />
           </div>
           {block.value === 'failed' && (
-            <input
-              type="text"
+            <textarea
               value={block.reason}
               onChange={(event) => block.setReason(event.target.value)}
-              placeholder="未通過必須填寫理由"
-              className={`mt-2 w-full rounded-lg border px-3 py-1 font-['Noto_Sans_TC'] text-[14px] ${
+              placeholder="未通過原因（必填）：請具體說明仍需修改的問題"
+              rows={3}
+              className={`mt-2 w-full rounded-[10px] border px-3 py-2 font-['Noto_Sans_TC'] text-[14px] ${
                 block.reason.trim() ? 'border-black-200' : 'border-status-alert'
               }`}
             />
           )}
         </section>
       ))}
+      </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="font-['Noto_Sans_TC'] text-[13px] text-black-500">
+      <div className="sticky bottom-0 -mx-1 flex flex-wrap items-center justify-between gap-3 border-t border-black-200 bg-black-100 px-1 py-3">
+        <span className="font-['Noto_Sans_TC'] text-[12px] text-black-500">
           未通過不等於補驗；最終結果仍由教案組決定。
         </span>
-        <Button
+        <button
+          type="button"
+          className={BTN_PRIMARY}
           onClick={() =>
             onSubmit({
               sheet_result: sheetResult,
@@ -204,10 +225,9 @@ export const FinalReviewForm: React.FC<FinalReviewFormProps> = ({
             })
           }
           disabled={submitting || missingReason}
-          className="bg-primary-900 px-6 py-2 font-bold text-white"
         >
-          {submitting ? '送出中…' : record ? '更新總驗判定' : '送出總驗判定'}
-        </Button>
+          {submitting ? '送出中…' : record ? '更新總驗判定' : '提交總驗'}
+        </button>
       </div>
     </div>
   );

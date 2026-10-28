@@ -5,7 +5,7 @@ import React from 'react';
  * 各頁面不要自己寫 bg-xxx-100 text-xxx-700，狀態 → 樣式的對應集中在這裡。
  */
 
-export type StatusTone = 'idle' | 'active' | 'done' | 'alert' | 'locked';
+export type StatusTone = 'idle' | 'active' | 'done' | 'alert' | 'locked' | 'info';
 
 // Tailwind 需要看得到完整 class 字串，不能動態拼接。
 const TONE_CLASS: Record<StatusTone, string> = {
@@ -14,6 +14,7 @@ const TONE_CLASS: Record<StatusTone, string> = {
   done: 'bg-status-done-bg text-status-done',
   alert: 'bg-status-alert-bg text-status-alert',
   locked: 'bg-status-locked-bg text-status-locked',
+  info: 'bg-status-info-bg text-status-info',
 };
 
 /** 業務狀態文案 → chip 樣式（§4.2 對應表）。 */

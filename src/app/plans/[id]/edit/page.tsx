@@ -7,7 +7,7 @@ import TeachingPlanEditor, { TeachingPlanEditorRef } from '@/features/teaching-p
 import { TeachingPlan } from '@/types/api';
 import { api } from '@/lib/api';
 import { DURATION_MAP, DURATION_INVERSE_MAP } from '@/lib/constants';
-import { updateManageCachesAfterEdit } from '@/features/manage/cache';
+import { updateMineCacheAfterEdit } from '@/features/manage/cache';
 import Link from 'next/link';
 
 const normalizePlan = (detail: any): TeachingPlan => {
@@ -128,7 +128,7 @@ export default function EditTeachingPlanPage() {
         setPlan((prev) => (prev ? { ...prev, slide_pdf: '' } : prev));
       }
 
-      updateManageCachesAfterEdit(data);
+      updateMineCacheAfterEdit(data);
 
       toast({
         title: '✅ 教案已更新',
@@ -189,7 +189,7 @@ export default function EditTeachingPlanPage() {
               返回
             </button>
             <Link
-              href="/review/my-plans"
+              href="/review/tasks"
               className="flex h-[44px] w-[160px] items-center justify-center rounded-[8px] bg-primary-900 font-bold text-white"
             >
               前往本期教案
@@ -209,6 +209,7 @@ export default function EditTeachingPlanPage() {
         onSave={handleSubmit}
         onCancel={() => router.back()}
         onSlideFileSelect={handleSlideFileSelect}
+        onSheetReupload={() => router.push(`/upload?replacePlanId=${planId}`)}
       />
       <div className="mt-6 flex gap-4">
         <button

@@ -29,7 +29,6 @@ export interface MembershipOut {
 
 export interface RoleOut {
   role: string;
-  scope_type: string;
   family_id?: string | null;
   family_name?: string | null;
 }

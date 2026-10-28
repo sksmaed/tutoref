@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S1 開始新的一期</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Milestone 1 UI 方案原型：只沿用 tutoref/src/app/globals.css 的色票與 lib/*-styles.ts 的尺寸，不新增品牌色。 */
+:root {
+  --p100: #fef7f1; --p300: #fbcf9e; --p700: #f1994a; --p900: #ed7a13;
+  --s100: #f4f7f0; --s700: #728a47;
+  --b100: #f1f1f1; --b200: #d4d4d4; --b300: #b8b8b8; --b400: #9c9c9c; --b500: #808080; --b700: #474747; --b900: #0d0d0d;
+  --idle: var(--b400); --idle-bg: var(--b100);
+  --active: var(--p900); --active-bg: var(--p100);
+  --done: var(--s700); --done-bg: var(--s100);
+  --alert: #c85f5f; --alert-bg: #faf0f0;
+  --locked: var(--b500); --locked-bg: var(--b100);
+  --info: #6392b5; --info-bg: #edf4fb;
+  --cat-nature: #728a47; --cat-social: #f1994a; --cat-general: #7f478a; --cat-info: #6392b5; --cat-art: #c85f5f;
+  --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); color: var(--b900); background: var(--b100); font-size: 14px; line-height: 1.55; }
+a { color: var(--p900); }
+
+/* ---------- 文件外框（說明區，不是原型本體） ---------- */
+.doc { max-width: 1260px; margin: 0 auto; padding: 28px 16px 80px; }
+.crumb { font-size: 12px; color: var(--b500); margin-bottom: 6px; }
+.crumb a { color: var(--b500); text-decoration: none; }
+.crumb a:hover { color: var(--p900); }
+.doc h1 { font-size: 24px; margin: 0 0 6px; }
+.doc .lead { color: var(--b700); font-size: 14px; margin: 0 0 18px; max-width: 900px; }
+.panel { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 18px 20px; margin-bottom: 16px; }
+.panel h2 { font-size: 16px; margin: 0 0 8px; }
+.panel h3 { font-size: 14px; margin: 14px 0 6px; }
+.panel p, .panel li { font-size: 14px; color: var(--b700); }
+.panel ul { margin: 6px 0 0; padding-left: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.issue-ref { display: inline-block; font-size: 12px; color: var(--alert); background: var(--alert-bg); border-radius: 6px; padding: 0 6px; margin: 0 2px; }
+.decide { border-left: 3px solid var(--p900); background: var(--p100); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 10px; font-size: 13px; color: var(--b700); }
+
+.opt-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 14px; }
+.opt-tab { cursor: pointer; border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 700; color: var(--b900); display: inline-flex; gap: 8px; align-items: center; }
+.opt-tab:hover { border-color: var(--b300); }
+.opt-tab.on { border-color: var(--p900); background: var(--p100); color: var(--p900); }
+.opt-tab .rec { font-size: 11px; font-weight: 700; color: #fff; background: var(--p900); border-radius: 6px; padding: 1px 6px; }
+.opt-tab .rec.codex { background: var(--b700); }
+.opt { display: none; }
+.opt.on { display: block; }
+.opt-meta { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 960px) { .opt-meta { grid-template-columns: 1fr; } }
+.opt-meta .panel { margin: 0; }
+.opt-meta h3 { margin-top: 0; }
+.pros li::marker { color: var(--s700); }
+.cons li::marker { color: var(--alert); }
+.verdict { font-size: 13px; color: var(--b700); background: #fff; border: 1px dashed var(--b300); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+.verdict b { color: var(--b900); }
+
+.stage { overflow-x: auto; padding-bottom: 6px; }
+.stage-cap { font-size: 12px; color: var(--b500); margin: 6px 2px 10px; }
+.pager { display: flex; justify-content: space-between; margin-top: 26px; font-size: 14px; }
+.pager a { text-decoration: none; font-weight: 700; }
+
+/* ---------- 原型：AppShell ---------- */
+.frame { position: relative; width: 1180px; min-height: 660px; display: flex; background: var(--b100); border: 1px solid var(--b200); border-radius: 14px; overflow: hidden; }
+.frame.tall { min-height: 780px; }
+.sb { width: 206px; margin: 20px 0 20px 20px; flex-shrink: 0; background: #fff; border-radius: 10px; box-shadow: 0 5px 16px rgba(0,0,0,.08); padding: 18px 16px; display: flex; flex-direction: column; }
+.sb .logo { font-size: 19px; font-weight: 700; letter-spacing: .5px; padding: 0 8px 16px; border-bottom: 1px solid var(--b100); margin-bottom: 8px; }
+.sb .logo span { color: var(--p900); }
+.sb .grp { font-size: 12px; color: var(--b400); padding: 12px 8px 5px; }
+.sb .it { display: flex; gap: 8px; align-items: center; border-radius: 7px; padding: 8px 9px; font-size: 15px; font-weight: 500; margin: 2px 0; }
+.sb .it i { width: 14px; height: 14px; border: 1.5px solid var(--b500); border-radius: 4px; display: inline-block; }
+.sb .it.on { background: var(--p100); color: var(--b900); }
+.sb .it.on i { border-color: var(--p900); }
+.sb .it .new { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--p900); background: var(--p100); border: 1px solid var(--p300); border-radius: 6px; padding: 0 5px; }
+.sb .spacer { flex: 1; }
+.sb .me { border-top: 1px solid var(--b100); padding: 14px 8px 0; display: flex; gap: 10px; align-items: center; }
+.sb .me .av { width: 29px; height: 29px; border-radius: 50%; background: var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--b700); }
+.sb .me b { display: block; font-size: 12px; }
+.sb .me small { display: block; font-size: 10px; color: var(--b400); }
+/* .main 不設 position，讓彈窗遮罩與抽屜以整個 .frame 為範圍（正式站的 Dialog 會連側欄一起蓋住）。 */
+.main { flex: 1; min-width: 0; padding: 20px 34px 40px 34px; }
+.userbtn { position: absolute; right: 24px; top: 20px; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 3px 10px rgba(0,0,0,.05); }
+.ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; padding-right: 64px; margin-bottom: 22px; }
+.ph h1 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.5; }
+.ph .sub { font-size: 13px; color: var(--b500); margin-top: 2px; }
+.ph .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- 原型：元件 ---------- */
+.card { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 20px; }
+.card + .card { margin-top: 14px; }
+.card .ct { font-size: 15px; font-weight: 700; }
+.card .cd { font-size: 12px; color: var(--b500); margin-top: 3px; line-height: 1.55; }
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.metric { background: #fff; border: 1px solid var(--b200); border-radius: 10px; padding: 16px 18px; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.metric small { font-size: 12px; color: var(--b500); }
+.metric b { display: block; font-size: 28px; font-weight: 800; line-height: 1.2; margin: 3px 0; }
+.metric span { font-size: 12px; color: var(--b500); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.metrics.three { grid-template-columns: repeat(3, 1fr); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 10px; border: 1px solid var(--b200); background: #fff; color: var(--b900); padding: 9px 13px; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: default; }
+.btn.primary { background: var(--p900); border-color: var(--p900); color: #fff; }
+.btn.danger { background: #fff; border-color: var(--alert-bg); color: var(--alert); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--b700); }
+.btn.sm { border-radius: 8px; padding: 6px 9px; font-size: 12px; }
+.btn[disabled] { opacity: .5; }
+.link { color: var(--p900); font-weight: 700; text-decoration: none; }
+.link-file { display: inline-flex; gap: 5px; align-items: center; color: var(--p900); font-weight: 700; font-size: 13px; text-decoration: none; white-space: nowrap; }
+.link-file::before { content: ''; width: 11px; height: 13px; border: 1.5px solid currentColor; border-radius: 2px; display: inline-block; }
+
+.chip { display: inline-flex; align-items: center; border-radius: 8px; padding: 2px 8px; font-size: 13px; font-weight: 500; white-space: nowrap; line-height: 1.5; }
+.chip.idle { background: var(--idle-bg); color: var(--idle); }
+.chip.active { background: var(--active-bg); color: var(--active); }
+.chip.done { background: var(--done-bg); color: var(--done); }
+.chip.alert { background: var(--alert-bg); color: var(--alert); }
+.chip.locked { background: var(--locked-bg); color: var(--locked); }
+.chip.info { background: var(--info-bg); color: var(--info); }
+.role { display: inline-flex; border-radius: 6px; background: var(--b100); color: var(--b700); font-size: 12px; padding: 1px 7px; margin: 1px 3px 1px 0; white-space: nowrap; }
+.variant { display: inline-flex; font-size: 11px; font-weight: 700; color: var(--b700); background: var(--b100); border: 1px solid var(--b200); border-radius: 6px; padding: 0 6px; margin-left: 4px; }
+.tag { display: inline-flex; gap: 4px; align-items: center; border-radius: 999px; border: 1px solid var(--p300); background: var(--p100); color: var(--p900); font-size: 12px; font-weight: 700; padding: 2px 9px; white-space: nowrap; }
+.tag .x { color: var(--b500); font-weight: 400; }
+
+/* 與 lib/table-styles.ts 的 TABLE_WRAP 相同：容器可橫向捲動 */
+.tbl { overflow-x: auto; border: 1px solid var(--b200); border-radius: 10px; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { background: var(--p100); text-align: left; font-size: 13px; font-weight: 700; padding: 13px 14px; border-bottom: 1px solid var(--b100); white-space: nowrap; }
+.tbl td { padding: 13px 14px; border-bottom: 1px solid var(--b100); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tr.hl td { background: rgba(254,247,241,.6); }
+.tbl tr.sel td { background: var(--p100); }
+.tbl td small, .tbl th small { display: block; font-size: 12px; color: var(--b500); font-weight: 400; }
+.tbl .cb { width: 42px; text-align: center; }
+.tbl tr.group td { background: #fafafa; font-size: 12px; font-weight: 700; color: var(--b700); padding: 7px 14px; }
+.tbl.clickable tbody tr:not(.group) { cursor: pointer; }
+.box { width: 15px; height: 15px; border: 1.5px solid var(--b300); border-radius: 4px; display: inline-block; vertical-align: middle; background: #fff; }
+.box.on { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.on::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.box.mixed { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.mixed::after { content: ''; position: absolute; left: 3px; top: 6px; width: 7px; height: 2px; background: #fff; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.tabs span { padding: 10px 16px; font-size: 15px; font-weight: 700; color: var(--b500); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs span.on { color: var(--p900); border-color: var(--p900); }
+.seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 10px; background: #fff; border: 1px solid var(--b200); }
+.seg span { padding: 6px 12px; border-radius: 7px; font-size: 14px; font-weight: 700; color: var(--b700); }
+.seg span.on { background: var(--p900); color: #fff; }
+
+.bulk { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--p300); background: var(--p100); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; color: var(--b700); }
+.bulk b { color: var(--b900); }
+.banner { border-radius: 8px; border: 1px solid; padding: 12px 16px; margin-bottom: 14px; }
+.banner b { display: block; font-size: 15px; }
+.banner p { margin: 3px 0 0; font-size: 14px; }
+.banner.locked { background: var(--locked-bg); border-color: var(--b200); color: var(--b700); }
+.banner.active { background: var(--active-bg); border-color: var(--p300); color: var(--b900); }
+.banner.alert { background: var(--alert-bg); border-color: #efcfcf; color: var(--alert); }
+.banner.done { background: var(--done-bg); border-color: #dbe4cf; color: var(--b900); }
+.banner.info { background: var(--info-bg); border-color: #cfe0ef; color: var(--b900); }
+
+.ctl { border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; color: var(--b900); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.ctl.ph { color: var(--b400); }
+.ctl.sel::after { content: '▾'; margin-left: auto; color: var(--b500); font-size: 12px; padding-left: 8px; }
+.ctl.req { border-color: var(--p700); }
+.ctl.full { width: 100%; }
+.ctl.dis { background: var(--b100); color: var(--b500); }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.toolbar .grow { flex: 1; min-width: 220px; }
+.flabel { display: block; font-size: 12px; font-weight: 700; color: var(--b700); margin-bottom: 6px; }
+.fhint { display: block; font-size: 12px; color: var(--b500); margin-top: 5px; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fgrid .span2 { grid-column: span 2; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { border: 1px solid var(--b200); border-radius: 999px; padding: 4px 11px; font-size: 13px; background: #fff; color: var(--b700); white-space: nowrap; }
+.pill.on { border-color: var(--p900); background: var(--p100); color: var(--p900); font-weight: 700; }
+.pill.dis { color: var(--b400); background: var(--b100); }
+.radio { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; margin-right: 14px; }
+.radio i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--b300); display: inline-block; background: #fff; }
+.radio.on i { border: 5px solid var(--p900); }
+.check { display: inline-flex; gap: 7px; align-items: center; font-size: 14px; margin-right: 14px; white-space: nowrap; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 9px 16px; font-size: 14px; margin: 0; }
+.kv dt { color: var(--b500); }
+.kv dd { margin: 0; font-weight: 500; }
+.muted { color: var(--b500); }
+.small { font-size: 12px; }
+.alert-text { color: var(--alert); }
+.ok-text { color: var(--s700); }
+.row { display: flex; gap: 10px; align-items: center; }
+.row.between { justify-content: space-between; }
+.stack > * + * { margin-top: 12px; }
+.hr { height: 1px; background: var(--b100); margin: 14px 0; }
+.steps { display: flex; gap: 8px; margin-bottom: 16px; }
+.steps span { flex: 1; font-size: 12px; font-weight: 700; color: var(--b400); border-top: 3px solid var(--b200); padding-top: 6px; }
+.steps span.on { color: var(--p900); border-color: var(--p900); }
+.steps span.done { color: var(--s700); border-color: var(--s700); }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 14px 22px; }
+.timeline li::before { content: ''; position: absolute; left: 4px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--p900); }
+.timeline li::after { content: ''; position: absolute; left: 8px; top: 18px; bottom: 2px; width: 1px; background: var(--b200); }
+.timeline li:last-child::after { display: none; }
+.timeline small { display: block; font-size: 12px; color: var(--b500); }
+.drop { border: 1.5px dashed var(--b300); border-radius: 12px; background: #fff; padding: 20px; text-align: center; color: var(--p900); font-weight: 700; font-size: 14px; }
+.drop small { display: block; color: var(--b500); font-weight: 400; font-size: 12px; margin-top: 4px; }
+.drop.filled { border-style: solid; border-color: var(--p300); background: var(--p100); color: var(--b900); text-align: left; }
+.drop.off { color: var(--b400); background: var(--b100); }
+.pdf { background: #fff; border: 1px solid var(--b200); border-radius: 8px; height: 100%; min-height: 380px; padding: 14px; font-size: 11px; color: var(--b500); }
+.pdf .ln { height: 7px; background: var(--b100); border-radius: 3px; margin: 7px 0; }
+.pdf .ln.w6 { width: 60%; } .pdf .ln.w8 { width: 80%; } .pdf .ln.w4 { width: 40%; }
+.cat { font-size: 13px; font-weight: 700; }
+.cat.nature { color: var(--cat-nature); } .cat.social { color: var(--cat-social); } .cat.general { color: var(--cat-general); } .cat.art { color: var(--cat-art); } .cat.info { color: var(--cat-info); }
+.diff { font-size: 13px; }
+.diff s { color: var(--b400); }
+.diff b { color: var(--p900); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--b300); margin-right: 6px; }
+.dot.done { background: var(--s700); } .dot.alert { background: var(--alert); } .dot.active { background: var(--p900); }
+
+/* ---------- 原型：覆蓋層 ---------- */
+.scrim { position: absolute; inset: 0; background: rgba(13,13,13,.4); display: flex; align-items: center; justify-content: center; padding: 30px; z-index: 5; }
+.scrim.light { background: rgba(13,13,13,.25); }
+.dialog { background: #fff; border-radius: 18px; box-shadow: 0 24px 90px rgba(0,0,0,.25); width: 760px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+/* 與 components/ui/Dialog.tsx 的 SIZE_CLASS 相同：sm 500、md 760、lg 1040 */
+.dialog.md { width: 760px; } .dialog.lg { width: 1040px; } .dialog.sm { width: 500px; }
+.dialog .dh { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid var(--b200); padding: 18px 20px; }
+.dialog .dh small { display: block; font-size: 12px; color: var(--b500); }
+.dialog .dh b { display: block; font-size: 17px; }
+.dialog .dh .x { font-size: 22px; color: var(--b500); line-height: 1; }
+.dialog .db { padding: 20px; overflow: auto; }
+.dialog .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+.dialog .df .left { margin-right: auto; font-size: 12px; color: var(--b500); }
+/* 與 components/ui/Drawer.tsx 相同：寬 min(620px, 92vw)，底下有半透明遮罩 */
+.frame:has(.drawer)::before { content: ''; position: absolute; inset: 0; background: rgba(13,13,13,.25); z-index: 5; }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 620px; background: #fff; border-left: 1px solid var(--b200); box-shadow: -20px 0 60px rgba(0,0,0,.12); z-index: 6; display: flex; flex-direction: column; }
+.drawer .dh { border-bottom: 1px solid var(--b200); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+.drawer .dh small { display: block; font-size: 12px; color: var(--b500); }
+.drawer .dh b { font-size: 18px; }
+.drawer .db { padding: 20px; overflow: auto; flex: 1; }
+.drawer .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.menu { position: absolute; right: 24px; top: 66px; width: 220px; background: #fff; border: 1px solid var(--b200); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 8px; z-index: 4; font-size: 14px; }
+.menu .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--b100); margin-bottom: 4px; }
+.menu .who b { display: block; }
+.menu .who small { color: var(--b500); font-size: 12px; }
+.menu .mi { padding: 8px 10px; border-radius: 8px; }
+.menu .mi.on { background: var(--p100); color: var(--p900); font-weight: 700; }
+/* 原型上的編號標記；說明寫在原型下方的 .legend，避免遮住畫面。 */
+.pin { position: absolute; z-index: 9; width: 22px; height: 22px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,0,0,.25); }
+.legend { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--b700); }
+.legend li { display: flex; gap: 6px; align-items: center; }
+.legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S1</div>
+  <h1>S1｜開始新的一期</h1>
+  <p class="lead">對應 US-01、Workflow 1（含 Workflow 2 的「自動複製上一期家別與角色」）。</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>情境</h2>
+      <p>26 夏結束，組長阿凱要開 27 冬：建立唯一的現行期別，舊期保留但改成唯讀，新期從空白驗收流程開始，並設定初驗與總驗時程。開完之後，組長、驗收者、各家家長與撰寫者要能直接在新期工作。</p>
+    </div>
+    <div class="panel">
+      <h2>目前遇到的問題</h2>
+      <ul>
+        <li><span class="issue-ref">C-01</span>「設定」裡沒有任何開新期的入口，只能打 API。</li>
+        <li><span class="issue-ref">C-02</span> 啟用新期後組長在新期沒有角色，管理頁全部消失，被鎖在外面。</li>
+        <li><span class="issue-ref">C-06</span> 舊期不會自動變唯讀。<span class="issue-ref">C-07</span> 角色要手動選期別複製。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>三個方案共同的前提</h2>
+    <p>不論選哪個方案，後端都要把「建立新期 → 帶入上一期角色 → 舊期設唯讀 → 切換現行期」當成<b>同一個動作</b>完成，否則還是會重演 C-02 的鎖死問題。風險文案建議從「本期驗收資料將被清空」改為「舊期資料會保留並轉為唯讀，新期從空白驗收流程開始」，避免組長誤以為資料會被刪掉。建立失敗時保留已填的內容並顯示原因，可以直接重試；建立成功後立即更新權限與側欄，並提供「前往成員管理」繼續調整名單。</p>
+    <div class="decide"><b>需要你決定：</b>開新期時要不要一併從上一期帶入驗收標準（初驗／總驗）？成員的家別與角色依 Workflow 2「自動複製上一期」<b>一律帶入、不能取消</b>（包含組長自己），之後在成員管理調整。</div>
+  </div>
+
+  <div class="opt-tabs">
+    <button class="opt-tab" data-opt="A">方案 A｜兩步驟確認彈窗 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
+    <button class="opt-tab" data-opt="B">方案 B｜一頁式大彈窗＋即時預覽</button>
+    <button class="opt-tab" data-opt="C">方案 C｜「準備下一期」檢查清單頁</button>
+  </div>
+
+  <!-- ===================== 方案 A ===================== -->
+  <section class="opt" data-opt="A">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>使用者選單 → 設定，組長才看得到「期別管理」卡片。按「開始新的一期」開兩步驟彈窗：第 1 步填新期資料與時程（成員家別與角色固定帶入，驗收標準可選）；第 2 步列出切換後會發生的事，確認後按「建立並切換到 27 冬」。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>最貼近原需求（設定 → 按鈕 → 彈窗）</li><li>先填完再確認，低頻但影響全團的動作不容易誤觸</li><li>沿用現有 Dialog，實作量最小</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>比一頁式多一步</li><li>時程欄位多，彈窗要捲動</li></ul></div>
+    </div>
+    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>開新期一學期只做一次，用兩步驟把「要建立什麼」和「會影響什麼」分開確認，最不容易出錯，又只需要現有元件。第 2 步的「我了解」勾選是原方案沒有的加強，可視情況拿掉。</div>
+
+    <div class="stage-cap">畫面 A-1：設定頁的「期別管理」卡片，按下後開啟第 1 步</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>設定</h1><div class="sub">檢視個人基本資料；需要修改時再進入編輯模式。</div></div><div class="acts"><span class="btn primary">編輯</span></div></div>
+        <div class="grid2" style="gap:14px">
+          <div class="card"><div class="ct">基本資訊</div><dl class="kv" style="margin-top:12px"><dt>姓名</dt><dd>組長阿凱</dd><dt>信箱</dt><dd>demo-leader@tutoref.tw</dd></dl></div>
+          <div class="card"><div class="ct">本期身份</div><div class="cd">角色、家別與期別由教案組維護。</div><dl class="kv" style="margin-top:10px"><dt>期別</dt><dd>26 夏</dd><dt>家別</dt><dd>利稻</dd><dt>角色</dt><dd><span class="chip active">驗收者</span> <span class="chip active">教案組長</span></dd></dl></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-head"><div><div class="ct">期別管理 <span class="chip locked" style="margin-left:6px">僅教案組長可見</span></div><div class="cd">目前期別 26 夏・初驗與總驗結果皆已發布。開始新的一期後，26 夏會保留並轉為唯讀。</div></div><span class="btn primary">開始新的一期</span></div>
+          <div class="tbl"><table><thead><tr><th>期別</th><th>狀態</th><th>成員</th><th>教案</th></tr></thead><tbody>
+            <tr><td><b>26 夏</b></td><td><span class="chip active">進行中</span></td><td>9 人</td><td>19 份</td></tr>
+            <tr><td>26 冬</td><td><span class="chip locked">唯讀</span></td><td>11 人</td><td>12 份</td></tr>
+            <tr><td>25 夏</td><td><span class="chip locked">唯讀</span></td><td>—</td><td>8 份</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="scrim">
+          <div class="dialog md">
+            <div class="dh"><div><small>開始新的一期・第 1 步，共 2 步</small><b>新期資料與時程</b></div><span class="x">×</span></div>
+            <div class="db">
+              <div class="steps"><span class="on">1　新期資料與時程</span><span>2　確認影響</span></div>
+              <div class="fgrid">
+                <div><span class="flabel">學年度</span><span class="ctl sel full">27</span></div>
+                <div><span class="flabel">營期</span><div><span class="radio on"><i></i>冬</span><span class="radio"><i></i>夏</span></div></div>
+                <div class="span2"><span class="flabel">顯示名稱</span><span class="ctl full">27 冬</span><span class="fhint">自動帶入，可修改。</span></div>
+              </div>
+              <div class="hr"></div>
+              <span class="flabel">驗收時程（台北時間；之後仍可在「本期驗收管理 → 驗收時程」修改）</span>
+              <div class="tbl" style="margin-top:6px"><table><thead><tr><th>輪次</th><th>送件截止</th><th>驗收截止</th></tr></thead><tbody>
+                <tr><td><b>初驗</b></td><td><span class="ctl">2027/01/05 23:59</span></td><td><span class="ctl">2027/01/12 23:59</span></td></tr>
+                <tr><td><b>總驗</b></td><td><span class="ctl ph">未設定</span></td><td><span class="ctl ph">未設定</span></td></tr>
+              </tbody></table></div>
+              <div class="hr"></div>
+              <span class="flabel">從上一期（26 夏）帶入</span>
+              <div class="stack">
+                <div class="row" style="gap:8px"><span class="chip done">固定帶入</span><b>成員的家別與角色</b><span class="muted small">9 人・13 個角色（含你自己的教案組長身份），帶入後可在成員管理調整</span></div>
+                <div><span class="check"><span class="box on"></span>驗收標準</span><span class="muted small">初驗標準 v1、總驗標準 v1</span></div>
+              </div>
+            </div>
+            <div class="df"><span class="left">尚未建立任何資料</span><span class="btn">取消</span><span class="btn primary">下一步：確認影響</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="stage-cap" style="margin-top:22px">畫面 A-2：第 2 步確認影響，勾選「我了解」後才能建立</div>
+    <div class="stage"><div class="frame">
+      <div class="sb" data-sb="leader"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>設定</h1><div class="sub">檢視個人基本資料；需要修改時再進入編輯模式。</div></div></div>
+        <div class="scrim">
+          <div class="dialog md">
+            <div class="dh"><div><small>開始新的一期・第 2 步，共 2 步</small><b>確認切換到 27 冬</b></div><span class="x">×</span></div>
+            <div class="db">
+              <div class="steps"><span class="done">1　新期資料與時程</span><span class="on">2　確認影響</span></div>
+              <div class="banner active"><b>按下「建立並切換」後，全團會立刻進入 27 冬</b><p>所有人重新整理後看到的都是 27 冬；26 夏的教案、驗收紀錄與結果都會保留。</p></div>
+              <div class="tbl"><table><tbody>
+                <tr><td style="width:150px" class="muted">26 夏</td><td><span class="chip locked">轉為唯讀</span>　資料保留，不能再送件、分配或修改</td></tr>
+                <tr><td class="muted">27 冬</td><td><span class="chip done">成為現行期</span>　空白驗收流程，尚無任何送件</td></tr>
+                <tr><td class="muted">成員</td><td>帶入 9 人・13 個角色（含你自己的「教案組長」）</td></tr>
+                <tr><td class="muted">驗收標準</td><td>帶入初驗 v1、總驗 v1</td></tr>
+                <tr><td class="muted">驗收時程</td><td>初驗 01/05、01/12；總驗未設定</td></tr>
+              </tbody></table></div>
+              <div style="margin-top:14px"><span class="check"><span class="box on"></span>我了解 26 夏會轉為唯讀；之後不能自行把現行期改回 26 夏（26 夏仍可查閱）</span></div>
+            </div>
+            <div class="df"><span class="btn">上一步</span><span class="btn primary">建立並切換到 27 冬</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== 方案 B ===================== -->
+  <section class="opt" data-opt="B">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>同一個入口打開大彈窗，左邊填新期資料、時程與帶入選項，右邊即時預覽「切換後會發生什麼」。所有資訊同時可見，底部一顆按鈕完成。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>一眼看到全部設定與結果，熟手最快</li><li>預覽隨輸入即時更新，比較不會漏看</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>資訊密度高，第一次使用比較吃力</li><li>小螢幕要上下捲動，預覽會被擠到下面</li><li>確認與填寫混在一起，比較容易一路按到底</li></ul></div>
+    </div>
+    <div class="verdict">適合每學期都由同一位熟悉流程的組長操作；如果組長每期換人，A 的分步確認比較保險。</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>設定</h1><div class="sub">檢視個人基本資料；需要修改時再進入編輯模式。</div></div></div>
+        <div class="scrim">
+          <div class="dialog lg">
+            <div class="dh"><div><small>期別管理</small><b>開始新的一期</b></div><span class="x">×</span></div>
+            <div class="db" style="display:grid;grid-template-columns:1.1fr .9fr;gap:20px">
+              <div>
+                <div class="fgrid">
+                  <div><span class="flabel">學年度</span><span class="ctl sel full">27</span></div>
+                  <div><span class="flabel">營期</span><div><span class="radio on"><i></i>冬</span><span class="radio"><i></i>夏</span></div></div>
+                </div>
+                <div style="margin-top:12px"><span class="flabel">顯示名稱</span><span class="ctl full">27 冬</span></div>
+                <div class="hr"></div>
+                <span class="flabel">驗收時程（台北時間）</span>
+                <div class="fgrid">
+                  <div><span class="fhint" style="margin:0 0 4px">初驗送件截止</span><span class="ctl full">2027/01/05 23:59</span></div>
+                  <div><span class="fhint" style="margin:0 0 4px">初驗驗收截止</span><span class="ctl full">2027/01/12 23:59</span></div>
+                  <div><span class="fhint" style="margin:0 0 4px">總驗送件截止</span><span class="ctl ph full">未設定</span></div>
+                  <div><span class="fhint" style="margin:0 0 4px">總驗驗收截止</span><span class="ctl ph full">未設定</span></div>
+                </div>
+                <div class="hr"></div>
+                <span class="flabel">從 26 夏帶入</span>
+                <div class="stack">
+                  <div class="row" style="gap:8px"><span class="chip done">固定帶入</span>成員家別與角色（9 人，含你自己）</div>
+                  <div><span class="check"><span class="box on"></span>驗收標準（初驗 v1、總驗 v1）</span></div>
+                </div>
+              </div>
+              <div style="background:var(--b100);border-radius:12px;padding:16px">
+                <div class="ct" style="font-weight:700;margin-bottom:10px">切換後會發生什麼</div>
+                <ul class="timeline">
+                  <li><b>26 夏轉為唯讀</b><small>19 份教案與驗收紀錄保留，可查閱不可修改</small></li>
+                  <li><b>建立 27 冬並設為現行期</b><small>空白驗收流程，尚無送件</small></li>
+                  <li><b>帶入 9 位成員（固定）</b><small>利稻 3、霧鹿 2、電光 2、新武 1、加拿 1</small></li>
+                  <li><b>帶入驗收標準</b><small>初驗 v1（20 項）、總驗 v1（18 項）</small></li>
+                  <li><b>時程</b><small>初驗已設定；總驗尚未設定，之後補也可以</small></li>
+                </ul>
+                <div class="banner alert" style="margin:6px 0 0"><b>切換後不能自行把現行期改回 26 夏</b><p>26 夏仍可查閱；如需改回，請聯絡網站管理員。</p></div>
+              </div>
+            </div>
+            <div class="df"><span class="left"><span class="check" style="margin:0"><span class="box on"></span>我了解以上影響</span></span><span class="btn">取消</span><span class="btn primary">建立並切換到 27 冬</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== 方案 C ===================== -->
+  <section class="opt" data-opt="C">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動 <span class="variant">變體：比原方案多了草稿期別與公告</span></h3><p>設定裡的「準備下一期」連到一個檢查清單頁。新期先以「準備中（尚未啟用）」建立，組長逐項完成時程、成員、驗收標準，全部必要項目打勾後，最後一步才「啟用 27 冬」，並跳出與 A-2 相同內容的確認彈窗。啟用前全團仍在 26 夏工作。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>開期前就能把成員與標準調好，啟用當下大家就能工作</li><li>準備期間組長仍在舊期、有完整權限；啟用時系統仍須確認新期已有組長身份，才能避開 C-02</li><li>可延伸成每學期的開期 SOP</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>多一頁與「準備中」狀態，實作成本最高</li><li>成員、標準頁面都要能編輯「尚未啟用的期別」</li><li>對 Milestone 1 可能做太多</li></ul></div>
+    </div>
+    <div class="verdict">如果你們希望開期當天就能讓家長、撰寫者直接上傳，C 最完整；只想先解決「開得了期、不被鎖」，A 就夠了。</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="leader"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>準備下一期：27 冬</h1><div class="sub">27 冬目前是「準備中」，只有教案組看得到；全團仍在 26 夏。完成必要項目後即可啟用。</div></div><div class="acts"><span class="btn">刪除草稿</span><span class="btn primary" disabled>啟用 27 冬</span></div></div>
+        <div class="banner active"><b>還差 1 項必要設定才能啟用</b><p>啟用時 26 夏會轉為唯讀。</p></div>
+        <div class="tbl"><table><thead><tr><th style="width:44px"></th><th>項目</th><th>狀態</th><th>說明</th><th></th></tr></thead><tbody>
+          <tr><td><span class="box on"></span></td><td><b>新期資料</b><small>學年度、營期、顯示名稱</small></td><td><span class="chip done">已完成</span></td><td>27 冬</td><td><span class="btn sm">修改</span></td></tr>
+          <tr><td><span class="box on"></span></td><td><b>成員與角色</b><small>必要：至少要有一位教案組長</small></td><td><span class="chip done">已完成</span></td><td>已從 26 夏帶入 9 人・13 個角色；撰寫者小美改為電光</td><td><span class="btn sm">前往成員管理</span></td></tr>
+          <tr class="hl"><td><span class="box"></span></td><td><b>初驗時程</b><small>必要：送件截止</small></td><td><span class="chip active">待設定</span></td><td class="muted">未設定</td><td><span class="btn primary sm">設定時程</span></td></tr>
+          <tr><td><span class="box on"></span></td><td><b>驗收標準</b><small>建議</small></td><td><span class="chip done">已完成</span></td><td>初驗 v1、總驗 v1（帶入 26 夏）</td><td><span class="btn sm">檢視</span></td></tr>
+          <tr><td><span class="box"></span></td><td><b>開期公告</b><small>選擇性</small></td><td><span class="chip idle">未建立</span></td><td class="muted">啟用後可在訊息公告發布</td><td><span class="btn sm">建立草稿</span></td></tr>
+        </tbody></table></div>
+        <p class="muted small" style="margin-top:10px">「準備中」的期別不會出現在家長、撰寫者的畫面上；啟用後才會切換。</p>
+      </div>
+    </div></div>
+  </section>
+
+  <div class="pager"><a href="index.html">← 回到總覽</a><a href="s2_member_list.html">S2 成員搜尋與篩選 →</a></div>
+</div>
+<script>
+// 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
+(function () {
+  const PEOPLE = {
+    leader: { name: '組長阿凱', mail: 'demo-leader@tutoref.tw', av: '組' },
+    parent: { name: '電光家長', mail: 'demo-parent-dianguang@…', av: '電' },
+    writer: { name: '撰寫者小美', mail: 'demo-writer@tutoref.tw', av: '撰' },
+    reviewer: { name: '驗收者一', mail: 'demo-reviewer-1@tutoref.tw', av: '驗' },
+  };
+
+  // data-sb="leader|parent|writer|reviewer"、data-on="<key>"、data-archived（改名「已歸檔教案」）、data-family（顯示家內教案）
+  document.querySelectorAll('.sb[data-sb]').forEach((sb) => {
+    const role = sb.dataset.sb;
+    const on = sb.dataset.on || '';
+    // 原型呈現的都是改版後的狀態，預設顯示「已歸檔教案」；data-legacy 才顯示舊名，data-archived 額外標「改名」
+    const archived = !sb.hasAttribute('data-legacy');
+    const family = sb.hasAttribute('data-family') || role === 'parent';
+    // data-name / data-mail / data-av 可覆寫側欄底部顯示的人（例如加拿家長）
+    const base = PEOPLE[role] || PEOPLE.leader;
+    const person = sb.dataset.name ? { name: sb.dataset.name, mail: sb.dataset.mail || '', av: sb.dataset.av || sb.dataset.name[0] } : base;
+    const item = (key, label, extra = '') =>
+      `<div class="it${key === on ? ' on' : ''}"><i></i>${label}${extra}</div>`;
+    let html = '<div class="logo">Tut<span>★</span>ref</div>';
+    html += item('search', '教案檢索') + item('package', '學習資源') + item('news', '訊息公告');
+    html += '<div class="grp">我的教案</div>';
+    html += item('mine', archived ? '已歸檔教案' : '已上傳教案', archived && sb.hasAttribute('data-archived') ? '<span class="new">改名</span>' : '');
+    html += item('likes', '已收藏教案');
+    html += '<div class="grp">教案驗收</div>';
+    if (family) html += item('family', '家內教案', role !== 'parent' && sb.hasAttribute('data-family') ? '<span class="new">開放</span>' : '');
+    html += item('tasks', '我的驗收任務');
+    if (role === 'leader') {
+      html += item('review', '本期驗收管理');
+      html += '<div class="grp">教案組管理</div>';
+      html += item('members', '成員管理') + item('plans', '教案管理') + item('rubric', '驗收標準');
+    }
+    html += '<div class="spacer"></div>';
+    html += `<div class="me"><div class="av">${person.av}</div><div><b>${person.name}</b><small>${person.mail}</small></div></div>`;
+    sb.innerHTML = html;
+  });
+
+  const tabs = Array.from(document.querySelectorAll('.opt-tab'));
+  const opts = Array.from(document.querySelectorAll('.opt'));
+  if (!tabs.length) return;
+  function show(key) {
+    tabs.forEach((t) => t.classList.toggle('on', t.dataset.opt === key));
+    opts.forEach((o) => o.classList.toggle('on', o.dataset.opt === key));
+  }
+  tabs.forEach((t) =>
+    t.addEventListener('click', () => {
+      show(t.dataset.opt);
+      history.replaceState(null, '', '#' + t.dataset.opt);
+    })
+  );
+  const fromHash = location.hash.replace('#', '').toUpperCase();
+  show(tabs.some((t) => t.dataset.opt === fromHash) ? fromHash : tabs[0].dataset.opt);
+})();
+
+</script>
+</body>
+</html>

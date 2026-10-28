@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S9 上傳待驗收教案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Milestone 1 UI 方案原型：只沿用 tutoref/src/app/globals.css 的色票與 lib/*-styles.ts 的尺寸，不新增品牌色。 */
+:root {
+  --p100: #fef7f1; --p300: #fbcf9e; --p700: #f1994a; --p900: #ed7a13;
+  --s100: #f4f7f0; --s700: #728a47;
+  --b100: #f1f1f1; --b200: #d4d4d4; --b300: #b8b8b8; --b400: #9c9c9c; --b500: #808080; --b700: #474747; --b900: #0d0d0d;
+  --idle: var(--b400); --idle-bg: var(--b100);
+  --active: var(--p900); --active-bg: var(--p100);
+  --done: var(--s700); --done-bg: var(--s100);
+  --alert: #c85f5f; --alert-bg: #faf0f0;
+  --locked: var(--b500); --locked-bg: var(--b100);
+  --info: #6392b5; --info-bg: #edf4fb;
+  --cat-nature: #728a47; --cat-social: #f1994a; --cat-general: #7f478a; --cat-info: #6392b5; --cat-art: #c85f5f;
+  --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); color: var(--b900); background: var(--b100); font-size: 14px; line-height: 1.55; }
+a { color: var(--p900); }
+
+/* ---------- 文件外框（說明區，不是原型本體） ---------- */
+.doc { max-width: 1260px; margin: 0 auto; padding: 28px 16px 80px; }
+.crumb { font-size: 12px; color: var(--b500); margin-bottom: 6px; }
+.crumb a { color: var(--b500); text-decoration: none; }
+.crumb a:hover { color: var(--p900); }
+.doc h1 { font-size: 24px; margin: 0 0 6px; }
+.doc .lead { color: var(--b700); font-size: 14px; margin: 0 0 18px; max-width: 900px; }
+.panel { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 18px 20px; margin-bottom: 16px; }
+.panel h2 { font-size: 16px; margin: 0 0 8px; }
+.panel h3 { font-size: 14px; margin: 14px 0 6px; }
+.panel p, .panel li { font-size: 14px; color: var(--b700); }
+.panel ul { margin: 6px 0 0; padding-left: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.issue-ref { display: inline-block; font-size: 12px; color: var(--alert); background: var(--alert-bg); border-radius: 6px; padding: 0 6px; margin: 0 2px; }
+.decide { border-left: 3px solid var(--p900); background: var(--p100); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 10px; font-size: 13px; color: var(--b700); }
+
+.opt-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 14px; }
+.opt-tab { cursor: pointer; border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 700; color: var(--b900); display: inline-flex; gap: 8px; align-items: center; }
+.opt-tab:hover { border-color: var(--b300); }
+.opt-tab.on { border-color: var(--p900); background: var(--p100); color: var(--p900); }
+.opt-tab .rec { font-size: 11px; font-weight: 700; color: #fff; background: var(--p900); border-radius: 6px; padding: 1px 6px; }
+.opt-tab .rec.codex { background: var(--b700); }
+.opt { display: none; }
+.opt.on { display: block; }
+.opt-meta { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 960px) { .opt-meta { grid-template-columns: 1fr; } }
+.opt-meta .panel { margin: 0; }
+.opt-meta h3 { margin-top: 0; }
+.pros li::marker { color: var(--s700); }
+.cons li::marker { color: var(--alert); }
+.verdict { font-size: 13px; color: var(--b700); background: #fff; border: 1px dashed var(--b300); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+.verdict b { color: var(--b900); }
+
+.stage { overflow-x: auto; padding-bottom: 6px; }
+.stage-cap { font-size: 12px; color: var(--b500); margin: 6px 2px 10px; }
+.pager { display: flex; justify-content: space-between; margin-top: 26px; font-size: 14px; }
+.pager a { text-decoration: none; font-weight: 700; }
+
+/* ---------- 原型：AppShell ---------- */
+.frame { position: relative; width: 1180px; min-height: 660px; display: flex; background: var(--b100); border: 1px solid var(--b200); border-radius: 14px; overflow: hidden; }
+.frame.tall { min-height: 780px; }
+.sb { width: 206px; margin: 20px 0 20px 20px; flex-shrink: 0; background: #fff; border-radius: 10px; box-shadow: 0 5px 16px rgba(0,0,0,.08); padding: 18px 16px; display: flex; flex-direction: column; }
+.sb .logo { font-size: 19px; font-weight: 700; letter-spacing: .5px; padding: 0 8px 16px; border-bottom: 1px solid var(--b100); margin-bottom: 8px; }
+.sb .logo span { color: var(--p900); }
+.sb .grp { font-size: 12px; color: var(--b400); padding: 12px 8px 5px; }
+.sb .it { display: flex; gap: 8px; align-items: center; border-radius: 7px; padding: 8px 9px; font-size: 15px; font-weight: 500; margin: 2px 0; }
+.sb .it i { width: 14px; height: 14px; border: 1.5px solid var(--b500); border-radius: 4px; display: inline-block; }
+.sb .it.on { background: var(--p100); color: var(--b900); }
+.sb .it.on i { border-color: var(--p900); }
+.sb .it .new { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--p900); background: var(--p100); border: 1px solid var(--p300); border-radius: 6px; padding: 0 5px; }
+.sb .spacer { flex: 1; }
+.sb .me { border-top: 1px solid var(--b100); padding: 14px 8px 0; display: flex; gap: 10px; align-items: center; }
+.sb .me .av { width: 29px; height: 29px; border-radius: 50%; background: var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--b700); }
+.sb .me b { display: block; font-size: 12px; }
+.sb .me small { display: block; font-size: 10px; color: var(--b400); }
+/* .main 不設 position，讓彈窗遮罩與抽屜以整個 .frame 為範圍（正式站的 Dialog 會連側欄一起蓋住）。 */
+.main { flex: 1; min-width: 0; padding: 20px 34px 40px 34px; }
+.userbtn { position: absolute; right: 24px; top: 20px; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 3px 10px rgba(0,0,0,.05); }
+.ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; padding-right: 64px; margin-bottom: 22px; }
+.ph h1 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.5; }
+.ph .sub { font-size: 13px; color: var(--b500); margin-top: 2px; }
+.ph .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- 原型：元件 ---------- */
+.card { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 20px; }
+.card + .card { margin-top: 14px; }
+.card .ct { font-size: 15px; font-weight: 700; }
+.card .cd { font-size: 12px; color: var(--b500); margin-top: 3px; line-height: 1.55; }
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.metric { background: #fff; border: 1px solid var(--b200); border-radius: 10px; padding: 16px 18px; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.metric small { font-size: 12px; color: var(--b500); }
+.metric b { display: block; font-size: 28px; font-weight: 800; line-height: 1.2; margin: 3px 0; }
+.metric span { font-size: 12px; color: var(--b500); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.metrics.three { grid-template-columns: repeat(3, 1fr); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 10px; border: 1px solid var(--b200); background: #fff; color: var(--b900); padding: 9px 13px; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: default; }
+.btn.primary { background: var(--p900); border-color: var(--p900); color: #fff; }
+.btn.danger { background: #fff; border-color: var(--alert-bg); color: var(--alert); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--b700); }
+.btn.sm { border-radius: 8px; padding: 6px 9px; font-size: 12px; }
+.btn[disabled] { opacity: .5; }
+.link { color: var(--p900); font-weight: 700; text-decoration: none; }
+.link-file { display: inline-flex; gap: 5px; align-items: center; color: var(--p900); font-weight: 700; font-size: 13px; text-decoration: none; white-space: nowrap; }
+.link-file::before { content: ''; width: 11px; height: 13px; border: 1.5px solid currentColor; border-radius: 2px; display: inline-block; }
+
+.chip { display: inline-flex; align-items: center; border-radius: 8px; padding: 2px 8px; font-size: 13px; font-weight: 500; white-space: nowrap; line-height: 1.5; }
+.chip.idle { background: var(--idle-bg); color: var(--idle); }
+.chip.active { background: var(--active-bg); color: var(--active); }
+.chip.done { background: var(--done-bg); color: var(--done); }
+.chip.alert { background: var(--alert-bg); color: var(--alert); }
+.chip.locked { background: var(--locked-bg); color: var(--locked); }
+.chip.info { background: var(--info-bg); color: var(--info); }
+.role { display: inline-flex; border-radius: 6px; background: var(--b100); color: var(--b700); font-size: 12px; padding: 1px 7px; margin: 1px 3px 1px 0; white-space: nowrap; }
+.variant { display: inline-flex; font-size: 11px; font-weight: 700; color: var(--b700); background: var(--b100); border: 1px solid var(--b200); border-radius: 6px; padding: 0 6px; margin-left: 4px; }
+.tag { display: inline-flex; gap: 4px; align-items: center; border-radius: 999px; border: 1px solid var(--p300); background: var(--p100); color: var(--p900); font-size: 12px; font-weight: 700; padding: 2px 9px; white-space: nowrap; }
+.tag .x { color: var(--b500); font-weight: 400; }
+
+/* 與 lib/table-styles.ts 的 TABLE_WRAP 相同：容器可橫向捲動 */
+.tbl { overflow-x: auto; border: 1px solid var(--b200); border-radius: 10px; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { background: var(--p100); text-align: left; font-size: 13px; font-weight: 700; padding: 13px 14px; border-bottom: 1px solid var(--b100); white-space: nowrap; }
+.tbl td { padding: 13px 14px; border-bottom: 1px solid var(--b100); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tr.hl td { background: rgba(254,247,241,.6); }
+.tbl tr.sel td { background: var(--p100); }
+.tbl td small, .tbl th small { display: block; font-size: 12px; color: var(--b500); font-weight: 400; }
+.tbl .cb { width: 42px; text-align: center; }
+.tbl tr.group td { background: #fafafa; font-size: 12px; font-weight: 700; color: var(--b700); padding: 7px 14px; }
+.tbl.clickable tbody tr:not(.group) { cursor: pointer; }
+.box { width: 15px; height: 15px; border: 1.5px solid var(--b300); border-radius: 4px; display: inline-block; vertical-align: middle; background: #fff; }
+.box.on { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.on::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.box.mixed { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.mixed::after { content: ''; position: absolute; left: 3px; top: 6px; width: 7px; height: 2px; background: #fff; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.tabs span { padding: 10px 16px; font-size: 15px; font-weight: 700; color: var(--b500); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs span.on { color: var(--p900); border-color: var(--p900); }
+.seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 10px; background: #fff; border: 1px solid var(--b200); }
+.seg span { padding: 6px 12px; border-radius: 7px; font-size: 14px; font-weight: 700; color: var(--b700); }
+.seg span.on { background: var(--p900); color: #fff; }
+
+.bulk { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--p300); background: var(--p100); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; color: var(--b700); }
+.bulk b { color: var(--b900); }
+.banner { border-radius: 8px; border: 1px solid; padding: 12px 16px; margin-bottom: 14px; }
+.banner b { display: block; font-size: 15px; }
+.banner p { margin: 3px 0 0; font-size: 14px; }
+.banner.locked { background: var(--locked-bg); border-color: var(--b200); color: var(--b700); }
+.banner.active { background: var(--active-bg); border-color: var(--p300); color: var(--b900); }
+.banner.alert { background: var(--alert-bg); border-color: #efcfcf; color: var(--alert); }
+.banner.done { background: var(--done-bg); border-color: #dbe4cf; color: var(--b900); }
+.banner.info { background: var(--info-bg); border-color: #cfe0ef; color: var(--b900); }
+
+.ctl { border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; color: var(--b900); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.ctl.ph { color: var(--b400); }
+.ctl.sel::after { content: '▾'; margin-left: auto; color: var(--b500); font-size: 12px; padding-left: 8px; }
+.ctl.req { border-color: var(--p700); }
+.ctl.full { width: 100%; }
+.ctl.dis { background: var(--b100); color: var(--b500); }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.toolbar .grow { flex: 1; min-width: 220px; }
+.flabel { display: block; font-size: 12px; font-weight: 700; color: var(--b700); margin-bottom: 6px; }
+.fhint { display: block; font-size: 12px; color: var(--b500); margin-top: 5px; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fgrid .span2 { grid-column: span 2; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { border: 1px solid var(--b200); border-radius: 999px; padding: 4px 11px; font-size: 13px; background: #fff; color: var(--b700); white-space: nowrap; }
+.pill.on { border-color: var(--p900); background: var(--p100); color: var(--p900); font-weight: 700; }
+.pill.dis { color: var(--b400); background: var(--b100); }
+.radio { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; margin-right: 14px; }
+.radio i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--b300); display: inline-block; background: #fff; }
+.radio.on i { border: 5px solid var(--p900); }
+.check { display: inline-flex; gap: 7px; align-items: center; font-size: 14px; margin-right: 14px; white-space: nowrap; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 9px 16px; font-size: 14px; margin: 0; }
+.kv dt { color: var(--b500); }
+.kv dd { margin: 0; font-weight: 500; }
+.muted { color: var(--b500); }
+.small { font-size: 12px; }
+.alert-text { color: var(--alert); }
+.ok-text { color: var(--s700); }
+.row { display: flex; gap: 10px; align-items: center; }
+.row.between { justify-content: space-between; }
+.stack > * + * { margin-top: 12px; }
+.hr { height: 1px; background: var(--b100); margin: 14px 0; }
+.steps { display: flex; gap: 8px; margin-bottom: 16px; }
+.steps span { flex: 1; font-size: 12px; font-weight: 700; color: var(--b400); border-top: 3px solid var(--b200); padding-top: 6px; }
+.steps span.on { color: var(--p900); border-color: var(--p900); }
+.steps span.done { color: var(--s700); border-color: var(--s700); }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 14px 22px; }
+.timeline li::before { content: ''; position: absolute; left: 4px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--p900); }
+.timeline li::after { content: ''; position: absolute; left: 8px; top: 18px; bottom: 2px; width: 1px; background: var(--b200); }
+.timeline li:last-child::after { display: none; }
+.timeline small { display: block; font-size: 12px; color: var(--b500); }
+.drop { border: 1.5px dashed var(--b300); border-radius: 12px; background: #fff; padding: 20px; text-align: center; color: var(--p900); font-weight: 700; font-size: 14px; }
+.drop small { display: block; color: var(--b500); font-weight: 400; font-size: 12px; margin-top: 4px; }
+.drop.filled { border-style: solid; border-color: var(--p300); background: var(--p100); color: var(--b900); text-align: left; }
+.drop.off { color: var(--b400); background: var(--b100); }
+.pdf { background: #fff; border: 1px solid var(--b200); border-radius: 8px; height: 100%; min-height: 380px; padding: 14px; font-size: 11px; color: var(--b500); }
+.pdf .ln { height: 7px; background: var(--b100); border-radius: 3px; margin: 7px 0; }
+.pdf .ln.w6 { width: 60%; } .pdf .ln.w8 { width: 80%; } .pdf .ln.w4 { width: 40%; }
+.cat { font-size: 13px; font-weight: 700; }
+.cat.nature { color: var(--cat-nature); } .cat.social { color: var(--cat-social); } .cat.general { color: var(--cat-general); } .cat.art { color: var(--cat-art); } .cat.info { color: var(--cat-info); }
+.diff { font-size: 13px; }
+.diff s { color: var(--b400); }
+.diff b { color: var(--p900); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--b300); margin-right: 6px; }
+.dot.done { background: var(--s700); } .dot.alert { background: var(--alert); } .dot.active { background: var(--p900); }
+
+/* ---------- 原型：覆蓋層 ---------- */
+.scrim { position: absolute; inset: 0; background: rgba(13,13,13,.4); display: flex; align-items: center; justify-content: center; padding: 30px; z-index: 5; }
+.scrim.light { background: rgba(13,13,13,.25); }
+.dialog { background: #fff; border-radius: 18px; box-shadow: 0 24px 90px rgba(0,0,0,.25); width: 760px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+/* 與 components/ui/Dialog.tsx 的 SIZE_CLASS 相同：sm 500、md 760、lg 1040 */
+.dialog.md { width: 760px; } .dialog.lg { width: 1040px; } .dialog.sm { width: 500px; }
+.dialog .dh { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid var(--b200); padding: 18px 20px; }
+.dialog .dh small { display: block; font-size: 12px; color: var(--b500); }
+.dialog .dh b { display: block; font-size: 17px; }
+.dialog .dh .x { font-size: 22px; color: var(--b500); line-height: 1; }
+.dialog .db { padding: 20px; overflow: auto; }
+.dialog .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+.dialog .df .left { margin-right: auto; font-size: 12px; color: var(--b500); }
+/* 與 components/ui/Drawer.tsx 相同：寬 min(620px, 92vw)，底下有半透明遮罩 */
+.frame:has(.drawer)::before { content: ''; position: absolute; inset: 0; background: rgba(13,13,13,.25); z-index: 5; }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 620px; background: #fff; border-left: 1px solid var(--b200); box-shadow: -20px 0 60px rgba(0,0,0,.12); z-index: 6; display: flex; flex-direction: column; }
+.drawer .dh { border-bottom: 1px solid var(--b200); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+.drawer .dh small { display: block; font-size: 12px; color: var(--b500); }
+.drawer .dh b { font-size: 18px; }
+.drawer .db { padding: 20px; overflow: auto; flex: 1; }
+.drawer .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.menu { position: absolute; right: 24px; top: 66px; width: 220px; background: #fff; border: 1px solid var(--b200); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 8px; z-index: 4; font-size: 14px; }
+.menu .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--b100); margin-bottom: 4px; }
+.menu .who b { display: block; }
+.menu .who small { color: var(--b500); font-size: 12px; }
+.menu .mi { padding: 8px 10px; border-radius: 8px; }
+.menu .mi.on { background: var(--p100); color: var(--p900); font-weight: 700; }
+/* 原型上的編號標記；說明寫在原型下方的 .legend，避免遮住畫面。 */
+.pin { position: absolute; z-index: 9; width: 22px; height: 22px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,0,0,.25); }
+.legend { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--b700); }
+.legend li { display: flex; gap: 6px; align-items: center; }
+.legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S9</div>
+  <h1>S9｜上傳待驗收教案與「已歸檔教案」</h1>
+  <p class="lead">對應 US-12、Workflow 4：從家內教案上傳；教案紙、投影片分兩塊選檔，按「確認上傳」才解析教案紙，再編輯教案簡介。「已上傳教案」改名「已歸檔教案」，不再出現待驗收教案。</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>情境</h2>
+      <p>撰寫者小美在「家內教案」按「上傳教案」，選好教案紙（網路世界放大鏡!_○○○.pdf），按確認後系統解析出課程名稱、類別、年級、時長，她修正簡介後儲存，回到家內教案就看到新的一列。之後她到「已歸檔教案」只會看到以前已經歸檔的教案。</p>
+    </div>
+    <div class="panel">
+      <h2>目前遇到的問題</h2>
+      <ul>
+        <li><span class="issue-ref">C-04</span> 家內教案沒有上傳按鈕，只能從「已上傳教案」上傳。</li>
+        <li><span class="issue-ref">C-16</span> 只有一個上傳區；投影片要解析完按「編輯內容」才找得到。</li>
+        <li><span class="issue-ref">C-15</span> 待驗收教案仍出現在「已上傳教案」，頁面也沒改名。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>需要你決定</h2>
+    <div class="decide">US-12 說上傳時投影片是 optional；Workflow 4 說投影片到總驗才提供上傳欄位，兩者衝突 <span class="issue-ref">C-17</span>。原型採 Codex 的解讀：<b>初驗只開放教案紙；總驗時投影片區才可以上傳，而且是選填</b>。初驗時投影片區畫成停用的說明卡（也可以選擇直接隱藏）。如果你們希望初驗也能先附投影片，只要把投影片區改成「選填」即可。</div>
+  </div>
+
+  <div class="opt-tabs">
+    <button class="opt-tab" data-opt="A">方案 A｜三步驟上傳頁 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
+    <button class="opt-tab" data-opt="B">方案 B｜在家內教案開大彈窗</button>
+    <button class="opt-tab" data-opt="C">方案 C｜左附件預覽、右簡介編輯</button>
+  </div>
+
+  <!-- ===================== A ===================== -->
+  <section class="opt" data-opt="A">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>家內教案的「上傳教案」帶到上傳頁，頁首固定顯示「27 冬・電光家・初驗」。第 1 步兩塊選檔區：教案紙（必填）、投影片（初驗顯示「總驗才開放」）；選檔只是暫存，按「確認上傳並解析」才開始。第 2 步編輯解析結果（解析失敗時保留附件，可重試或手動填），第 3 步儲存後回到家內教案並標出新的一列。頁面上的 500 MB 上限、「總驗通過並公告後才公開」、「歸檔過去教案」入口都是現有規則；「約 10 秒」是這次實測的解析時間。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>「選檔 → 確認 → 解析 → 編輯 → 儲存」順序最清楚</li><li>沿用現有上傳頁與教案編輯器，改動集中</li><li>解析失敗時保留已選的檔案，可重試或手動填</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>佔用整頁，步驟較多</li></ul></div>
+    </div>
+    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>現有上傳頁已有「解析 → 編輯 → 確認」，只要把第一步改成兩塊、入口移到家內教案、完成後導回家內教案。</div>
+    <div class="stage-cap">畫面 A-1：第 1 步，兩塊選檔區（初驗）</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="writer" data-on="family" data-family data-archived></div>
+      <div class="main">
+        <div class="userbtn">撰</div>
+        <div class="ph"><div><div class="small muted">家內教案 ／</div><h1>上傳待驗收教案</h1><div class="sub">27 冬・電光家・初驗　上傳後會出現在電光家的家內教案，總驗通過並公告後才會公開。</div></div></div>
+        <div class="steps" style="max-width:760px"><span class="on">1　選擇檔案</span><span>2　檢查教案簡介</span><span>3　完成</span></div>
+        <div class="grid2" style="max-width:760px;gap:14px">
+          <div class="card"><div class="ct">教案紙 <span class="chip active" style="margin-left:4px">必填</span></div><div class="cd">PDF，系統會從這份檔案解析課程資訊。</div>
+            <div class="drop filled" style="margin-top:12px"><b>2025台大山服冬令營_電光_自然_網路世界放大鏡!_○○○.pdf</b><small>6.5 MB</small><div style="margin-top:10px"><span class="btn sm">重新選擇</span> <span class="btn danger sm">移除</span></div></div>
+          </div>
+          <div class="card"><div class="ct">投影片 <span class="chip locked" style="margin-left:4px">總驗開放（選填）</span></div><div class="cd">初驗只需要教案紙；總驗時這裡才可以上傳，而且是選填。</div>
+            <div class="drop off" style="margin-top:12px">總驗開始後可上傳<small>PDF，最大 500 MB</small></div>
+          </div>
+        </div>
+        <div style="max-width:760px;margin-top:16px" class="row between"><span class="muted small">按下後才會上傳並解析教案紙（約 10 秒）。</span><span class="btn primary">確認上傳並解析</span></div>
+      </div>
+    </div></div>
+    <div class="stage-cap" style="margin-top:22px">畫面 A-2：第 2 步，檢查解析出來的教案簡介</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="writer" data-on="family" data-family></div>
+      <div class="main">
+        <div class="userbtn">撰</div>
+        <div class="ph"><div><div class="small muted">家內教案 ／</div><h1>上傳待驗收教案</h1><div class="sub">27 冬・電光家・初驗</div></div><div class="acts"><span class="btn">上一步</span><span class="btn primary">儲存到家內教案</span></div></div>
+        <div class="steps" style="max-width:860px"><span class="done">1　選擇檔案</span><span class="on">2　檢查教案簡介</span><span>3　完成</span></div>
+        <div class="card" style="max-width:860px">
+          <div class="row between" style="margin-bottom:10px"><b>教案簡介（自動解析，請檢查）</b><span class="chip done">解析成功</span></div>
+          <div class="fgrid">
+            <div class="span2"><span class="flabel">課程名稱</span><span class="ctl full">網路世界放大鏡!</span></div>
+            <div><span class="flabel">類別</span><span class="ctl sel full">自然</span></div>
+            <div><span class="flabel">適用年級</span><span class="ctl sel full">全年級</span></div>
+            <div><span class="flabel">課程時長</span><span class="ctl sel full">小堂課（40 分鐘）</span></div>
+            <div><span class="flabel">教案紙上的設計者</span><span class="ctl full">○○○</span></div>
+            <div class="span2"><span class="flabel">課程大綱</span><div class="ctl full" style="display:block;min-height:64px">本課程透過介紹假新聞為開頭，讓理解什麼是假新聞？為什麼會出現？並透過諸多例子作為輔佐……</div></div>
+          </div>
+          <p class="muted small" style="margin:10px 0 0">家別與期別依你本期的身份帶入（電光・27 冬），不會被 PDF 內容改掉。儲存後回到家內教案，新的一列會標示出來。</p>
+        </div>
+      </div>
+    </div></div>
+    <div class="stage-cap" style="margin-top:22px">畫面 A-3：解析失敗時（教案紙已保留，可以重試或手動填）</div>
+    <div class="stage"><div class="frame">
+      <div class="sb" data-sb="writer" data-on="family" data-family></div>
+      <div class="main">
+        <div class="userbtn">撰</div>
+        <div class="ph"><div><div class="small muted">家內教案 ／</div><h1>上傳待驗收教案</h1><div class="sub">27 冬・電光家・初驗</div></div></div>
+        <div class="steps" style="max-width:860px"><span class="done">1　選擇檔案</span><span class="on">2　檢查教案簡介</span><span>3　完成</span></div>
+        <div class="banner alert" style="max-width:860px"><b>無法從教案紙讀出課程資訊</b><p>可能是掃描圖檔或格式特殊。教案紙已經上傳並保留，不用重新選檔。</p></div>
+        <div class="card" style="max-width:860px">
+          <div class="row between"><div><b>網路世界放大鏡!_○○○.pdf</b><div class="muted small">6.5 MB・已上傳</div></div><span class="row"><span class="btn">重新解析</span><span class="btn primary">手動填寫簡介</span></span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="stage-cap" style="margin-top:22px">畫面 A-4：完成後回到家內教案，新的一列會標示出來</div>
+    <div class="stage"><div class="frame">
+      <div class="sb" data-sb="writer" data-on="family" data-family></div>
+      <div class="main">
+        <div class="userbtn">撰</div>
+        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗</div></div><div class="acts"><span class="btn primary">＋ 上傳教案</span></div></div>
+        <div class="banner done"><b>已上傳「網路世界放大鏡!」</b><p>附件在背景上傳到雲端，完成前教案紙欄顯示「處理中」；失敗會改成「上傳失敗」並提供重新上傳。</p></div>
+        <div class="tbl"><table>
+          <thead><tr><th>教案名稱</th><th>撰寫者</th><th>家別</th><th>類別</th><th>教案紙</th><th>投影片</th><th>待驗收</th><th>驗收狀態</th></tr></thead>
+          <tbody>
+            <tr class="sel"><td><a class="link">網路世界放大鏡!</a> <span class="chip info" style="font-size:11px">剛上傳</span></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><span class="chip active">處理中…</span></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip active">本輪納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
+            <tr><td><a class="link">空氣的力量</a></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip active">本輪納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div></div>
+    <div class="stage-cap" style="margin-top:22px">畫面 A-5：改名後的「已歸檔教案」（不再出現待驗收教案）</div>
+    <div class="stage"><div class="frame">
+      <div class="sb" data-sb="writer" data-on="mine" data-family data-archived></div>
+      <div class="main">
+        <div class="userbtn">撰</div>
+        <div class="ph"><div><h1>已歸檔教案</h1><div class="sub">已完成驗收並歸檔，或從過去學期匯入的教案。</div></div><div class="acts"><span class="btn">＋ 歸檔過去教案</span></div></div>
+        <div class="banner info"><b>本期待驗收的教案在「家內教案」</b><p>例如「網路世界放大鏡!」（27 冬・電光）正在驗收中，請到 <a class="link">家內教案</a> 查看。</p></div>
+        <div class="tbl"><table>
+          <thead><tr><th>教案</th><th>期別／家別</th><th>檔案完整性</th><th>狀態</th><th>最後更新</th></tr></thead>
+          <tbody>
+            <tr><td><b>溪流生態</b><small>自然</small></td><td>26 夏・電光</td><td><span class="chip done">完整</span></td><td><span class="chip done">已公開</span></td><td>2026/09/06</td></tr>
+            <tr><td><b>地圖探險</b><small>社會</small></td><td>26 夏・電光</td><td><span class="chip done">完整</span></td><td><span class="chip done">已公開</span></td><td>2026/09/06</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== B ===================== -->
+  <section class="opt" data-opt="B">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>不離開家內教案：按「上傳教案」開大彈窗，先在兩塊區域選檔（每個檔案都能移除或替換），按確認後彈窗切換到解析結果與簡介編輯；解析中不能關閉彈窗，失敗時保留檔案可重試；儲存後關窗，家內教案表格刷新並標出新列。下圖示範總驗時投影片區變成選填。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>一直留在家內教案，情境不中斷</li><li>上傳完立刻看到在清單中的位置</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>解析出的簡介欄位多，彈窗會很擠</li><li>解析中途關掉彈窗的行為要另外定義</li></ul></div>
+    </div>
+    <div class="verdict">如果撰寫者通常一次只傳一份、而且很少改解析結果，B 最快。</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="writer" data-on="family" data-family data-archived></div>
+      <div class="main">
+        <div class="userbtn">撰</div>
+        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・總驗</div></div><div class="acts"><span class="btn primary">＋ 上傳教案</span></div></div>
+        <div class="scrim">
+          <div class="dialog lg">
+            <div class="dh"><div><small>27 冬・電光家・總驗</small><b>上傳待驗收教案</b></div><span class="x">×</span></div>
+            <div class="db">
+              <div class="steps"><span class="on">1　選擇檔案</span><span>2　檢查教案簡介</span></div>
+              <div class="grid2" style="gap:14px">
+                <div><span class="flabel">教案紙（必填）</span><div class="drop filled"><b>網路世界放大鏡!_○○○.pdf</b><small>6.5 MB</small><div style="margin-top:8px"><span class="btn sm">替換</span> <span class="btn danger sm">移除</span></div></div></div>
+                <div><span class="flabel">投影片（選填）</span><div class="drop">點擊或拖曳 PDF 到這裡<small>總驗可附投影片，最大 500 MB</small></div></div>
+              </div>
+            </div>
+            <div class="df"><span class="left">確認後才會上傳並解析教案紙</span><span class="btn">取消</span><span class="btn primary">確認上傳並解析</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== C ===================== -->
+  <section class="opt" data-opt="C">
+    <div class="opt-meta">
+      <div class="panel"><h3>版面與互動</h3><p>上傳頁分左右兩欄：左邊是兩張附件卡與教案紙預覽，右邊是解析出來的簡介草稿。解析前和 A 一樣是兩區選檔＋「確認上傳並解析」，右欄先空著；解析完成後右欄自動填入，撰寫者可以一邊看 PDF 一邊修正，最後按「儲存到家內教案」。下圖是解析完成後的樣子。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>對照原檔修正解析錯誤最方便</li><li>之後總驗替換附件也能用同一個版面</li></ul></div>
+      <div class="panel cons"><h3>缺點</h3><ul><li>版面與暫存狀態最複雜</li><li>小螢幕要上下堆疊，對照效果打折</li></ul></div>
+    </div>
+    <div class="verdict">如果解析結果常常要人工修正，C 的左右對照最省時間。</div>
+    <div class="stage"><div class="frame tall">
+      <div class="sb" data-sb="writer" data-on="family" data-family data-archived></div>
+      <div class="main">
+        <div class="userbtn">撰</div>
+        <div class="ph"><div><div class="small muted">家內教案 ／</div><h1>上傳待驗收教案</h1><div class="sub">27 冬・電光家・初驗</div></div><div class="acts"><span class="btn">取消</span><span class="btn primary">儲存到家內教案</span></div></div>
+        <div class="steps"><span class="done">1　選擇檔案</span><span class="done">2　確認並解析</span><span class="on">3　對照修正</span></div>
+        <div style="display:grid;grid-template-columns:330px 1fr;gap:16px">
+          <div class="stack">
+            <div class="card" style="padding:14px"><div class="row between"><b>教案紙</b><span class="chip done">已解析</span></div><div class="small muted" style="margin-top:4px">網路世界放大鏡!_○○○.pdf・6.5 MB</div></div>
+            <div class="card" style="padding:14px"><div class="row between"><b>投影片</b><span class="chip locked">總驗開放（選填）</span></div></div>
+            <div class="pdf" style="min-height:330px"><b style="color:var(--b700)">教案紙預覽　1 / 9</b><div class="ln w8"></div><div class="ln"></div><div class="ln w6"></div><div class="ln w8"></div><div class="ln w4"></div><div class="ln"></div><div class="ln w6"></div><div class="ln w8"></div><div class="ln"></div><div class="ln w4"></div></div>
+          </div>
+          <div class="card">
+            <div class="row between" style="margin-bottom:10px"><b>教案簡介（自動解析，請檢查）</b><span class="muted small">解析完成 21:02</span></div>
+            <div class="fgrid">
+              <div class="span2"><span class="flabel">課程名稱</span><span class="ctl full">網路世界放大鏡!</span></div>
+              <div><span class="flabel">類別</span><span class="ctl sel full">自然</span></div>
+              <div><span class="flabel">適用年級</span><span class="ctl sel full">全年級</span></div>
+              <div><span class="flabel">課程時長</span><span class="ctl sel full">小堂課（40 分鐘）</span></div>
+              <div><span class="flabel">教案紙上的設計者</span><span class="ctl full">○○○</span></div>
+              <div class="span2"><span class="flabel">課程目標</span><div class="ctl full" style="display:block;min-height:70px">1. 介紹什麼是假新聞？出現原因？<br>2. 判別假新聞？如何不被左右<br>3. 讓小朋友們進行假新聞事實查核</div></div>
+            </div>
+            <p class="muted small" style="margin:10px 0 0">家別與期別依你本期的身份自動帶入（電光・27 冬），不會被 PDF 內容改掉。</p>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <div class="pager"><a href="s8_submit.html">← S8 送出與鎖定</a><a href="s10_leader_check.html">S10 組長檢查送件 →</a></div>
+</div>
+<script>
+// 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
+(function () {
+  const PEOPLE = {
+    leader: { name: '組長阿凱', mail: 'demo-leader@tutoref.tw', av: '組' },
+    parent: { name: '電光家長', mail: 'demo-parent-dianguang@…', av: '電' },
+    writer: { name: '撰寫者小美', mail: 'demo-writer@tutoref.tw', av: '撰' },
+    reviewer: { name: '驗收者一', mail: 'demo-reviewer-1@tutoref.tw', av: '驗' },
+  };
+
+  // data-sb="leader|parent|writer|reviewer"、data-on="<key>"、data-archived（改名「已歸檔教案」）、data-family（顯示家內教案）
+  document.querySelectorAll('.sb[data-sb]').forEach((sb) => {
+    const role = sb.dataset.sb;
+    const on = sb.dataset.on || '';
+    // 原型呈現的都是改版後的狀態，預設顯示「已歸檔教案」；data-legacy 才顯示舊名，data-archived 額外標「改名」
+    const archived = !sb.hasAttribute('data-legacy');
+    const family = sb.hasAttribute('data-family') || role === 'parent';
+    // data-name / data-mail / data-av 可覆寫側欄底部顯示的人（例如加拿家長）
+    const base = PEOPLE[role] || PEOPLE.leader;
+    const person = sb.dataset.name ? { name: sb.dataset.name, mail: sb.dataset.mail || '', av: sb.dataset.av || sb.dataset.name[0] } : base;
+    const item = (key, label, extra = '') =>
+      `<div class="it${key === on ? ' on' : ''}"><i></i>${label}${extra}</div>`;
+    let html = '<div class="logo">Tut<span>★</span>ref</div>';
+    html += item('search', '教案檢索') + item('package', '學習資源') + item('news', '訊息公告');
+    html += '<div class="grp">我的教案</div>';
+    html += item('mine', archived ? '已歸檔教案' : '已上傳教案', archived && sb.hasAttribute('data-archived') ? '<span class="new">改名</span>' : '');
+    html += item('likes', '已收藏教案');
+    html += '<div class="grp">教案驗收</div>';
+    if (family) html += item('family', '家內教案', role !== 'parent' && sb.hasAttribute('data-family') ? '<span class="new">開放</span>' : '');
+    html += item('tasks', '我的驗收任務');
+    if (role === 'leader') {
+      html += item('review', '本期驗收管理');
+      html += '<div class="grp">教案組管理</div>';
+      html += item('members', '成員管理') + item('plans', '教案管理') + item('rubric', '驗收標準');
+    }
+    html += '<div class="spacer"></div>';
+    html += `<div class="me"><div class="av">${person.av}</div><div><b>${person.name}</b><small>${person.mail}</small></div></div>`;
+    sb.innerHTML = html;
+  });
+
+  const tabs = Array.from(document.querySelectorAll('.opt-tab'));
+  const opts = Array.from(document.querySelectorAll('.opt'));
+  if (!tabs.length) return;
+  function show(key) {
+    tabs.forEach((t) => t.classList.toggle('on', t.dataset.opt === key));
+    opts.forEach((o) => o.classList.toggle('on', o.dataset.opt === key));
+  }
+  tabs.forEach((t) =>
+    t.addEventListener('click', () => {
+      show(t.dataset.opt);
+      history.replaceState(null, '', '#' + t.dataset.opt);
+    })
+  );
+  const fromHash = location.hash.replace('#', '').toUpperCase();
+  show(tabs.some((t) => t.dataset.opt === fromHash) ? fromHash : tabs[0].dataset.opt);
+})();
+
+</script>
+</body>
+</html>

@@ -20,6 +20,8 @@ export interface FamilyPlan {
     slide_present: boolean;
   } | null;
   job_state: string | null;
+  family_id?: string;
+  family_name?: string;
 }
 
 /** GET /review/family-submissions 的一列。 */
@@ -96,6 +98,8 @@ export interface ReviewJobRow {
     reviewer_id: string;
     reviewer_name: string;
     assignment_state: string;
+    /** 該 slot 的提交狀態為 submitted 或 edited。 */
+    submitted?: boolean;
   }[];
 }
 
@@ -241,8 +245,7 @@ export interface MemberRow {
   name: string;
   family_id: string | null;
   family_name: string | null;
-  membership_active: boolean;
-  roles: { role: string; scope_type: string; family_id?: string | null; family_name?: string | null }[];
+  roles: { role: string; family_id?: string | null; family_name?: string | null }[];
 }
 
 export interface ReviewerLoadRow {
@@ -250,13 +253,14 @@ export interface ReviewerLoadRow {
   reviewer_name: string;
   job_count: number;
   points: number;
-  jobs: { job_id: string; tp_name: string; slot_label: string; points: number }[];
+  /** submitted：該 slot 的提交狀態為 submitted 或 edited。 */
+  jobs: { job_id: string; tp_name: string; slot_label: string; points: number; submitted?: boolean }[];
 }
 
 export interface AssignmentInput {
   job_id: string;
   slot_label: string;
-  reviewer_id: string;
+  reviewer_id: string | null;
 }
 
 export async function fetchSchedules(termId: string): Promise<ScheduleRow[]> {
@@ -350,13 +354,14 @@ export interface FinalRecord {
 
 export interface ResultRow {
   /** 總驗才有：教案紙 / 投影片各自的判定。 */
-  records?: { A: FinalRecord | null; B: FinalRecord | null };
+  records?: Record<string, FinalRecord>;
   job_id: string;
   plan_id: string;
   tp_name: string;
   family: string;
   score_a: string | null;
   score_b: string | null;
+  scores: Record<string, string>;
   average: string | null;
   band: string | null;
   job_state: string;
@@ -516,14 +521,13 @@ export interface FamilyRow {
 export interface MemberUpsertInput {
   email: string;
   name?: string;
-  family_id?: string | null;
+  family_id: string;
   roles?: { role: string; family_id?: string | null }[];
 }
 
 export interface MemberPatchInput {
   user_id: string;
-  membership_active?: boolean | null;
-  revoke_roles?: string[];
+  revoke_roles?: { role: string; family_id?: string | null }[];
 }
 
 export async function fetchTerms(): Promise<TermRow[]> {
@@ -557,6 +561,23 @@ export async function cloneMembersFromTerm(fromTermId: string, toTermId: string)
 export async function setPlanExcellent(planId: string, isExcellent: boolean): Promise<unknown> {
   const response = await api.patch(`/review/plans/${planId}/excellent`, { is_excellent: isExcellent });
   return response.data;
+}
+
+/** 一次批量設定優良教案；任一 id 不存在就整批不改（404），一次最多 200 筆。 */
+export async function setPlansExcellent(planIds: string[], isExcellent: boolean): Promise<{ updated: number }> {
+  const response = await api.patch<{ updated: number }>('/review/plans/excellent', {
+    plan_ids: planIds,
+    is_excellent: isExcellent,
+  });
+  return response.data;
+}
+
+/** 教案組一次取得全團本輪教案（依家別、建立時間排序）；沒有 review.manage 時只會回自己的家。 */
+export async function fetchAllFamilyPlans(stage: Round): Promise<FamilyPlan[]> {
+  const response = await api.get<FamilyPlan[]>('/review/family-plans', {
+    params: { all_families: true, stage },
+  });
+  return Array.isArray(response.data) ? response.data : [];
 }
 
 /** 後台檢視某一家的教案；家長只拿得到自己家的，教案組可指定 family_id。 */
@@ -612,6 +633,18 @@ export async function createRubricVersion(payload: {
   return response.data;
 }
 
+/**
+ * 替還沒有標準的一期開一份 v1。內容沿用上一期的啟用版本, 沒有上一期就用規格預設,
+ * 組長不用從零手打二十項。
+ */
+export async function bootstrapRubric(payload: {
+  term_id: string;
+  kind: 'initial' | 'final';
+}): Promise<RubricRow> {
+  const response = await api.post<RubricRow>('/review/rubrics/bootstrap', payload);
+  return response.data;
+}
+
 /* ---------------- 公告 ---------------- */
 
 export type AnnouncementType =
@@ -631,6 +664,8 @@ export interface AnnouncementRow {
   state: string;
   published_at: string | null;
   published_by_name: string | null;
+  send_email?: boolean;
+  updated_at?: string;
 }
 
 export const ANNOUNCEMENT_TYPE_LABEL: Record<AnnouncementType, string> = {
@@ -669,6 +704,41 @@ export async function fetchAnnouncement(id: string): Promise<AnnouncementRow> {
   return response.data;
 }
 
+/* 公告草稿：只有建立者看得到、改得到；已發布的公告不能再編輯或重發。 */
+
+export interface AnnouncementDraftInput {
+  term_id: string;
+  announcement_type: AnnouncementType;
+  title: string;
+  body?: string;
+  send_email?: boolean;
+}
+
+export async function saveAnnouncementDraft(payload: AnnouncementDraftInput): Promise<AnnouncementRow> {
+  const response = await api.post<AnnouncementRow>('/review/announcements', { ...payload, draft: true });
+  return response.data;
+}
+
+export async function fetchAnnouncementDrafts(termId: string): Promise<AnnouncementRow[]> {
+  const response = await api.get<AnnouncementRow[]>('/review/announcements/drafts', {
+    params: { term_id: termId },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+}
+
+export async function updateAnnouncementDraft(
+  id: string,
+  patch: Partial<Omit<AnnouncementDraftInput, 'term_id'>>
+): Promise<AnnouncementRow> {
+  const response = await api.patch<AnnouncementRow>(`/review/announcements/${id}`, patch);
+  return response.data;
+}
+
+export async function publishAnnouncementDraft(id: string): Promise<AnnouncementRow> {
+  const response = await api.post<AnnouncementRow>(`/review/announcements/${id}/publish`, {});
+  return response.data;
+}
+
 export interface JobReviewRow {
   slot_label: string;
   reviewer_name: string;
@@ -682,7 +752,7 @@ export interface JobReviewRow {
   record: FinalRecord | null;
 }
 
-/** 教案組看兩位 reviewer 各自寫了什麼；作者端不會用到這支。 */
+/** 教案組查看所有 reviewer 各自寫了什麼；作者端不會用到這支。 */
 export async function fetchJobReviews(jobId: string): Promise<JobReviewRow[]> {
   const response = await api.get<JobReviewRow[]>(`/review/jobs/${jobId}/reviews`);
   return Array.isArray(response.data) ? response.data : [];

@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AllPlansTable, Row } from '@/features/teaching-plan/AllPlansTable';
+import { OwnedPlanModal } from '@/features/teaching-plan/OwnedPlanModal';
+import { PageHead } from '@/components/layout/PageHead';
+import { LockBanner } from '@/features/review-shared/LockBanner';
+import { BTN_PRIMARY } from '@/lib/button-styles';
 import { DeleteTeachPlanModal } from '@/features/teaching-plan/DeleteTeachPlanModal';
 import { fetchMyTeachingPlans, TeachingPlanDetail } from '@/services/teaching-plan';
 import { api } from '@/lib/api';
@@ -10,11 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { popFlash, Flash } from '@/lib/flash';
 import { Toast } from '@/components/ui/toast';
 import { readSessionJson, writeSessionJson } from '@/lib/session-cache';
-import {
-  MINE_PLANS_CACHE_KEY,
-  MINE_TABLE_UI_CACHE_KEY,
-  removePlanIdFromManageCaches,
-} from '@/features/manage/cache';
+import { MINE_PLANS_CACHE_KEY, MINE_TABLE_UI_CACHE_KEY } from '@/features/manage/cache';
 
 const mapMyPlanToRow = (plan: TeachingPlanDetail): Row => ({
   id: plan.id,
@@ -30,7 +30,22 @@ const mapMyPlanToRow = (plan: TeachingPlanDetail): Row => ({
   viewCount: typeof plan.view_count === 'number' ? plan.view_count : undefined,
   createdAt: plan.created_at ? Date.parse(plan.created_at) : undefined,
   hashtags: Array.isArray(plan.hashtags) ? plan.hashtags : [],
+  editingStatus: plan.editing_status,
+  visibilityStatus: plan.visibility_status,
+  hasSheet: !!plan.sheet_pdf,
+  hasSlides: !!plan.slide_pdf,
+  updatedAt: plan.updated_at,
+  inReview: isInReviewPipeline(plan),
 });
+
+/**
+ * 有沒有進過驗收流程。後端有給 in_review_pipeline 就用它；
+ * 沒給時用 editing_status 推斷——歷屆教案被回填成 locked，那是「已通過」，不算。
+ */
+function isInReviewPipeline(plan: TeachingPlanDetail): boolean {
+  if (typeof plan.in_review_pipeline === 'boolean') return plan.in_review_pipeline;
+  return !!plan.editing_status && !['draft', 'locked'].includes(plan.editing_status);
+}
 
 export default function MineAllPage() {
   const router = useRouter();
@@ -41,6 +56,7 @@ export default function MineAllPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [flashToast, setFlashToast] = useState<Flash | null>(null);
   const [flashOpen, setFlashOpen] = useState(false);
+  const [selected, setSelected] = useState<Row | null>(null);
 
   useEffect(() => {
     const flash = popFlash();
@@ -102,6 +118,7 @@ export default function MineAllPage() {
       });
       return;
     }
+    setSelected(null);
     setDeleteTarget(row);
     setDeleteModalOpen(true);
   };
@@ -125,7 +142,6 @@ export default function MineAllPage() {
         writeSessionJson(MINE_PLANS_CACHE_KEY, nextRows);
         return nextRows;
       });
-      removePlanIdFromManageCaches(deleteTarget.id);
       toast({
         title: '✅ 已刪除教案',
         description: '教案已成功移除。',
@@ -149,15 +165,37 @@ export default function MineAllPage() {
     setDeleteTarget(null);
   };
 
+  const anyInReview = rows.some((row) => row.inReview);
+
   return (
     <>
+      <PageHead
+        title="已上傳教案"
+        subtitle="新增與維護自己的教案；重新上傳教案紙或投影片會直接覆蓋原檔案。"
+        actions={
+          <button type="button" className={BTN_PRIMARY} onClick={() => router.push('/upload')}>
+            ＋ 上傳教案
+          </button>
+        }
+      />
+      {anyInReview && (
+        <LockBanner
+          className="mb-4"
+          title="部分教案已進入本期驗收流程"
+          description="這些教案無法在這裡編輯或刪除；回饋處理與總驗修改版請到「我的驗收任務」。"
+        />
+      )}
       <AllPlansTable
-        title="我的教案"
         rowsInput={rows}
         mode="mine"
         uiStateStorageKey={MINE_TABLE_UI_CACHE_KEY}
+        onView={setSelected}
+      />
+      <OwnedPlanModal
+        row={selected}
+        onClose={() => setSelected(null)}
         onEdit={handleEdit}
-        onDelete={handleDelete}
+        onDelete={(row) => void handleDelete(row)}
       />
       <DeleteTeachPlanModal
         open={deleteModalOpen}
