@@ -273,7 +273,7 @@ a { color: var(--p900); }
     </div>
   </div>
   <div class="panel">
-    <h2>三個方案共同的規則</h2>
+    <h2>方案 A 的共用規則</h2>
     <ul>
       <li>按鈕與確認視窗都寫明家別與輪次（「送出電光家初驗」），送出範圍是整家本輪資料。</li>
       <li>納入本輪的教案若有附件失敗或還在處理中，<b>不能送出</b>：先重新上傳，或改登記為缺交（不會只是從清單消失）。</li>
@@ -282,9 +282,7 @@ a { color: var(--p900); }
   </div>
 
   <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜摘要列＋確認彈窗 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜專用核對頁</button>
-    <button class="opt-tab" data-opt="C">方案 C｜檢查抽屜＋最後確認</button>
+    <button class="opt-tab" data-opt="A">方案 A｜摘要列＋確認彈窗 <span class="rec">已選定</span></button>
   </div>
 
   <!-- ===================== A ===================== -->
@@ -294,7 +292,7 @@ a { color: var(--p900); }
       <div class="panel pros"><h3>優點</h3><ul><li>就是現有的送出流程，只補上清單與擋件規則</li><li>確認時看得到完整名單，不用心算</li></ul></div>
       <div class="panel cons"><h3>缺點</h3><ul><li>教案很多時彈窗要捲動</li><li>要修正問題得先關掉彈窗</li></ul></div>
     </div>
-    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>現有的確認彈窗方向是對的，主要缺的是「完整清單」和「附件異常時擋下來」。摘要列放在頁底是對原方案（放清單上方）的小幅變體。</div>
+    <div class="verdict"><b>採用方案 A：摘要列＋確認彈窗。</b>現有的確認彈窗方向是對的，主要缺的是「完整清單」和「附件異常時擋下來」。摘要列放在頁底是對原方案（放清單上方）的小幅變體。</div>
     <div class="stage-cap">畫面 A-1：家內教案底部的固定摘要列（還有 1 份需處理）</div>
     <div class="stage"><div class="frame">
       <div class="sb" data-sb="parent" data-on="family"></div>
@@ -365,78 +363,6 @@ a { color: var(--p900); }
             </div>
             <div class="df"><span class="btn">返回修正</span><span class="btn primary">確認並送出加拿家初驗</span></div>
           </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>「送出驗收」先進入一個核對頁（仍在同一個版面裡）：左邊是要送驗的教案，可以直接開附件預覽；右邊是缺交清單。附件失敗的教案可以「改為缺交」，直接帶到右邊登記，不會只是被排除而消失。最下面固定一條確認列，所有項目都沒問題才能送出，送出後回到家內教案。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>一家十幾份教案時，核對最舒服</li><li>可以把核對頁連結傳給其他家長一起看</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>多一頁、多一次返回</li><li>只有兩三份教案時顯得太重</li></ul></div>
-    </div>
-    <div class="verdict">教案份數多的家（例如一輪十份以上）用 B 會比彈窗好核對。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="parent" data-on="family" data-archived></div>
-      <div class="main">
-        <div class="userbtn">電</div>
-        <div class="ph"><div><div class="small muted">家內教案 ／</div><h1>核對電光家初驗送件</h1><div class="sub">27 冬・初驗　確認無誤後送出；送出後本輪內容鎖定。</div></div></div>
-        <div class="grid2" style="gap:14px">
-          <div class="card"><div class="ct">送驗教案（2）</div>
-            <div class="tbl" style="margin-top:10px;box-shadow:none"><table><tbody>
-              <tr><td><b>網路世界放大鏡!</b><small>撰寫者小美・自然</small></td><td><a class="link-file">預覽教案紙</a></td><td><span class="chip done">OK</span></td></tr>
-              <tr class="hl"><td><b>電光的秘密</b><small>陳怡君・社會</small></td><td><span class="chip alert">上傳失敗</span></td><td><span class="btn sm">改為缺交</span></td></tr>
-            </tbody></table></div>
-          </div>
-          <div class="card"><div class="ct">缺交教案（2）</div>
-            <div class="tbl" style="margin-top:10px;box-shadow:none"><table><tbody>
-              <tr><td><b>彩虹從哪裡來</b><small>李小華</small></td><td><span class="chip alert">缺教案紙</span></td></tr>
-              <tr><td><b>小小氣象員</b><small>王小明</small></td><td><span class="chip alert">缺教案紙</span></td></tr>
-            </tbody></table></div>
-          </div>
-        </div>
-        <div style="position:absolute;left:246px;right:0;bottom:0;background:#fff;border-top:1px solid var(--b200);box-shadow:0 -2px 10px rgba(0,0,0,.08);padding:12px 34px" class="row between">
-          <span><b>本輪送出 2 份｜缺交 2 份</b>　<span class="alert-text small">還有 1 份需處理</span></span>
-          <span class="row"><span class="btn">返回家內教案</span><span class="btn primary" disabled>確認並送出電光家初驗</span></span>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>按「檢查送件」打開右側抽屜，逐項列出檢查結果（附件、缺交、截止時間），每個問題都有「前往處理」可跳到對應的列。全部通過後，抽屜底部按「送出」，再跳一個極簡的確認彈窗。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>發現問題、修正、再檢查的來回最快</li><li>檢查項目之後可以擴充（例如教案時長、類別缺漏）</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>抽屜加彈窗兩層；現有 Drawer 按 Esc 會直接關閉，疊彈窗時要先調整元件</li><li>概念比 A 多，第一次用的家長要學</li></ul></div>
-    </div>
-    <div class="verdict">如果之後想加更多送件前檢查（例如自動檢查教案紙欄位是否完整），C 的「檢查清單」最好擴充。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="parent" data-on="family" data-archived></div>
-      <div class="main">
-        <div class="userbtn">電</div>
-        <div class="ph" style="padding-right:600px"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗</div></div></div>
-        <div class="tbl" style="width:470px"><table><thead><tr><th>教案名稱</th><th>教案紙</th></tr></thead><tbody>
-          <tr><td>網路世界放大鏡!</td><td><a class="link-file">查看教案紙</a></td></tr>
-          <tr class="hl"><td><b>電光的秘密</b></td><td><span class="chip alert">上傳失敗</span></td></tr>
-        </tbody></table></div>
-        <div class="drawer">
-          <div class="dh"><div><small>27 冬・電光家・初驗</small><b>送件前檢查</b></div><span style="font-size:22px;color:var(--b500)">×</span></div>
-          <div class="db">
-            <div class="tbl"><table><tbody>
-              <tr><td><span class="dot done"></span>送驗教案都有標題、類別、時長</td><td class="ok-text small">通過</td><td></td></tr>
-              <tr class="hl"><td><span class="dot alert"></span>「電光的秘密」教案紙上傳失敗</td><td class="alert-text small">需處理</td><td><span class="btn sm">前往處理</span></td></tr>
-              <tr><td><span class="dot done"></span>缺交 2 筆都有教案名稱與姓名</td><td class="ok-text small">通過</td><td></td></tr>
-              <tr><td><span class="dot active"></span>距離送件截止還有 1 天</td><td class="muted small">提醒</td><td></td></tr>
-            </tbody></table></div>
-            <div class="hr"></div>
-            <b>本輪將送出</b>
-            <div class="small" style="margin-top:6px">送驗 2 份：網路世界放大鏡!、電光的秘密<br>缺交 2 份：小小氣象員（王小明）、彩虹從哪裡來（李小華）</div>
-            <p class="muted small" style="margin-top:12px">處理完會自動重新檢查；全部通過後按「送出」，再跳出最後確認彈窗。</p>
-          </div>
-          <div class="df"><span class="btn">稍後再送</span><span class="btn primary" disabled>送出電光家初驗</span></div>
         </div>
       </div>
     </div></div>

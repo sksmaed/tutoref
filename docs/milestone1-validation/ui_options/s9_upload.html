@@ -278,9 +278,7 @@ a { color: var(--p900); }
   </div>
 
   <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜三步驟上傳頁 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜在家內教案開大彈窗</button>
-    <button class="opt-tab" data-opt="C">方案 C｜左附件預覽、右簡介編輯</button>
+    <button class="opt-tab" data-opt="A">方案 A｜三步驟上傳頁 <span class="rec">已選定</span></button>
   </div>
 
   <!-- ===================== A ===================== -->
@@ -290,7 +288,7 @@ a { color: var(--p900); }
       <div class="panel pros"><h3>優點</h3><ul><li>「選檔 → 確認 → 解析 → 編輯 → 儲存」順序最清楚</li><li>沿用現有上傳頁與教案編輯器，改動集中</li><li>解析失敗時保留已選的檔案，可重試或手動填</li></ul></div>
       <div class="panel cons"><h3>缺點</h3><ul><li>佔用整頁，步驟較多</li></ul></div>
     </div>
-    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>現有上傳頁已有「解析 → 編輯 → 確認」，只要把第一步改成兩塊、入口移到家內教案、完成後導回家內教案。</div>
+    <div class="verdict"><b>採用方案 A：三步驟上傳頁。</b>現有上傳頁已有「解析 → 編輯 → 確認」，只要把第一步改成兩塊、入口移到家內教案、完成後導回家內教案。</div>
     <div class="stage-cap">畫面 A-1：第 1 步，兩塊選檔區（初驗）</div>
     <div class="stage"><div class="frame tall">
       <div class="sb" data-sb="writer" data-on="family" data-family data-archived></div>
@@ -373,73 +371,6 @@ a { color: var(--p900); }
             <tr><td><b>地圖探險</b><small>社會</small></td><td>26 夏・電光</td><td><span class="chip done">完整</span></td><td><span class="chip done">已公開</span></td><td>2026/09/06</td></tr>
           </tbody>
         </table></div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>不離開家內教案：按「上傳教案」開大彈窗，先在兩塊區域選檔（每個檔案都能移除或替換），按確認後彈窗切換到解析結果與簡介編輯；解析中不能關閉彈窗，失敗時保留檔案可重試；儲存後關窗，家內教案表格刷新並標出新列。下圖示範總驗時投影片區變成選填。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>一直留在家內教案，情境不中斷</li><li>上傳完立刻看到在清單中的位置</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>解析出的簡介欄位多，彈窗會很擠</li><li>解析中途關掉彈窗的行為要另外定義</li></ul></div>
-    </div>
-    <div class="verdict">如果撰寫者通常一次只傳一份、而且很少改解析結果，B 最快。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="writer" data-on="family" data-family data-archived></div>
-      <div class="main">
-        <div class="userbtn">撰</div>
-        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・總驗</div></div><div class="acts"><span class="btn primary">＋ 上傳教案</span></div></div>
-        <div class="scrim">
-          <div class="dialog lg">
-            <div class="dh"><div><small>27 冬・電光家・總驗</small><b>上傳待驗收教案</b></div><span class="x">×</span></div>
-            <div class="db">
-              <div class="steps"><span class="on">1　選擇檔案</span><span>2　檢查教案簡介</span></div>
-              <div class="grid2" style="gap:14px">
-                <div><span class="flabel">教案紙（必填）</span><div class="drop filled"><b>網路世界放大鏡!_○○○.pdf</b><small>6.5 MB</small><div style="margin-top:8px"><span class="btn sm">替換</span> <span class="btn danger sm">移除</span></div></div></div>
-                <div><span class="flabel">投影片（選填）</span><div class="drop">點擊或拖曳 PDF 到這裡<small>總驗可附投影片，最大 500 MB</small></div></div>
-              </div>
-            </div>
-            <div class="df"><span class="left">確認後才會上傳並解析教案紙</span><span class="btn">取消</span><span class="btn primary">確認上傳並解析</span></div>
-          </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>上傳頁分左右兩欄：左邊是兩張附件卡與教案紙預覽，右邊是解析出來的簡介草稿。解析前和 A 一樣是兩區選檔＋「確認上傳並解析」，右欄先空著；解析完成後右欄自動填入，撰寫者可以一邊看 PDF 一邊修正，最後按「儲存到家內教案」。下圖是解析完成後的樣子。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>對照原檔修正解析錯誤最方便</li><li>之後總驗替換附件也能用同一個版面</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>版面與暫存狀態最複雜</li><li>小螢幕要上下堆疊，對照效果打折</li></ul></div>
-    </div>
-    <div class="verdict">如果解析結果常常要人工修正，C 的左右對照最省時間。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="writer" data-on="family" data-family data-archived></div>
-      <div class="main">
-        <div class="userbtn">撰</div>
-        <div class="ph"><div><div class="small muted">家內教案 ／</div><h1>上傳待驗收教案</h1><div class="sub">27 冬・電光家・初驗</div></div><div class="acts"><span class="btn">取消</span><span class="btn primary">儲存到家內教案</span></div></div>
-        <div class="steps"><span class="done">1　選擇檔案</span><span class="done">2　確認並解析</span><span class="on">3　對照修正</span></div>
-        <div style="display:grid;grid-template-columns:330px 1fr;gap:16px">
-          <div class="stack">
-            <div class="card" style="padding:14px"><div class="row between"><b>教案紙</b><span class="chip done">已解析</span></div><div class="small muted" style="margin-top:4px">網路世界放大鏡!_○○○.pdf・6.5 MB</div></div>
-            <div class="card" style="padding:14px"><div class="row between"><b>投影片</b><span class="chip locked">總驗開放（選填）</span></div></div>
-            <div class="pdf" style="min-height:330px"><b style="color:var(--b700)">教案紙預覽　1 / 9</b><div class="ln w8"></div><div class="ln"></div><div class="ln w6"></div><div class="ln w8"></div><div class="ln w4"></div><div class="ln"></div><div class="ln w6"></div><div class="ln w8"></div><div class="ln"></div><div class="ln w4"></div></div>
-          </div>
-          <div class="card">
-            <div class="row between" style="margin-bottom:10px"><b>教案簡介（自動解析，請檢查）</b><span class="muted small">解析完成 21:02</span></div>
-            <div class="fgrid">
-              <div class="span2"><span class="flabel">課程名稱</span><span class="ctl full">網路世界放大鏡!</span></div>
-              <div><span class="flabel">類別</span><span class="ctl sel full">自然</span></div>
-              <div><span class="flabel">適用年級</span><span class="ctl sel full">全年級</span></div>
-              <div><span class="flabel">課程時長</span><span class="ctl sel full">小堂課（40 分鐘）</span></div>
-              <div><span class="flabel">教案紙上的設計者</span><span class="ctl full">○○○</span></div>
-              <div class="span2"><span class="flabel">課程目標</span><div class="ctl full" style="display:block;min-height:70px">1. 介紹什麼是假新聞？出現原因？<br>2. 判別假新聞？如何不被左右<br>3. 讓小朋友們進行假新聞事實查核</div></div>
-            </div>
-            <p class="muted small" style="margin:10px 0 0">家別與期別依你本期的身份自動帶入（電光・27 冬），不會被 PDF 內容改掉。</p>
-          </div>
-        </div>
       </div>
     </div></div>
   </section>

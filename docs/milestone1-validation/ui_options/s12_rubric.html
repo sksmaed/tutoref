@@ -250,216 +250,167 @@ a { color: var(--p900); }
 .legend li { display: flex; gap: 6px; align-items: center; }
 .legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
+
+/* 驗收標準：制定入口、草稿、變更確認與本期採用共用樣式。 */
+[hidden] { display: none !important; }
+button, select { cursor: pointer; }
+button, input, select { font-family: var(--font); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--p900); outline-offset: 3px; }
+.btn { cursor: pointer; text-decoration: none; }
+.btn:disabled { cursor: not-allowed; }
+.prototype-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+.prototype-nav a { text-decoration: none; }
+.frame { width: 100%; min-width: 1000px; }
+.main { padding-left: 24px; padding-right: 24px; }
+.page-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.page-tabs a, .page-tabs span { padding: 10px 16px; color: var(--b500); text-decoration: none; font-size: 15px; font-weight: 700; }
+.page-tabs .on { color: var(--p900); border-bottom: 2px solid var(--p900); }
+.round-switch { display: flex; gap: 6px; margin-bottom: 18px; align-items: center; }
+.round-switch button { font: inherit; }
+.round-switch .context { margin-left: auto; font-size: 12px; color: var(--b500); }
+.section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.section-head h2 { margin: 0; font-size: 18px; }
+.section-head p { margin: 4px 0 0; color: var(--b500); font-size: 12px; }
+.entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+.entry-card { display: flex; align-items: flex-start; gap: 14px; margin: 0 !important; }
+.entry-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 38px; height: 38px; border-radius: 10px; background: var(--p100); color: var(--p900); font-size: 19px; }
+.entry-card h3 { font-size: 15px; margin: 0 0 5px; }
+.entry-card p { color: var(--b500); font-size: 12px; margin: 0 0 12px; }
+.version-card { border-top: 3px solid var(--p900); }
+.meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+.meta-grid small { color: var(--b500); display: block; font-size: 12px; margin-bottom: 4px; }
+.meta-grid b { font-size: 13px; word-break: break-word; }
+.score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+.score-box { border: 1px solid var(--b200); border-radius: 8px; padding: 12px; }
+.score-box b { display: block; font-size: 17px; }
+.score-box small { color: var(--b500); font-size: 12px; }
+.formula { margin: 12px 0 0; padding: 12px 14px; background: var(--b100); border-radius: 8px; font-size: 13px; }
+.rubric-table { box-shadow: none; }
+.rubric-table th, .rubric-table td { vertical-align: top; }
+.rubric-table td { overflow-wrap: anywhere; }
+.rubric-table input, .rubric-table select, .rubric-table textarea { width: 100%; min-width: 0; }
+.rubric-table textarea { resize: vertical; min-height: 76px; line-height: 1.6; font-family: var(--font); }
+.rubric-table input[type="number"] { padding: 9px 8px; appearance: textfield; }
+.rubric-table input[type="number"]::-webkit-inner-spin-button { appearance: none; margin: 0; }
+.editor-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 14px; align-items: start; }
+.editor-layout .card { margin: 0; }
+.editor-layout .card + .card { margin-top: 14px; }
+.preview-side { background: var(--p100); border: 1px solid var(--p300); border-radius: 10px; padding: 16px; font-size: 12px; }
+.preview-side h3 { font-size: 14px; margin: 0 0 8px; }
+.preview-side ul { padding-left: 18px; margin: 8px 0; }
+.preview-side li { margin: 8px 0; overflow-wrap: anywhere; }
+.score-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+.field-error { color: var(--alert); font-size: 12px; margin: 6px 0 0; }
+.source-note { margin: 0 0 14px; color: var(--b500); font-size: 12px; overflow-wrap: anywhere; }
+.import-drop { padding: 24px; border: 1.5px dashed var(--b300); border-radius: 10px; text-align: center; }
+.import-drop p { color: var(--b500); font-size: 12px; }
+.import-drop .row { justify-content: center; }
+.import-drop input { max-width: 100%; }
+.parse-steps { display: flex; gap: 12px; margin: 18px 0; }
+.parse-steps span { flex: 1; border-top: 3px solid var(--b200); padding-top: 7px; color: var(--b500); font-size: 12px; }
+.parse-steps .on { border-color: var(--p900); color: var(--p900); font-weight: 700; }
+.check-label { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.7; }
+.check-label input { accent-color: var(--p900); margin-top: 5px; }
+.confirm-dialog { padding: 0; border: 1px solid var(--b200); width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 40px); color: var(--b900); font: inherit; }
+.confirm-dialog:not([open]) { display: none; }
+.confirm-dialog::backdrop { background: rgba(13,13,13,.4); }
+.confirm-dialog .dh button { border: 0; background: none; font: inherit; font-size: 22px; color: var(--b500); cursor: pointer; }
+.confirm-dialog .dh { flex-shrink: 0; }
+.confirm-dialog .df { flex-shrink: 0; }
+.confirm-dialog h3 { font-size: 14px; margin: 0 0 10px; }
+.change-table table { table-layout: fixed; }
+.change-table th:first-child { width: 28%; }
+.change-table th:nth-child(2) { width: 32%; }
+.change-table td { overflow-wrap: anywhere; white-space: normal; }
+.change-table .before { color: var(--b500); background: var(--b100); }
+.change-table .after { color: var(--p900); font-weight: 700; background: var(--p100); }
+.impact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.impact-grid > div { border: 1px solid var(--b200); border-radius: 9px; padding: 12px 14px; }
+.impact-grid p { font-size: 12px; margin: 5px 0 0; color: var(--b500); }
+.impact-grid .next { border-color: var(--p300); background: var(--p100); }
+.status-line { min-height: 24px; margin: 10px 0; color: var(--s700); font-size: 13px; }
+@media (max-width: 700px) { .doc { padding: 20px 12px 48px; } .confirm-dialog .impact-grid { grid-template-columns: 1fr; } .confirm-dialog .db { padding: 16px; } }
 </style>
 </head>
 <body>
 <div class="doc">
   <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S12</div>
-  <h1>S12｜更新驗收標準</h1>
-  <p class="lead">對應 US-07、Workflow 3（確認驗收標準）：按照固定格式編輯標準內容；「匯入教案組企劃書、自動解析標準」是 nice-to-have。</p>
-
+  <h1>S12｜制定與採用本期評分標準</h1>
+  <p class="lead">沿用方案 A 的固定格式編輯，分開提供「人工編輯」與「匯入企劃書」入口。兩種方式都先建立草稿、確認變更後再採用；本期使用的版本另有完整檢視頁。</p>
   <div class="grid2">
-    <div class="panel">
-      <h2>情境</h2>
-      <p>開期後組長從上一期帶入初驗標準 v1，想把「時間安排」類的一個項目改寫、把底分改成 100、門檻改成 94／83／62。初驗任務已經有幾份分配出去了，他要知道改了之後，那些任務用的是哪一版。</p>
-    </div>
-    <div class="panel">
-      <h2>目前遇到的問題</h2>
-      <ul>
-        <li>固定格式編輯（類別、項目、扣分）、另存新版<b>已經可以用</b>。</li>
-        <li><span class="issue-ref">#24</span> 另存新版只送出底分，原本改過的門檻會被重設成 30／25／20（Codex 實測重現，`RubricEditor.tsx:255`）。</li>
-        <li>畫面上看不出「已分配的任務用哪一版」，改版的影響範圍不清楚。</li>
-      </ul>
-    </div>
+    <div class="panel"><h2>兩個制定入口</h2><p><b>人工編輯：</b>以目前版本為基礎，調整類別、檢核項目、扣分、底分及門檻。</p><p><b>匯入企劃書：</b>上傳文件，由後台解析並對應系統欄位，顯示出處與待確認項目，經人工檢查後帶入草稿。</p></div>
+    <div class="panel"><h2>採用與版本規則</h2><p>初驗採底分扣分制；總驗維持教案紙／投影片分開判定。已分配任務維持原版本，之後新分配任務使用新版本。</p><p>A-2 改以「項目／變更前／變更後」比較，分開呈現計分變更、條文變更與影響範圍，避免把資訊塞在同一格。</p></div>
   </div>
-  <div class="panel">
-    <h2>三個方案共同的規則</h2>
-    <ul>
-      <li>底分與三個門檻都是標準的一部分，另存新版時要完整保留，介面上也要能改。</li>
-      <li>存檔時說清楚生效範圍：<b>已分配的任務維持原本的版本</b>，之後新分配的任務才用新版（或由組長選擇「全部任務改用新版」，並列出受影響份數）。</li>
-      <li>企劃書匯入（nice-to-have）只會產生草稿，人工確認後才會成為新版本。</li>
-    </ul>
-  </div>
-
-  <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜固定格式編輯＋預覽與生效範圍 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 第三輪推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜標準清單＋逐項抽屜</button>
-    <button class="opt-tab" data-opt="C">方案 C｜版本草稿＋差異確認</button>
-  </div>
-
-  <!-- ===================== A ===================== -->
-  <section class="opt" data-opt="A">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>沿用「本期驗收管理 → 驗收標準」的初驗／總驗分頁與現有的逐條編輯器，補上底分與三個門檻欄位；右側即時預覽驗收者會看到的表單。按「建立新版本」時跳確認，寫明生效範圍與受影響的任務數。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>就是現有的編輯器，補欄位與確認即可</li><li>預覽讓組長知道驗收者實際看到什麼</li><li>生效範圍寫清楚，不會悄悄套用到進行中的任務</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>項目多時頁面很長</li></ul></div>
+  <p class="small muted">互動 UI 原型：可切換初驗／總驗、編輯草稿、預覽解析及確認採用。匯入採內建示意資料，不讀取文件內容、不呼叫後台、不寫入正式資料；重新整理會還原。</p>
+  <nav class="prototype-nav" aria-label="原型畫面"><a class="btn sm" href="#current" data-view="current">A-0 本期採用標準</a><a class="btn sm" href="#manual" data-view="manual">A-1 人工編輯入口</a><a class="btn sm" href="#import" data-view="import">A-3 企劃書匯入入口</a><button class="btn sm" type="button" id="preview-confirm">A-2 預覽變更確認</button></nav>
+  <div class="stage"><div class="frame tall">
+    <div class="sb" data-sb="leader" data-on="review"></div>
+    <div class="main">
+      <div class="userbtn">組</div>
+      <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬・管理驗收時程、標準，以及初驗與總驗的教案、分配和結果。</div></div></div>
+      <div class="page-tabs"><a href="s11_schedule.html">驗收時程</a><span class="on">驗收標準</span><span>初驗</span><span>總驗</span></div>
+      <div class="round-switch" aria-label="驗收標準輪次"><button class="pill" type="button" data-round="initial">初驗標準</button><button class="pill" type="button" data-round="final">總驗標準</button><span class="context">27 冬・台北時間</span></div>
+      <p class="status-line" id="rubric-status" role="status"></p>
+      <section id="current-view" aria-labelledby="current-title">
+        <div class="section-head"><div><h2 id="current-title">本期採用的評分標準</h2><p>新分配的驗收任務將使用此版本。</p></div><span class="chip done">本期採用</span></div>
+        <div id="current-content"></div>
+        <div class="entry-grid">
+          <div class="card entry-card"><div class="entry-icon" aria-hidden="true">✎</div><div><h3>人工編輯標準</h3><p>沿用目前版本，逐項編輯內容、計分與門檻。</p><button class="btn primary sm" type="button" data-open="manual">以目前版本建立草稿</button></div></div>
+          <div class="card entry-card"><div class="entry-icon" aria-hidden="true">↑</div><div><h3>匯入企劃書制定標準</h3><p>由後台解析文件，檢查對應欄位與來源後建立草稿。</p><button class="btn sm" type="button" data-open="import">匯入企劃書</button></div></div>
+        </div>
+      </section>
+      <section id="manual-view" hidden aria-labelledby="manual-title">
+        <div class="section-head"><div><h2 id="manual-title">人工編輯評分標準</h2><p id="draft-version"></p></div><button class="btn sm" type="button" data-open="current">返回本期採用標準</button></div>
+        <p class="source-note" id="draft-source"></p>
+        <form id="editor-form" novalidate>
+          <div class="editor-layout"><div>
+            <div class="card"><div class="ct">標準內容</div><label style="display:block;margin-top:12px"><span class="flabel">版本名稱</span><input class="ctl full" id="draft-name" required maxlength="100"></label><div class="hr"></div>
+              <div class="score-inputs" id="score-inputs">
+                <label><span class="flabel">底分</span><input class="ctl full" id="base-score" type="number" min="0" step="0.5" required></label>
+                <label><span class="flabel">潛力優良（大於）</span><input class="ctl full" id="excellent-score" type="number" min="0" step="0.5" required></label>
+                <label><span class="flabel">通過（大於或等於）</span><input class="ctl full" id="pass-score" type="number" min="0" step="0.5" required></label>
+                <label><span class="flabel">需討論（大於或等於）</span><input class="ctl full" id="discussion-score" type="number" min="0" step="0.5" required></label>
+              </div>
+              <p class="small muted" id="final-rule" hidden>總驗不使用底分或分數門檻；教案紙與投影片各自判定通過／未通過，未通過時須填理由。投影片未附時顯示「未附（選填）」。</p>
+              <p class="field-error" id="score-error" role="alert"></p>
+            </div>
+            <div class="card"><div class="row between" style="margin-bottom:12px"><b>檢核項目</b><button type="button" class="btn sm" id="add-item">＋ 新增項目</button></div><div id="item-editor"></div><p class="field-error" id="item-error" role="alert"></p></div>
+          </div><aside class="preview-side"><h3>驗收者表單預覽</h3><div id="live-preview"></div><p class="small muted">修改會保留在草稿；確認採用前不影響本期版本。</p></aside></div>
+          <div class="form-actions"><button class="btn" type="button" data-open="current">返回檢視（保留草稿）</button><button class="btn primary" type="submit">檢查變更並採用</button></div>
+        </form>
+      </section>
+      <section id="import-view" hidden aria-labelledby="import-title">
+        <div class="section-head"><div><h2 id="import-title">匯入企劃書制定標準</h2><p>文件上傳 → 後台解析 → 檢查與修正 → 確認採用</p></div><button class="btn sm" type="button" data-open="current">返回本期採用標準</button></div>
+        <div class="card">
+          <div class="parse-steps"><span class="on">01 選擇企劃書</span><span id="parse-step">02 解析與欄位對應</span><span id="review-step">03 檢查後帶入草稿</span></div>
+          <div class="import-drop"><b>上傳教案組企劃書</b><p>預計支援 PDF、DOCX；此原型僅展示選檔與解析示意。</p><div class="row"><input type="file" id="proposal-file" accept=".pdf,.docx" aria-label="選擇企劃書"><button class="btn sm" type="button" id="demo-file">使用示意企劃書</button></div><p id="selected-file">尚未選擇企劃書</p></div>
+          <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="parse-file" type="button" disabled>解析企劃書（示意）</button><button class="btn sm" id="parse-failure" type="button" disabled>預覽解析失敗</button></div>
+          <p class="field-error" id="parse-error" role="alert"></p>
+        </div>
+        <div class="card" id="parse-result" hidden>
+          <div class="card-head"><div><div class="ct">解析結果與系統欄位對應</div><div class="cd" id="parsed-source"></div></div><span class="chip active">待人工確認</span></div>
+          <div class="banner active"><b>發現 1 項需確認</b><p>「時間安排」條文包含轉場時間描述，請對照來源確認；帶入草稿後仍可修正內容與計分。</p></div>
+          <div id="parse-mapping"></div>
+          <label class="check-label" style="margin-top:14px"><input id="review-import" type="checkbox"><span>我已檢查欄位對應及待確認條文，將解析內容帶入草稿後再確認採用。</span></label>
+          <div class="form-actions"><button class="btn primary" type="button" id="load-import" disabled>帶入編輯器檢查與修正</button></div>
+        </div>
+      </section>
     </div>
-    <div class="verdict"><b>Claude 與 Codex（第三輪）都推薦 A。</b>現有編輯器方向對，主要補「門檻要保留」和「生效範圍要講清楚」。這頁是依 Codex 第二輪的要求新增的；第三輪 Codex 確認方向正確，並指出的缺口已補上。</div>
-    <div class="stage-cap">畫面 A-1：編輯器（底分與三個門檻都能改，另存新版時一起保留）</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬・管理驗收時程、標準，以及初驗與總驗的教案、分配和結果。</div></div></div>
-        <div class="tabs"><span>驗收時程</span><span class="on">驗收標準</span><span>初驗</span><span>總驗</span></div>
-        <div class="row" style="gap:16px;margin-bottom:12px"><span class="link">初驗標準</span><span class="muted">總驗標準</span><span class="muted small" style="margin-left:auto">編輯中：初驗標準 v2（以 v1 為基礎）</span></div>
-        <div style="display:grid;grid-template-columns:1.25fr .75fr;gap:14px">
-          <div class="card">
-            <div class="fgrid" style="grid-template-columns:repeat(4,1fr)">
-              <div><span class="flabel">底分</span><span class="ctl full">100</span></div>
-              <div><span class="flabel">潛力優良（&gt;）</span><span class="ctl full">94</span></div>
-              <div><span class="flabel">通過（≥）</span><span class="ctl full">83</span></div>
-              <div><span class="flabel">需討論（≥）</span><span class="ctl full">62</span></div>
-            </div>
-            <div class="hr"></div>
-            <div class="tbl"><table><thead><tr><th style="width:120px">類別</th><th>檢核項目</th><th style="width:80px">扣分</th><th style="width:50px"></th></tr></thead><tbody>
-              <tr><td>基本格式</td><td>檔名、字體、字型是否符合要求</td><td>1</td><td class="muted small">移除</td></tr>
-              <tr class="hl"><td>時間安排</td><td><span class="ctl full">各流程時間是否合理，並預留轉場時間</span></td><td>1.5</td><td class="muted small">移除</td></tr>
-              <tr><td>完整度</td><td>各知識點是否有清楚說明</td><td>2</td><td class="muted small">移除</td></tr>
-            </tbody></table></div>
-            <div class="row between" style="margin-top:12px"><span class="btn sm">＋ 新增項目</span><span class="btn primary">建立新版本</span></div>
-          </div>
-          <div class="card" style="background:var(--b100)">
-            <div class="ct">驗收者會看到（預覽）</div>
-            <div class="cd">初驗表單・試算從 100 分開始扣</div>
-            <div class="stack" style="margin-top:10px">
-              <div class="row between"><span class="small">時間安排（每項 −1.5）</span><span class="muted small">5 項</span></div>
-              <div class="small"><span class="box"></span> 各流程時間是否合理，並預留轉場時間</div>
-              <div class="small"><span class="box"></span> 時間切割是否過長</div>
-              <div class="hr"></div>
-              <div class="small">&gt; 94 潛力優良｜83～94 通過｜62 以上、未滿 83 有疑慮｜&lt; 62 不通過</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div></div>
-      <div class="stage-cap" style="margin-top:22px">畫面 A-2：按「建立新版本」後的確認，寫明生效範圍</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬・管理驗收時程、標準，以及初驗與總驗的教案、分配和結果。</div></div></div>
-        <div class="tabs"><span>驗收時程</span><span class="on">驗收標準</span><span>初驗</span><span>總驗</span></div>
-        <div class="row" style="gap:16px;margin-bottom:12px"><span class="link">初驗標準</span><span class="muted">總驗標準</span><span class="muted small" style="margin-left:auto">編輯中：初驗標準 v2（以 v1 為基礎）</span></div>
-        <div style="display:grid;grid-template-columns:1.25fr .75fr;gap:14px">
-          <div class="card">
-            <div class="fgrid" style="grid-template-columns:repeat(4,1fr)">
-              <div><span class="flabel">底分</span><span class="ctl full">100</span></div>
-              <div><span class="flabel">潛力優良（&gt;）</span><span class="ctl full">94</span></div>
-              <div><span class="flabel">通過（≥）</span><span class="ctl full">83</span></div>
-              <div><span class="flabel">需討論（≥）</span><span class="ctl full">62</span></div>
-            </div>
-            <div class="hr"></div>
-            <div class="tbl"><table><thead><tr><th style="width:120px">類別</th><th>檢核項目</th><th style="width:80px">扣分</th><th style="width:50px"></th></tr></thead><tbody>
-              <tr><td>基本格式</td><td>檔名、字體、字型是否符合要求</td><td>1</td><td class="muted small">移除</td></tr>
-              <tr class="hl"><td>時間安排</td><td><span class="ctl full">各流程時間是否合理，並預留轉場時間</span></td><td>1.5</td><td class="muted small">移除</td></tr>
-              <tr><td>完整度</td><td>各知識點是否有清楚說明</td><td>2</td><td class="muted small">移除</td></tr>
-            </tbody></table></div>
-            <div class="row between" style="margin-top:12px"><span class="btn sm">＋ 新增項目</span><span class="btn primary">建立新版本</span></div>
-          </div>
-          <div class="card" style="background:var(--b100)">
-            <div class="ct">驗收者會看到（預覽）</div>
-            <div class="cd">初驗表單・試算從 100 分開始扣</div>
-            <div class="stack" style="margin-top:10px">
-              <div class="row between"><span class="small">時間安排（每項 −1.5）</span><span class="muted small">5 項</span></div>
-              <div class="small"><span class="box"></span> 各流程時間是否合理，並預留轉場時間</div>
-              <div class="small"><span class="box"></span> 時間切割是否過長</div>
-              <div class="hr"></div>
-              <div class="small">&gt; 94 潛力優良｜83～94 通過｜62 以上、未滿 83 有疑慮｜&lt; 62 不通過</div>
-            </div>
-          </div>
-        </div>
-        <div class="scrim">
-          <div class="dialog sm">
-            <div class="dh"><div><small>初驗標準</small><b>建立 v2 並啟用？</b></div><span class="x">×</span></div>
-            <div class="db">
-              <div class="tbl"><table><tbody>
-                <tr><td class="muted">已分配的 6 份任務</td><td>維持 v1</td></tr>
-                <tr><td class="muted">之後新分配的任務</td><td><b>使用 v2</b></td></tr>
-                <tr><td class="muted">變更</td><td>底分 32 → 100；門檻 30／25／20 → 94／83／62；改寫 1 項</td></tr>
-              </tbody></table></div>
-              <div style="margin-top:12px"><span class="check"><span class="box"></span>已分配的 6 份也改用 v2</span><div class="muted small" style="margin:6px 0 0 22px">預設不勾：既有任務維持 v1。若勾選，已提交的 2 份要不要重新計分還沒決定（待決定）。</div></div>
-            </div>
-            <div class="df"><span class="btn">取消</span><span class="btn primary">建立並啟用 v2</span></div>
-          </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>主畫面是標準的清單表格（類別、檢核項目、扣分、目前版本），點某一項從右側打開抽屜編輯該項的文字與扣分；排序和新增留在清單上。底分與門檻放在清單上方的設定列，同樣在抽屜裡編輯。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>項目很多時掃讀最快</li><li>一次只改一項，不容易改錯別的</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>要大改整段文字時，一項一項開很慢</li><li>多次修改要累積成一個新版本，存檔時機要設計</li></ul></div>
-    </div>
-    <div class="verdict">如果每學期只會微調少數幾項，B 的逐項編輯最清楚。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="tabs"><span>驗收時程</span><span class="on">驗收標準</span><span>初驗</span><span>總驗</span></div>
-        <div class="bulk"><span><b>初驗標準 v1</b>　底分 32・門檻 30／25／20</span><span class="row"><span class="btn sm">編輯底分與門檻</span><span class="btn primary sm">建立新版本（1 項修改）</span></span></div>
-        <div class="tbl"><table><thead><tr><th>類別</th><th>檢核項目</th><th>扣分</th><th></th></tr></thead><tbody>
-          <tr><td>基本格式</td><td>檔名、字體、字型是否符合要求</td><td>1</td><td></td></tr>
-          <tr class="sel"><td>時間安排</td><td>內容佔比（知識傳遞／手作、活動的時間分配）</td><td>1.5</td><td><span class="chip active">已修改</span></td></tr>
-          <tr><td>時間安排</td><td>時間切割是否過長</td><td>1.5</td><td></td></tr>
-          <tr><td>完整度</td><td>各知識點是否有清楚說明</td><td>2</td><td></td></tr>
-        </tbody></table></div>
-        <div class="drawer">
-          <div class="dh"><div><small>初驗標準・時間安排</small><b>編輯檢核項目</b></div><span style="font-size:22px;color:var(--b500)">×</span></div>
-          <div class="db stack">
-            <div><span class="flabel">類別</span><span class="ctl sel full">時間安排</span></div>
-            <div><span class="flabel">檢核項目</span><div class="ctl full" style="display:block;min-height:64px">各流程時間是否合理，並預留轉場時間</div></div>
-            <div><span class="flabel">扣分</span><div class="pills"><span class="pill">1</span><span class="pill on">1.5</span><span class="pill">2</span></div></div>
-          </div>
-          <div class="df"><span class="btn danger">移除此項</span><span class="btn primary">暫存修改</span></div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>分成「目前使用」與「編輯中的草稿」兩個狀態。草稿可以手動編輯，也可以由「匯入企劃書」自動產生（nice-to-have）；發布前列出和目前版本的差異（新增、刪除、修改的項目與門檻），確認後才成為新版本。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>改了什麼、何時生效最清楚，方便追溯</li><li>可以直接接上企劃書匯入：匯入只產生草稿，不會直接生效</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>需要草稿與發布機制，超出單純的編輯功能</li><li>Milestone 1 可能用不到這麼完整</li></ul></div>
-    </div>
-    <div class="verdict">如果之後一定會做「匯入企劃書」，C 的草稿＋差異確認是最穩的底子；只想修好現有編輯，A 就夠了。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬</div></div><div class="acts"><span class="btn">匯入企劃書（草稿）</span><span class="btn primary">發布草稿</span></div></div>
-        <div class="tabs"><span>驗收時程</span><span class="on">驗收標準</span><span>初驗</span><span>總驗</span></div>
-        <div class="seg" style="margin-bottom:14px"><span>目前使用：v1</span><span class="on">編輯中的草稿</span></div>
-        <div class="scrim">
-          <div class="dialog md">
-            <div class="dh"><div><small>初驗標準</small><b>發布草稿為 v2：確認差異</b></div><span class="x">×</span></div>
-            <div class="db">
-              <div class="banner info" style="margin-top:0"><b>草稿來源：教案組企劃書_27冬.pdf（自動解析）</b><p>請逐項確認；有疑問的項目可以先在草稿裡修改。</p></div>
-              <div class="tbl"><table><thead><tr><th style="width:90px">變更</th><th>項目</th><th>內容</th></tr></thead><tbody>
-                <tr><td><span class="chip done">新增</span></td><td>完整度</td><td>是否附上學習單與答案（−2）</td></tr>
-                <tr><td><span class="chip active">修改</span></td><td>時間安排</td><td class="diff"><s>內容佔比</s> → <b>各流程時間是否合理，並預留轉場時間</b></td></tr>
-                <tr><td><span class="chip alert">刪除</span></td><td>基本格式</td><td>附錄、參考資料完整性</td></tr>
-                <tr><td><span class="chip active">修改</span></td><td>門檻</td><td class="diff"><s>30／25／20</s> → <b>94／83／62</b>（底分 100）</td></tr>
-              </tbody></table></div>
-              <p class="muted small" style="margin:10px 0 0">已分配的 6 份任務維持 v1；之後新分配的任務使用 v2。</p>
-            </div>
-            <div class="df"><span class="btn">回到草稿</span><span class="btn primary">發布 v2</span></div>
-          </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
+  </div></div>
   <div class="pager"><a href="s11_schedule.html">← S11 編輯本期時程</a><a href="index.html">回到總覽 →</a></div>
 </div>
+<dialog class="dialog confirm-dialog" id="change-dialog" aria-labelledby="change-title">
+  <div class="dh"><div><small id="change-context"></small><b id="change-title">確認變更並採用新版本</b></div><button type="button" id="close-confirm" aria-label="關閉變更確認">×</button></div>
+  <div class="db"><p class="source-note" id="change-source"></p>
+    <section id="score-changes-section"><h3>計分設定變更</h3><div class="tbl rubric-table change-table" id="score-changes"></div></section>
+    <section style="margin-top:18px"><h3>檢核項目變更</h3><div class="tbl rubric-table change-table" id="item-changes"></div></section>
+    <section style="margin-top:18px"><h3>生效範圍</h3><div class="impact-grid"><div><b>已分配 6 份・維持原版</b><p id="existing-impact"></p></div><div class="next"><b>之後新分配・採用新版</b><p id="new-impact"></p></div></div><p class="small muted">既有任務的評分與已提交結果保留，不會因本次採用重新計分。</p></section>
+    <label class="check-label"><input id="confirm-checked" type="checkbox"><span>我已核對變更內容，並確認新版本僅用於之後新分配的任務。</span></label>
+  </div>
+  <div class="df"><button class="btn" type="button" id="back-to-draft">返回草稿</button><button class="btn primary" type="button" id="activate-version" disabled>確認採用</button></div>
+</dialog>
 <script>
-// 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
 (function () {
   const PEOPLE = {
     leader: { name: '組長阿凱', mail: 'demo-leader@tutoref.tw', av: '組' },
@@ -498,21 +449,176 @@ a { color: var(--p900); }
     sb.innerHTML = html;
   });
 
-  const tabs = Array.from(document.querySelectorAll('.opt-tab'));
-  const opts = Array.from(document.querySelectorAll('.opt'));
-  if (!tabs.length) return;
-  function show(key) {
-    tabs.forEach((t) => t.classList.toggle('on', t.dataset.opt === key));
-    opts.forEach((o) => o.classList.toggle('on', o.dataset.opt === key));
+})();
+
+(() => {
+  const $ = id => document.getElementById(id);
+  const clone = value => JSON.parse(JSON.stringify(value));
+  const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const roundLabel = () => round === 'initial' ? '初驗' : '總驗';
+  const initialItems = [
+    { id: 1, category: '基本格式', label: '檔名、字體、字型是否符合要求', deduction: 1 },
+    { id: 2, category: '時間安排', label: '各流程時間是否合理', deduction: 1.5 },
+    { id: 3, category: '完整度', label: '各知識點是否有清楚說明', deduction: 2 }
+  ];
+  const finalItems = [
+    { id: 1, category: '教案紙', label: '已依初驗回饋完成修正', deduction: 0 },
+    { id: 2, category: '教案紙', label: '各流程時間與教學目標相符', deduction: 0 },
+    { id: 3, category: '投影片', label: '內容與教案紙相符，文字與圖像清楚', deduction: 0 }
+  ];
+  const initialVersion = (kind) => ({ version: 1, name: `27 冬${kind === 'initial' ? '初驗' : '總驗'}評分標準`, source: '人工編輯', adopted: '2027/01/03 20:00', scoring: { base: 32, excellent: 30, pass: 25, discussion: 20 }, items: clone(kind === 'initial' ? initialItems : finalItems) });
+  const current = { initial: initialVersion('initial'), final: initialVersion('final') };
+  const drafts = { initial: null, final: null };
+  const imports = { initial: { file: '', parsed: false, reviewed: false }, final: { file: '', parsed: false, reviewed: false } };
+  const params = new URLSearchParams(location.search);
+  let round = params.get('round') === 'final' ? 'final' : 'initial';
+  let view = ['manual', 'import'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'current';
+  let nextItemId = 10;
+  let previewOnly = false;
+  let demoDraft = null;
+  function draft() {
+    if (!drafts[round]) drafts[round] = { ...clone(current[round]), name: `${current[round].name} v${current[round].version + 1}`, source: '人工編輯' };
+    return drafts[round];
   }
-  tabs.forEach((t) =>
-    t.addEventListener('click', () => {
-      show(t.dataset.opt);
-      history.replaceState(null, '', '#' + t.dataset.opt);
-    })
-  );
-  const fromHash = location.hash.replace('#', '').toUpperCase();
-  show(tabs.some((t) => t.dataset.opt === fromHash) ? fromHash : tabs[0].dataset.opt);
+  function scoringBoxes(s) {
+    return `<div class="score-grid">${[[`> ${s.excellent}`, '潛力優良'],[`${s.pass}～${s.excellent}`, '通過（含兩端）'],[`≥ ${s.discussion}、< ${s.pass}`, '需討論'],[`< ${s.discussion}`, '不通過']].map(([range, name]) => `<div class="score-box"><b>${range}</b><small>${name}</small></div>`).join('')}</div>`;
+  }
+  function readonlyItems(items) {
+    return `<div class="tbl rubric-table"><table><thead><tr><th scope="col" style="width:110px">${round === 'initial' ? '類別' : '判定對象'}</th><th scope="col">檢核項目</th>${round === 'initial' ? '<th scope="col" style="width:110px">未達標扣分</th>' : ''}</tr></thead><tbody>${items.map(item => `<tr><td>${esc(item.category)}</td><td>${esc(item.label)}</td>${round === 'initial' ? `<td>−${item.deduction} 分</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+  }
+  function renderCurrent() {
+    const c = current[round];
+    $('current-content').innerHTML = `<div class="card version-card"><div class="row between"><div><b class="ct">${esc(c.name)}</b> <span class="chip active">v${c.version}</span></div><span class="muted small">${c.items.length} 項檢核</span></div><div class="meta-grid"><div><small>適用輪次</small><b>${roundLabel()}</b></div><div><small>制定方式</small><b>${esc(c.source)}</b></div><div><small>採用時間</small><b>${esc(c.adopted)}</b></div><div><small>採用者</small><b>組長阿凱</b></div></div></div><div class="card"><div class="ct">${round === 'initial' ? '計分方式與結果門檻' : '總驗判定方式'}</div>${round === 'initial' ? `<p class="formula">評分 = 底分 <b>${c.scoring.base}</b> − 各未達標項目的扣分加總</p>${scoringBoxes(c.scoring)}` : '<p class="small muted">教案紙與投影片各自判定「通過／未通過」；未通過需填寫理由。投影片未附時顯示「未附（選填）」，不視為缺附件。</p>'}</div><div class="card"><div class="ct" style="margin-bottom:12px">完整檢核標準</div>${readonlyItems(c.items)}</div><div class="banner locked" style="margin-top:14px"><b>任務使用分配當下的版本</b><p>本頁顯示新分配任務採用的 v${c.version}；已分配任務保留各自版本，可於任務詳情確認。</p></div>`;
+  }
+  function renderEditor() {
+    const d = draft();
+    $('manual-title').textContent = d.source === '人工編輯' ? '人工編輯評分標準' : '匯入草稿・檢查與修正';
+    $('draft-version').textContent = `${roundLabel()}・草稿 v${current[round].version + 1}，以目前 v${current[round].version} 為基礎`;
+    $('draft-source').textContent = `草稿來源：${d.source}。尚未採用，不會影響本期評分。`;
+    $('draft-name').value = d.name;
+    [['base-score','base'],['excellent-score','excellent'],['pass-score','pass'],['discussion-score','discussion']].forEach(([id,key]) => $(id).value = d.scoring[key]);
+    $('score-inputs').hidden = round !== 'initial';
+    $('final-rule').hidden = round === 'initial';
+    $('score-error').textContent = '';
+    $('item-error').textContent = '';
+    $('item-editor').innerHTML = `<div class="tbl rubric-table"><table><thead><tr><th scope="col" style="width:105px">${round === 'initial' ? '類別' : '判定對象'}</th><th scope="col">檢核項目</th>${round === 'initial' ? '<th scope="col" style="width:80px">扣分</th>' : ''}<th scope="col" style="width:64px">操作</th></tr></thead><tbody>${d.items.map((item, index) => `<tr data-index="${index}"><td>${round === 'initial' ? `<input class="ctl" data-field="category" aria-label="第 ${index+1} 項類別" value="${esc(item.category)}">` : `<select class="ctl" data-field="category" aria-label="第 ${index+1} 項判定對象"><option ${item.category === '教案紙' ? 'selected' : ''}>教案紙</option><option ${item.category === '投影片' ? 'selected' : ''}>投影片</option></select>`}</td><td><textarea class="ctl" rows="2" data-field="label" aria-label="第 ${index+1} 項檢核內容" >${esc(item.label)}</textarea></td>${round === 'initial' ? `<td><input class="ctl" type="number" min="0" step="0.5" data-field="deduction" aria-label="第 ${index+1} 項扣分" value="${item.deduction}"></td>` : ''}<td><button type="button" class="btn danger sm" data-remove="${index}" aria-label="移除第 ${index+1} 項">移除</button></td></tr>`).join('')}</tbody></table></div>`;
+    renderPreview();
+  }
+  function renderPreview() {
+    const d = draft();
+    $('live-preview').innerHTML = (round === 'initial' ? `<p>底分 <b>${d.scoring.base ?? '—'}</b>，依未達標項目扣分。</p><p>潛力優良 > ${d.scoring.excellent ?? '—'}<br>通過 ≥ ${d.scoring.pass ?? '—'}<br>需討論 ≥ ${d.scoring.discussion ?? '—'}</p>` : '<p>教案紙／投影片分別判定通過；不通過時填寫理由。</p>') + `<ul>${d.items.map(item => `<li>${esc(item.category || '未分類')}：${esc(item.label || '尚未填寫')}${round === 'initial' ? `（−${item.deduction ?? '—'}）` : ''}</li>`).join('')}</ul>`;
+  }
+  function renderImport() {
+    const data = imports[round];
+    $('selected-file').textContent = data.file || '尚未選擇企劃書';
+    $('parse-file').disabled = !data.file;
+    $('parse-failure').disabled = !data.file;
+    $('parse-result').hidden = !data.parsed;
+    $('review-import').checked = data.reviewed;
+    $('load-import').disabled = !data.parsed || !data.reviewed;
+    $('parse-step').classList.toggle('on', data.parsed);
+    $('review-step').classList.toggle('on', data.reviewed);
+    if (!data.parsed) return;
+    $('parsed-source').textContent = `來源：${data.file}・${roundLabel()}標準・示意解析結果`;
+    const fields = round === 'initial' ? [['底分','100','第 6 頁'],['潛力優良／通過／需討論','94／83／62','第 6 頁'],['基本格式／完整度','3 項檢核，含扣分值','第 6～7 頁']] : [['判定方式','教案紙與投影片分開判斷','第 8 頁'],['判定對象與檢核項目','3 項檢核，不採扣分制','第 8～9 頁']];
+    $('parse-mapping').innerHTML = `<div class="tbl rubric-table"><table><thead><tr><th scope="col">系統欄位</th><th scope="col">解析內容</th><th scope="col">文件出處</th><th scope="col">檢查狀態</th></tr></thead><tbody>${fields.map(([a,b,c]) => `<tr><td>${a}</td><td>${b}</td><td>${c}</td><td><span class="chip done">已對應</span></td></tr>`).join('')}<tr><td>時間安排・檢核條文</td><td>各流程時間是否合理，並預留轉場時間</td><td>第 ${round === 'initial' ? '7' : '8'} 頁</td><td><span class="chip alert">待確認</span></td></tr></tbody></table></div>`;
+  }
+  function show(next) {
+    view = next;
+    $('rubric-status').textContent = '';
+    ['current','manual','import'].forEach(key => $(`${key}-view`).hidden = view !== key);
+    document.querySelectorAll('[data-round]').forEach(btn => { const on = btn.dataset.round === round; btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on)); });
+    if (view === 'current') renderCurrent();
+    if (view === 'manual') renderEditor();
+    if (view === 'import') renderImport();
+    const url = new URL(location.href);
+    url.searchParams.set('round', round); url.hash = view;
+    history.replaceState(null, '', url);
+  }
+  function validate() {
+    const d = draft();
+    let scoreError = !d.name.trim() ? '請填寫版本名稱。' : '';
+    if (round === 'initial') {
+      const s = d.scoring;
+      if (Object.values(s).some(n => n === null || !Number.isFinite(n) || n < 0)) scoreError = '底分與門檻皆須填入大於或等於 0 的數字。';
+      else if (!(s.base > s.excellent && s.excellent >= s.pass && s.pass > s.discussion)) scoreError = '請確認：底分 > 潛力優良門檻 ≥ 通過門檻 > 需討論門檻。';
+    }
+    const itemError = !d.items.length ? '請至少保留一項檢核項目。' : d.items.some(item => !item.category.trim() || !item.label.trim() || round === 'initial' && (item.deduction === null || !Number.isFinite(item.deduction) || item.deduction <= 0)) ? '每項皆須填寫類別、內容；初驗扣分須大於 0。' : '';
+    $('score-error').textContent = scoreError;
+    $('item-error').textContent = itemError;
+    if (scoreError) $('score-error').scrollIntoView({block: 'center'});
+    else if (itemError) $('item-error').scrollIntoView({block: 'center'});
+    return !scoreError && !itemError;
+  }
+  function changeRow(name, before, after) { return `<tr><td>${esc(name)}</td><td class="before">${esc(before)}</td><td class="after">${esc(after)}</td></tr>`; }
+  function changeTable(rows) { return `<table><thead><tr><th scope="col">項目</th><th scope="col">變更前</th><th scope="col">變更後</th></tr></thead><tbody>${rows.join('') || '<tr><td colspan="3" class="muted">本區無變更</td></tr>'}</tbody></table>`; }
+  function openConfirm(d, onlyPreview = false) {
+    previewOnly = onlyPreview;
+    const c = current[round];
+    const nextVersion = c.version + 1;
+    $('change-context').textContent = `畫面 A-2・27 冬・${roundLabel()}標準・v${c.version} → v${nextVersion}${onlyPreview ? '（版面示意）' : ''}`;
+    $('change-source').textContent = `新版名稱：${d.name}｜制定方式：${d.source}`;
+    $('score-changes-section').hidden = round !== 'initial';
+    $('score-changes').innerHTML = changeTable([['base','底分'],['excellent','潛力優良（>）'],['pass','通過（≥）'],['discussion','需討論（≥）']].filter(([key]) => c.scoring[key] !== d.scoring[key]).map(([key,label]) => changeRow(label,c.scoring[key],d.scoring[key])));
+    const changes = [];
+    for (const item of d.items) {
+      const prev = c.items.find(p => p.id === item.id);
+      const description = i => `${i.category}｜${i.label}${round === 'initial' ? `（扣 ${i.deduction} 分）` : ''}`;
+      if (!prev) changes.push(changeRow('新增檢核項目','—',description(item)));
+      else if (description(prev) !== description(item)) changes.push(changeRow('修改檢核項目',description(prev),description(item)));
+    }
+    for (const item of c.items) if (!d.items.some(i => i.id === item.id)) changes.push(changeRow('移除檢核項目',`${item.category}｜${item.label}`,'移除'));
+    $('item-changes').innerHTML = changeTable(changes);
+    $('existing-impact').textContent = `維持 v${c.version}：2 份已提交、4 份待驗收，不受本次變更影響。`;
+    $('new-impact').textContent = `採用後新分配的${roundLabel()}任務使用 v${nextVersion}；其他輪次不受影響。`;
+    $('confirm-checked').checked = false;
+    $('activate-version').disabled = true;
+    $('activate-version').textContent = onlyPreview ? '版面預覽・請返回草稿' : `確認採用 v${nextVersion}`;
+    $('change-dialog').showModal();
+  }
+  document.querySelectorAll('[data-open], [data-view]').forEach(btn => btn.addEventListener('click', e => { e.preventDefault(); show(btn.dataset.open || btn.dataset.view); }));
+  document.querySelectorAll('[data-round]').forEach(btn => btn.addEventListener('click', () => { round = btn.dataset.round; $('proposal-file').value = ''; $('parse-error').textContent = ''; show(view); }));
+  $('draft-name').addEventListener('input', e => { draft().name = e.target.value; });
+  [['base-score','base'],['excellent-score','excellent'],['pass-score','pass'],['discussion-score','discussion']].forEach(([id,key]) => $(id).addEventListener('input', e => { draft().scoring[key] = e.target.value === '' ? null : Number(e.target.value); renderPreview(); }));
+  $('item-editor').addEventListener('input', e => {
+    const key = e.target.dataset.field;
+    if (!key) return;
+    draft().items[Number(e.target.closest('tr').dataset.index)][key] = key === 'deduction' ? e.target.value === '' ? null : Number(e.target.value) : e.target.value;
+    renderPreview();
+  });
+  $('item-editor').addEventListener('click', e => { const btn = e.target.closest('[data-remove]'); if (btn) { draft().items.splice(Number(btn.dataset.remove),1); renderEditor(); } });
+  $('add-item').addEventListener('click', () => { draft().items.push({id:nextItemId++,category:round === 'initial' ? '' : '教案紙',label:'',deduction:1}); renderEditor(); $('item-editor').querySelector('tbody tr:last-child [data-field="label"]').focus(); });
+  $('editor-form').addEventListener('submit', e => { e.preventDefault(); if (validate()) openConfirm(draft()); });
+  function selectFile(name) { imports[round] = { file:name,parsed:false,reviewed:false }; $('parse-error').textContent = ''; renderImport(); }
+  $('proposal-file').addEventListener('change', e => { const file = e.target.files[0]; if (!file) return; if (!/\.(pdf|docx)$/i.test(file.name)) { selectFile(''); $('parse-error').textContent = '請選擇 PDF 或 DOCX 企劃書。'; return; } selectFile(file.name); });
+  $('demo-file').addEventListener('click', () => { $('proposal-file').value = ''; selectFile('教案組企劃書_27冬.pdf'); });
+  $('parse-file').addEventListener('click', () => { if (!imports[round].file) return; imports[round].parsed = true; imports[round].reviewed = false; $('parse-error').textContent = ''; renderImport(); });
+  $('parse-failure').addEventListener('click', () => { imports[round].parsed = false; imports[round].reviewed = false; renderImport(); $('parse-error').textContent = '解析失敗：無法辨識評分標準段落。請重新選檔、重試，或改用人工編輯；目前採用標準不受影響。'; });
+  $('review-import').addEventListener('change', e => { imports[round].reviewed = e.target.checked; renderImport(); });
+  $('load-import').addEventListener('click', () => {
+    const data = imports[round]; if (!data.parsed || !data.reviewed) return;
+    const d = clone(current[round]); d.name = `27 冬${roundLabel()}評分標準（企劃書匯入）`; d.source = `企劃書匯入：${data.file}`;
+    if (round === 'initial') d.scoring = {base:100,excellent:94,pass:83,discussion:62};
+    d.items[1].label = '各流程時間是否合理，並預留轉場時間';
+    drafts[round] = d; show('manual');
+  });
+  $('preview-confirm').addEventListener('click', () => {
+    demoDraft = clone(current[round]); demoDraft.name = `27 冬${roundLabel()}評分標準 v${current[round].version+1}`;
+    if (round === 'initial') demoDraft.scoring = {base:100,excellent:94,pass:83,discussion:62};
+    demoDraft.items[1].label = '各流程時間是否合理，並預留轉場時間';
+    openConfirm(demoDraft, true);
+  });
+  $('confirm-checked').addEventListener('change', e => { $('activate-version').disabled = previewOnly || !e.target.checked; });
+  $('close-confirm').addEventListener('click', () => $('change-dialog').close());
+  $('back-to-draft').addEventListener('click', () => { $('change-dialog').close(); if (previewOnly && !drafts[round]) drafts[round] = clone(demoDraft); show('manual'); });
+  $('activate-version').addEventListener('click', () => {
+    if (previewOnly || !$('confirm-checked').checked || !validate()) return;
+    const d = clone(draft()); d.version = current[round].version + 1; d.adopted = '本次操作（原型示意）';
+    current[round] = d; drafts[round] = null;
+    $('change-dialog').close(); show('current');
+    $('rubric-status').textContent = `已在原型採用${roundLabel()}標準 v${d.version}；正式資料未變更。`;
+  });
+  show(view);
 })();
 
 </script>

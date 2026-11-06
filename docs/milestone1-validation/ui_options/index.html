@@ -256,12 +256,12 @@ a { color: var(--p900); }
 <div class="doc">
   <div class="crumb">Tutoref ／ Milestone 1 流程驗證</div>
   <h1>Milestone 1｜UI 方案總覽</h1>
-  <p class="lead">針對 User Story 裡提到 UI 修改或優化的情境，每個情境提供 A／B／C 三種方案，版面與色票參照正式站（左側浮動側欄、Noto Sans TC、<code>globals.css</code> 色票、StatusChip、Dialog／Drawer 的正式尺寸、BulkActionBar）。原型裡的人名、教案名稱都是示意資料。</p>
+  <p class="lead">針對 User Story 裡提到 UI 修改或優化的情境，各情境呈現候選或已選定的方案，版面與色票參照正式站（左側浮動側欄、Noto Sans TC、<code>globals.css</code> 色票、StatusChip、Dialog／Drawer 的正式尺寸、BulkActionBar）。原型裡的人名、教案名稱都是示意資料。</p>
 
   <div class="panel">
     <h2>怎麼看、怎麼回覆</h2>
     <p>點下表的情境進入該頁，頁首有情境說明、目前遇到的問題（<span class="issue-ref">C-xx</span>、<span class="issue-ref">#xx</span> 是測試報告與總結中的問題編號），切換 A／B／C 看每個方案的版面、優缺點與原型畫面。挑好後直接回覆這樣的格式即可：</p>
-    <div class="decide" style="font-family:ui-monospace,Menlo,monospace">S1=?　S2=?　S3=?　S4=?　S5=?　S6=?　S7=?　S8=?　S9=?　S10=?　S11=?　S12=?</div>
+    <div class="decide" style="font-family:ui-monospace,Menlo,monospace">S1=?　S2=?　S3=A　S4=A　S5=C　S6=A+C　S7=A　S8=A　S9=A　S10=A　S11=A　S12=A（雙入口）</div>
     <p class="muted small" style="margin-top:8px">S1～S12 都經過 Codex 審查（S1～S10 在第二、三輪，S11、S12 在第三輪），推薦都是 A；第三輪指出的缺口已補上，這最後一批修改 Codex 沒有再看過。標 <span class="variant">變體</span> 的方案和原本的方案文件不完全一樣，標「假設」的是還沒決定的規則。</p>
   </div>
 
@@ -270,16 +270,16 @@ a { color: var(--p900); }
     <tbody>
       <tr><td><b>S1</b></td><td><a class="link" href="s1_new_term.html">開始新的一期</a></td><td>US-01、W1</td><td>沒有入口；先啟用再複製角色時組長會被鎖在外面</td><td><span class="chip active">A 兩步驟彈窗</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
       <tr><td><b>S2</b></td><td><a class="link" href="s2_member_list.html">成員搜尋與篩選</a></td><td>US-03、US-05</td><td>沒有期別／角色篩選、沒有帳號狀態欄</td><td><span class="chip active">A 固定篩選列</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S3</b></td><td><a class="link" href="s3_member_detail.html">成員資訊、歷史與單人編輯</a></td><td>US-04、US-05</td><td>點列沒反應、沒有歷史；改家別角色不跟著搬</td><td><span class="chip active">A 資訊彈窗＋同窗編輯</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S4</b></td><td><a class="link" href="s4_batch_edit.html">批量編輯</a></td><td>US-05</td><td>只能單選家別、只能新增一個角色</td><td><span class="chip active">A 彈窗＋變更摘要</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S5</b></td><td><a class="link" href="s5_add_member.html">新增成員與帳號認領</a></td><td>US-02</td><td>新帳號沒有通知與認領路徑</td><td><span class="chip active">A 單人新增＋認領路徑</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S6</b></td><td><a class="link" href="s6_family_plans.html">家內教案（三種角色共用）</a></td><td>US-09、US-11、W5</td><td>撰寫者、驗收者會被轉走；沒有附件連結</td><td><span class="chip active">A 完整欄位表格</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S7</b></td><td><a class="link" href="s7_missing.html">以教案為單位登記缺交</a></td><td>US-10、W6</td><td>欄位不符、重新整理就消失</td><td><span class="chip active">A 表格＋單筆彈窗</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S8</b></td><td><a class="link" href="s8_submit.html">送出初驗與鎖定</a></td><td>US-11、W7</td><td>附件失敗仍可送出；送出後仍可改</td><td><span class="chip active">A 摘要列＋確認彈窗</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S9</b></td><td><a class="link" href="s9_upload.html">上傳待驗收教案＋已歸檔教案</a></td><td>US-12、W4</td><td>入口不在家內教案；單一上傳區；沒改名</td><td><span class="chip active">A 三步驟上傳頁</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S10</b></td><td><a class="link" href="s10_leader_check.html">組長檢查送件與缺交</a></td><td>US-08、W8</td><td>沒有附件連結；缺交只有份數</td><td><span class="chip active">A 進度表＋家別抽屜</span></td><td><span class="chip locked">A（審查後）</span></td></tr>
-      <tr><td><b>S11</b></td><td><a class="link" href="s11_schedule.html">編輯本期時程</a></td><td>US-06、W3</td><td>截止日期先後順序沒有檢查</td><td><span class="chip active">A 表單＋時間線</span></td><td><span class="chip locked">A（第三輪）</span></td></tr>
-      <tr><td><b>S12</b></td><td><a class="link" href="s12_rubric.html">更新驗收標準</a></td><td>US-07、W3</td><td>另存新版會重設門檻；生效範圍不清楚</td><td><span class="chip active">A 編輯＋預覽＋生效範圍</span></td><td><span class="chip locked">A（第三輪）</span></td></tr>
+      <tr><td><b>S3</b></td><td><a class="link" href="s3_member_detail.html">成員資訊、歷史與單人編輯</a></td><td>US-04、US-05</td><td>點列沒反應、沒有歷史；改家別角色不跟著搬</td><td><span class="chip active">A 資訊彈窗＋同窗編輯（已選定）</span></td><td><span class="chip locked">A（已選定）</span></td></tr>
+      <tr><td><b>S4</b></td><td><a class="link" href="s4_batch_edit.html">批量編輯</a></td><td>US-05</td><td>只能單選家別、只能新增一個角色</td><td><span class="chip active">A 彈窗直接複選（已選定）</span></td><td><span class="chip locked">A（已選定）</span></td></tr>
+      <tr><td><b>S5</b></td><td><a class="link" href="s5_add_member.html">新增成員、通訊錄匯入與授權認領</a></td><td>US-02</td><td>成員名單需經角色指派與本人選擇帳號連結認領</td><td><span class="chip active">C 新增／匯入＋預覽＋授權（已選定）</span></td><td><span class="chip locked">C（已選定）</span></td></tr>
+      <tr><td><b>S6</b></td><td><a class="link" href="s6_family_plans.html">家內教案（依角色呈現）</a></td><td>US-09、US-11、W5</td><td>撰寫者、驗收者會被轉走；沒有附件連結</td><td><span class="chip active">A＋C 完整表格／階段分組（已選定）</span></td><td><span class="chip locked">A＋C（已選定）</span></td></tr>
+      <tr><td><b>S7</b></td><td><a class="link" href="s7_missing.html">以教案為單位登記缺交</a></td><td>US-10、W6</td><td>欄位不符、重新整理就消失</td><td><span class="chip active">A 表格＋單筆彈窗（已選定）</span></td><td><span class="chip locked">A（已選定）</span></td></tr>
+      <tr><td><b>S8</b></td><td><a class="link" href="s8_submit.html">送出初驗與鎖定</a></td><td>US-11、W7</td><td>附件失敗仍可送出；送出後仍可改</td><td><span class="chip active">A 摘要列＋確認彈窗（已選定）</span></td><td><span class="chip locked">A（已選定）</span></td></tr>
+      <tr><td><b>S9</b></td><td><a class="link" href="s9_upload.html">上傳待驗收教案＋已歸檔教案</a></td><td>US-12、W4</td><td>入口不在家內教案；單一上傳區；沒改名</td><td><span class="chip active">A 三步驟上傳頁（已選定）</span></td><td><span class="chip locked">A（已選定）</span></td></tr>
+      <tr><td><b>S10</b></td><td><a class="link" href="s10_leader_check.html">組長檢查送件與缺交</a></td><td>US-08、W8</td><td>沒有附件連結；缺交只有份數</td><td><span class="chip active">A 進度表＋家別抽屜（已選定）</span></td><td><span class="chip locked">A（已選定）</span></td></tr>
+      <tr><td><b>S11</b></td><td><a class="link" href="s11_schedule.html">編輯本期時程</a></td><td>US-06、W3</td><td>截止日期先後順序沒有檢查</td><td><span class="chip active">A 表單＋時間線（已選定）</span></td><td><span class="chip locked">A（已選定）</span></td></tr>
+      <tr><td><b>S12</b></td><td><a class="link" href="s12_rubric.html">制定與採用本期評分標準</a></td><td>US-07、W3</td><td>另存新版會重設門檻；生效範圍不清楚</td><td><span class="chip active">A 人工／匯入雙入口＋本期採用</span></td><td><span class="chip locked">A 延伸（雙入口）</span></td></tr>
     </tbody>
   </table></div>
 
@@ -290,7 +290,7 @@ a { color: var(--p900); }
         <li><b>投影片何時開放上傳</b>：US-12 說上傳時可附（選填），Workflow 4 說總驗才開放。原型採「初驗只有教案紙、總驗開放且選填」（S6、S7、S9）。</li>
         <li><b>舊期能不能改</b>：US-05 說可編輯各期家別與角色，Workflow 1 說舊期唯讀。原型採舊期唯讀（S3）。</li>
         <li><b>同一期能不能屬於兩家</b>：US-03 要求同期不同家分列，目前資料模型做不到，要改後端（S2、S3）。</li>
-        <li><b>帳號認領方式</b>：組長建帳號＋本人設定密碼，或本人註冊＋認領碼（S5）。</li>
+        <li><b>帳號認領方式</b>：已確定由組長先指派角色並寄送授權信，成員自行選擇帳號連結認領；組長不建立帳號（S5）。</li>
         <li><b>「撰寫者」以誰為準</b>：建議分兩欄，主欄放平台上的撰寫者帳號，另外顯示教案紙上的設計者（S6、S9）。</li>
         <li><b>開新期的風險文案</b>：原文「本期驗收資料將被清空」，實際是保留並轉唯讀（S1）。</li>
       </ul>
@@ -298,7 +298,7 @@ a { color: var(--p900); }
     <div class="panel">
       <h2>原型的限制</h2>
       <ul>
-        <li>是靜態示意圖：按鈕、連結不會動，也沒有鍵盤焦點與載入狀態的完整行為。</li>
+        <li>是 UI 原型：部分選項與 S5 的新增、預覽、指派及模擬寄信可操作；不會寫入正式資料、實際寄信或登入。S5 的 xlsx 使用內建示意資料。</li>
         <li>只畫了桌機寬度；手機版需要另外設計。</li>
         <li>分頁、輪次、篩選條件沿用 <code>tutoref/AGENTS.md</code>「狀態放網址」的規則，方便互相貼連結；原型沒有逐一畫出網址。</li>
         <li>新的狀態文字（待認領、已啟用、上傳失敗、缺交、總驗開放）目前不在 <code>StatusChip</code> 的對應表裡，實作時要補上對應或明確指定色調。</li>

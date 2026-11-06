@@ -250,18 +250,20 @@ a { color: var(--p900); }
 .legend li { display: flex; gap: 6px; align-items: center; }
 .legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
+button.pill { font-family: var(--font); cursor: pointer; }
+button.pill:focus-visible { outline: 2px solid var(--p900); outline-offset: 2px; }
 </style>
 </head>
 <body>
 <div class="doc">
   <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S4</div>
   <h1>S4｜批量編輯成員</h1>
-  <p class="lead">對應 US-05 批量編輯：本期家別、角色都可複選並直接覆蓋原本的值，沒動的欄位維持「不變更」。</p>
+  <p class="lead">對應 US-05 批量編輯：直接以橢圓選項呈現目前家別與角色，點擊即可複選或取消，儲存後套用至所選成員。</p>
 
   <div class="grid2">
     <div class="panel">
       <h2>情境</h2>
-      <p>帶入上一期名單後，組長勾選 3 位今年轉到電光的成員，一次把他們的本期家別改成電光、角色改成撰寫者；另外選 2 位退團的人，把本期角色清空。</p>
+      <p>匯入通訊錄並完成角色指派後，組長勾選 3 位電光家的撰寫者，批量調整家別或增加驗收者角色。開啟彈窗時，電光與撰寫者已呈亮色，直接點選其他橢圓選項即可調整。</p>
     </div>
     <div class="panel">
       <h2>目前遇到的問題</h2>
@@ -272,24 +274,22 @@ a { color: var(--p900); }
     </div>
   </div>
   <div class="panel">
-    <h2>三個方案共同的規則</h2>
-    <p>每個欄位都有三種狀態：<b>不變更</b>（預設）／<b>取代為</b>（選好的值會完整蓋掉原本的）／<b>清空</b>（只有角色有）。家別與家別角色（家長、撰寫者）同時取代時，代表「這些人在每個選定的家都擔任這些角色」；驗收者、教案組長是全期角色，另外設定，不會套到每一家。按下套用前一定先看到變更摘要，避免以為是「追加」。</p>
+    <h2>選取方式</h2>
+    <p>家別與系統角色直接複選：亮色代表已選，灰底代表未選，再點一次即可取消。所有系統角色放在同一列。此例所選 3 人目前都是電光家的撰寫者；批量成員屬性不同時，共同屬性顯示亮色，部分成員擁有的屬性以虛線標示「部分」，點擊可統一選取或取消。</p>
   </div>
 
   <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜彈窗＋變更摘要 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜批量列預覽 <span class="variant">變體</span></button>
-    <button class="opt-tab" data-opt="C">方案 C｜抽屜逐人前後對照</button>
+    <button class="opt-tab" data-opt="A">方案 A｜彈窗直接複選 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
   </div>
 
   <!-- ===================== A ===================== -->
   <section class="opt" data-opt="A">
     <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>勾選後出現批量列，按「批量編輯」開彈窗。家別、角色各有「不變更／取代為」兩種模式，選「取代為」才展開複選膠囊；角色多一個「清空本期角色」。下方即時顯示變更摘要（幾人會改成什麼），確認後套用。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>「不變更」和「清空」語意分得最清楚</li><li>沿用現有 Dialog＋BulkActionBar，改動小</li><li>摘要讓人在按下前就知道是覆蓋不是追加</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>多一層模式切換</li><li>看不到每個人改之前是什麼，只有總數</li></ul></div>
+      <div class="panel"><h3>版面與互動</h3><p>勾選成員後點「批量編輯」開啟一頁式彈窗，直接顯示本期家別與角色的橢圓選項。依目前屬性預先亮起，點擊切換選取；確認後直接儲存，不另設模式或摘要區。</p></div>
+      <div class="panel pros"><h3>優點</h3><ul><li>目前家別與角色一眼可見</li><li>直接點擊即可複選，操作與 S3 一致</li><li>單頁完成編輯，畫面簡潔</li></ul></div>
+      <div class="panel cons"><h3>注意事項</h3><ul><li>多人屬性不同時，以「部分」標示混合狀態</li><li>儲存會將點選的屬性調整套用至所選成員</li></ul></div>
     </div>
-    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A，並吸收 C 的「逐家受影響摘要」。</b>開期時的批量調整一次就改好幾個人，最怕誤把「覆蓋」當成「追加」；模式切換＋摘要最能防呆。</div>
+    <div class="verdict"><b>採用方案 A：彈窗直接複選。</b>家別與角色依目前狀態顯示亮色；所有系統角色在同一列點選。</div>
     <div class="stage"><div class="frame tall">
       <div class="sb" data-sb="leader" data-on="members"></div>
       <div class="main">
@@ -300,94 +300,14 @@ a { color: var(--p900); }
           <div class="dialog md">
             <div class="dh"><div><small>已選 3 筆身份／3 人：林小安、陳怡君、張家豪</small><b>批量編輯本期身份</b></div><span class="x">×</span></div>
             <div class="db">
-              <span class="flabel">本期家別</span>
-              <div><span class="radio"><i></i>不變更</span><span class="radio on"><i></i>取代為</span></div>
-              <div class="pills" style="margin:8px 0 0 22px"><span class="pill">加拿</span><span class="pill">初來</span><span class="pill">新武</span><span class="pill">霧鹿</span><span class="pill">利稻</span><span class="pill on">電光</span></div>
+              <span class="flabel">本期家別（可複選）</span>
+              <div class="pills"><button type="button" class="pill" aria-pressed="false">加拿</button><button type="button" class="pill" aria-pressed="false">初來</button><button type="button" class="pill" aria-pressed="false">新武</button><button type="button" class="pill" aria-pressed="false">霧鹿</button><button type="button" class="pill" aria-pressed="false">利稻</button><button type="button" class="pill on" aria-pressed="true">電光</button></div>
               <div class="hr"></div>
-              <span class="flabel">本期家別角色（家長、撰寫者，套用到每個選定的家）</span>
-              <div><span class="radio"><i></i>不變更</span><span class="radio on"><i></i>取代為</span><span class="radio"><i></i>清空本期角色</span></div>
-              <div class="pills" style="margin:8px 0 0 22px"><span class="pill on">撰寫者</span><span class="pill">家長</span></div>
-              <div class="hr"></div>
-              <span class="flabel">全期角色（驗收者、教案組長，不分家別）</span>
-              <div><span class="radio on"><i></i>不變更</span><span class="radio"><i></i>取代為</span></div>
-              <div class="banner active" style="margin:16px 0 0"><b>套用後（作用於所選帳號 27 冬的全部身份）</b><p>3 人的身份會<b>完整改成</b>「電光・撰寫者」。受影響：利稻 1 人（家長 → 撰寫者）、霧鹿 2 人（撰寫者，家別改電光）。已上傳的教案不受影響。</p></div>
-              <p class="muted small" style="margin:10px 0 0">規則：只改家別、角色選「不變更」時，原本的角色跟著搬到新家；「清空本期角色」會保留家別身份，但不能送件、驗收或被分配任務；兩個欄位都是「不變更」時無法套用。</p>
+              <span class="flabel">系統角色（可複選）</span>
+              <div class="pills"><button type="button" class="pill on" aria-pressed="true">撰寫者</button><button type="button" class="pill" aria-pressed="false">家長</button><button type="button" class="pill" aria-pressed="false">驗收者</button><button type="button" class="pill" aria-pressed="false">教案組長</button></div>
             </div>
-            <div class="df"><span class="btn">取消</span><span class="btn primary">套用到 3 位</span></div>
+            <div class="df"><span class="btn">取消</span><span class="btn primary">儲存到 3 位</span></div>
           </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動 <span class="variant">變體：原方案 B 是「可逐列編輯的表格＋統一儲存」，這裡只保留批量列＋預覽</span></h3><p>不開彈窗：勾選後批量列直接展開兩個下拉，各有「不變更／取代為（複選）」，角色多一個「清空本期角色」。一選好，表格裡被選到的列馬上用刪除線＋橘字預覽改前改後，確認無誤再按「套用」。預覽中改變勾選，預覽跟著更新；還沒套用就離開頁面會提醒。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>每個人改之前、改之後一目了然</li><li>不用離開表格，操作最少</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>預覽中的狀態容易和已儲存的資料混淆</li><li>要處理「預覽中離開頁面」的提醒</li></ul></div>
-    </div>
-    <div class="verdict">如果組長習慣在表格上直接看結果、選了就想立刻看到差異，B 最直覺；但「未套用」的狀態要做得很明顯。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="members"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="bulk" style="flex-wrap:wrap">
-          <span><b>已選 3 位</b>　批量設定：</span>
-          <span class="row">
-            <span class="ctl sel" style="min-height:34px;padding:5px 10px"><span class="muted small">家別</span>&nbsp;取代為 電光</span>
-            <span class="ctl sel" style="min-height:34px;padding:5px 10px"><span class="muted small">家別角色</span>&nbsp;取代為 撰寫者</span>
-            <span class="ctl sel" style="min-height:34px;padding:5px 10px"><span class="muted small">全期角色</span>&nbsp;不變更</span>
-            <span class="btn sm">取消</span><span class="btn primary sm">套用變更（3）</span>
-          </span>
-        </div>
-        <div class="banner active" style="padding:8px 14px"><p style="margin:0">預覽中，尚未儲存：<b>橘字</b>是套用後的值。</p></div>
-        <div class="tbl"><table>
-          <thead><tr><th class="cb"><span class="box mixed"></span></th><th>姓名</th><th>家別</th><th>角色</th><th>狀態</th></tr></thead>
-          <tbody>
-            <tr class="sel"><td class="cb"><span class="box on"></span></td><td><b>林小安</b></td><td class="diff"><s>利稻</s> → <b>電光</b></td><td class="diff"><s>家長</s> → <b>撰寫者</b></td><td><span class="chip done">已啟用</span></td></tr>
-            <tr class="sel"><td class="cb"><span class="box on"></span></td><td><b>陳怡君</b></td><td class="diff"><s>霧鹿</s> → <b>電光</b></td><td class="diff">撰寫者（不變）</td><td><span class="chip active">待認領</span></td></tr>
-            <tr class="sel"><td class="cb"><span class="box on"></span></td><td><b>張家豪</b></td><td class="diff"><s>霧鹿</s> → <b>電光</b></td><td class="diff">撰寫者（不變）</td><td><span class="chip done">已啟用</span></td></tr>
-            <tr><td class="cb"><span class="box"></span></td><td>電光家長</td><td>電光</td><td><span class="role">家長</span></td><td><span class="chip done">已啟用</span></td></tr>
-            <tr><td class="cb"><span class="box"></span></td><td>驗收者一</td><td>電光</td><td><span class="role">驗收者</span></td><td><span class="chip done">已啟用</span></td></tr>
-          </tbody>
-        </table></div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>批量列按「批量編輯」打開右側抽屜：上半部設定共同欄位（同 A 的不變更／取代為／清空本期角色，清空可在套用前復原），下半部逐人列出「原本 → 套用後」，每個人都能單獨取消勾選排除。若選 C，S3 的單人編輯也改用同一個抽屜。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>影響範圍最清楚，跨家成員不容易被改錯</li><li>可以臨時排除某一個人</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>步驟最多</li><li>選很多人時抽屜很長</li></ul></div>
-    </div>
-    <div class="verdict">如果常有「同一人同期在兩家」的情況，C 的逐人對照最不容易出錯。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="members"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph" style="padding-right:600px"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="bulk" style="width:470px"><span><b>已選 3 位</b></span><span class="btn primary sm">批量編輯</span></div>
-        <div class="drawer">
-          <div class="dh"><div><small>批量編輯・27 冬</small><b>3 位成員</b></div><span style="font-size:22px;color:var(--b500)">×</span></div>
-          <div class="db">
-            <div class="fgrid">
-              <div><span class="flabel">本期家別</span><span class="ctl sel full">取代為：電光</span></div>
-              <div><span class="flabel">本期家別角色</span><span class="ctl sel full">不變更</span></div>
-              <div class="span2"><span class="flabel">全期角色（驗收者、教案組長）</span><span class="ctl sel full">不變更</span></div>
-            </div>
-            <div class="hr"></div>
-            <span class="flabel">逐人確認（取消勾選＝這個人不套用）</span>
-            <div class="tbl"><table><thead><tr><th class="cb"></th><th>成員</th><th>原本</th><th>套用後</th></tr></thead><tbody>
-              <tr><td class="cb"><span class="box on"></span></td><td><b>林小安</b></td><td>利稻・家長</td><td class="diff"><b>電光</b>・家長</td></tr>
-              <tr><td class="cb"><span class="box on"></span></td><td><b>陳怡君</b></td><td>霧鹿・撰寫者<br>新武・家長</td><td class="diff"><b>電光</b>・撰寫者、家長<br><span class="alert-text small">兩家的角色合併到電光</span></td></tr>
-              <tr style="opacity:.5"><td class="cb"><span class="box"></span></td><td><b>張家豪</b></td><td>霧鹿・撰寫者</td><td class="muted">不套用</td></tr>
-            </tbody></table></div>
-          </div>
-          <div class="df"><span class="btn">取消</span><span class="btn primary">套用到 2 位</span></div>
         </div>
       </div>
     </div></div>
@@ -395,6 +315,18 @@ a { color: var(--p900); }
 
   <div class="pager"><a href="s3_member_detail.html">← S3 成員資訊與編輯</a><a href="s5_add_member.html">S5 新增成員與帳號認領 →</a></div>
 </div>
+<script>
+// 橢圓選項僅切換原型的選取外觀，不會寫入正式成員資料。
+(function () {
+  document.querySelectorAll('button.pill[aria-pressed]').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const selected = pill.getAttribute('aria-pressed') !== 'true';
+      pill.setAttribute('aria-pressed', String(selected));
+      pill.classList.toggle('on', selected);
+    });
+  });
+})();
+</script>
 <script>
 // 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
 (function () {

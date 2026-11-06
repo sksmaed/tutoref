@@ -273,7 +273,7 @@ a { color: var(--p900); }
     </div>
   </div>
   <div class="panel">
-    <h2>三個方案共同的規則</h2>
+    <h2>方案 A 的共用規則</h2>
     <ul>
       <li>時間一律標示台北時間；「未設定」和「還沒到」要分得出來。</li>
       <li>檢查順序：同一輪的送件截止不能晚於驗收截止；總驗送件截止不能早於初驗驗收截止。違反時在該欄位顯示錯誤，不能儲存。</li>
@@ -283,9 +283,7 @@ a { color: var(--p900); }
   </div>
 
   <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜時程表單＋摘要時間線 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 第三輪推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜輪次卡片＋小彈窗</button>
-    <button class="opt-tab" data-opt="C">方案 C｜月曆＋日期抽屜</button>
+    <button class="opt-tab" data-opt="A">方案 A｜時程表單＋摘要時間線 <span class="rec">已選定</span></button>
   </div>
 
   <!-- ===================== A ===================== -->
@@ -295,7 +293,7 @@ a { color: var(--p900); }
       <div class="panel pros"><h3>優點</h3><ul><li>一頁同時看得到全期順序與要改的欄位</li><li>錯誤就在欄位旁邊，不用猜哪裡錯</li><li>現有分頁加上檢查即可，改動小</li></ul></div>
       <div class="panel cons"><h3>缺點</h3><ul><li>日期欄位多，頁面較長</li></ul></div>
     </div>
-    <div class="verdict"><b>Claude 與 Codex（第三輪）都推薦 A。</b>最重要的是「改得了、順序對、改了立刻生效」；現有分頁補上檢查與影響說明就能做到。這頁是依 Codex 第二輪的要求新增的；第三輪 Codex 確認方向正確，並指出的缺口已補上。</div>
+    <div class="verdict"><b>採用方案 A：時程表單＋摘要時間線。</b>最重要的是「改得了、順序對、改了立刻生效」；現有分頁補上檢查與影響說明就能做到。這頁是依 Codex 第二輪的要求新增的；第三輪 Codex 確認方向正確，並指出的缺口已補上。</div>
     <div class="stage"><div class="frame tall">
       <div class="sb" data-sb="leader" data-on="review"></div>
       <div class="main">
@@ -325,128 +323,6 @@ a { color: var(--p900); }
           </div>
         </div>
         <div class="banner active" style="margin-top:14px"><b>儲存前會先確認</b><p>初驗已經開始：送件截止延後到 01/07，尚未送出的加拿、初來、新武、霧鹿家長會看到新的倒數；已送出的家不受影響。</p></div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>每一輪一張卡片，平常只顯示日期與狀態；按「編輯本輪」開小彈窗，一次只改一輪。儲存時一樣檢查和另一輪的先後關係，有錯就在彈窗內標出。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>頁面簡短，不會誤改到沒打算動的那一輪</li><li>平常瀏覽時資訊最乾淨</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>兩輪都要調整時要開兩次彈窗</li><li>改的時候看不到另一輪的日期，比較難對照</li></ul></div>
-    </div>
-    <div class="verdict">如果時程設定好後很少再動、只偶爾延一下某一輪，B 最不容易誤改。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="tabs"><span class="on">驗收時程</span><span>驗收標準</span><span>初驗</span><span>總驗</span></div>
-        <div class="grid2" style="gap:14px">
-          <div class="card"><div class="card-head"><div><div class="ct">初驗 <span class="chip active">進行中</span></div><div class="cd">台北時間</div></div><span class="btn sm">編輯本輪</span></div>
-            <ul class="timeline"><li><b>送件截止</b><small>2027/01/05 23:59・還有 2 天</small></li><li><b>驗收截止</b><small>2027/01/12 23:59</small></li></ul></div>
-          <div class="card"><div class="card-head"><div><div class="ct">總驗 <span class="chip idle">尚未開始</span></div><div class="cd">台北時間</div></div><span class="btn sm">編輯本輪</span></div>
-            <ul class="timeline"><li><b>送件截止</b><small>未設定</small></li><li><b>驗收截止</b><small>未設定</small></li></ul></div>
-        </div>
-        <div class="scrim">
-          <div class="dialog sm">
-            <div class="dh"><div><small>27 冬</small><b>編輯總驗時程</b></div><span class="x">×</span></div>
-            <div class="db stack">
-              <div><span class="flabel">送件截止（台北時間）</span><span class="ctl full" style="border-color:var(--alert)">2027/01/10 23:59</span><span class="fhint alert-text">不能早於初驗驗收截止（2027/01/12 23:59）</span></div>
-              <div><span class="flabel">驗收截止（台北時間，選填）</span><span class="ctl ph full">未設定</span></div>
-            </div>
-            <div class="df"><span class="btn">取消</span><span class="btn primary" disabled>儲存</span></div>
-          </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>時程分頁顯示月曆，四個截止日是月曆上的事件；旁邊有事件清單。點事件從右側打開抽屜，用表單輸入正確的日期時間（不用拖拉當唯一的輸入方式）。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>最容易看出和寒假、營期、考試週有沒有撞到</li><li>間隔太短一眼就看得出來</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>要做月曆元件，實作成本最高</li><li>精準輸入還是要靠表單</li></ul></div>
-    </div>
-    <div class="verdict">如果排時程時最常卡在「跟其他活動撞期」，C 的月曆最直覺；Milestone 1 不一定需要做到這樣。</div>
-    <div class="stage-cap">畫面 C-1：月曆＋事件清單</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="tabs"><span class="on">驗收時程</span><span>驗收標準</span><span>初驗</span><span>總驗</span></div>
-        <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px">
-        <div class="card" style="padding:14px">
-          <div class="row between" style="margin-bottom:10px"><b>2027 年 1 月</b><span class="row"><span class="btn sm">‹</span><span class="btn sm">›</span></span></div>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:12px">
-            <div class="muted" style="text-align:center">日</div><div class="muted" style="text-align:center">一</div><div class="muted" style="text-align:center">二</div><div class="muted" style="text-align:center">三</div><div class="muted" style="text-align:center">四</div><div class="muted" style="text-align:center">五</div><div class="muted" style="text-align:center">六</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">3</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">4</div>
-            <div style="height:54px;border:1px solid var(--p300);background:var(--p100);border-radius:6px;padding:4px"><b>5</b><div class="small" style="color:var(--p900)">初驗送件截止</div></div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">6</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">7</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">8</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">9</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">10</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">11</div>
-            <div style="height:54px;border:1px solid var(--p300);background:var(--p100);border-radius:6px;padding:4px"><b>12</b><div class="small" style="color:var(--p900)">初驗驗收截止</div></div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">13</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">14</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">15</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">16</div>
-          </div>
-        </div>
-        <div class="card" style="padding:14px 16px">
-          <b>事件清單</b>
-          <ul class="timeline" style="margin-top:10px">
-            <li><b>初驗送件截止</b><small>01/05 23:59・還有 2 天</small></li>
-            <li><b>初驗驗收截止</b><small>01/12 23:59</small></li>
-            <li><b>總驗送件截止</b><small class="alert-text">未設定</small></li>
-            <li><b>總驗驗收截止</b><small class="alert-text">未設定</small></li>
-          </ul>
-          <span class="btn sm">＋ 設定總驗日期</span>
-        </div>
-        </div>
-      </div>
-    </div></div>
-      <div class="stage-cap" style="margin-top:22px">畫面 C-2：點事件後，從右側抽屜編輯日期</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="tabs"><span class="on">驗收時程</span><span>驗收標準</span><span>初驗</span><span>總驗</span></div>
-        <div class="card" style="padding:14px">
-          <div class="row between" style="margin-bottom:10px"><b>2027 年 1 月</b><span class="row"><span class="btn sm">‹</span><span class="btn sm">›</span></span></div>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:12px">
-            <div class="muted" style="text-align:center">日</div><div class="muted" style="text-align:center">一</div><div class="muted" style="text-align:center">二</div><div class="muted" style="text-align:center">三</div><div class="muted" style="text-align:center">四</div><div class="muted" style="text-align:center">五</div><div class="muted" style="text-align:center">六</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">3</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">4</div>
-            <div style="height:54px;border:1px solid var(--p300);background:var(--p100);border-radius:6px;padding:4px"><b>5</b><div class="small" style="color:var(--p900)">初驗送件截止</div></div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">6</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">7</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">8</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">9</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">10</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">11</div>
-            <div style="height:54px;border:1px solid var(--p300);background:var(--p100);border-radius:6px;padding:4px"><b>12</b><div class="small" style="color:var(--p900)">初驗驗收截止</div></div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">13</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">14</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">15</div>
-            <div style="height:54px;border:1px solid var(--b100);border-radius:6px;padding:4px" class="muted">16</div>
-          </div>
-        </div>
-        <div class="drawer">
-          <div class="dh"><div><small>27 冬・初驗</small><b>初驗送件截止</b></div><span style="font-size:22px;color:var(--b500)">×</span></div>
-          <div class="db stack">
-            <div><span class="flabel">日期時間（台北時間）</span><span class="ctl full">2027/01/05 23:59</span></div>
-            <div class="banner info" style="margin:0"><b>前後的時間點</b><p>之後：初驗驗收截止 01/12 23:59。送件截止不能晚於它。</p></div>
-          </div>
-          <div class="df"><span class="btn">取消</span><span class="btn primary">儲存</span></div>
-        </div>
       </div>
     </div></div>
   </section>

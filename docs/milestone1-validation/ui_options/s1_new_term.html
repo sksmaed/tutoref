@@ -256,12 +256,12 @@ a { color: var(--p900); }
 <div class="doc">
   <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S1</div>
   <h1>S1｜開始新的一期</h1>
-  <p class="lead">對應 US-01、Workflow 1（含 Workflow 2 的「自動複製上一期家別與角色」）。</p>
+  <p class="lead">對應 US-01、Workflow 1；設定新期資料與時程，確認後建立並切換現行期。</p>
 
   <div class="grid2">
     <div class="panel">
       <h2>情境</h2>
-      <p>26 夏結束，組長阿凱要開 27 冬：建立唯一的現行期別，舊期保留但改成唯讀，新期從空白驗收流程開始，並設定初驗與總驗時程。開完之後，組長、驗收者、各家家長與撰寫者要能直接在新期工作。</p>
+      <p>26 夏結束，組長阿凱要開 27 冬：建立唯一的現行期別，舊期保留但改成唯讀，新期從空白驗收流程開始，並設定初驗與總驗時程。開期後保留操作組長的管理身份；新增成員、通訊錄匯入與角色授權由 S5 接續處理。</p>
     </div>
     <div class="panel">
       <h2>目前遇到的問題</h2>
@@ -273,21 +273,19 @@ a { color: var(--p900); }
     </div>
   </div>
   <div class="panel">
-    <h2>三個方案共同的前提</h2>
-    <p>不論選哪個方案，後端都要把「建立新期 → 帶入上一期角色 → 舊期設唯讀 → 切換現行期」當成<b>同一個動作</b>完成，否則還是會重演 C-02 的鎖死問題。風險文案建議從「本期驗收資料將被清空」改為「舊期資料會保留並轉為唯讀，新期從空白驗收流程開始」，避免組長誤以為資料會被刪掉。建立失敗時保留已填的內容並顯示原因，可以直接重試；建立成功後立即更新權限與側欄，並提供「前往成員管理」繼續調整名單。</p>
-    <div class="decide"><b>需要你決定：</b>開新期時要不要一併從上一期帶入驗收標準（初驗／總驗）？成員的家別與角色依 Workflow 2「自動複製上一期」<b>一律帶入、不能取消</b>（包含組長自己），之後在成員管理調整。</div>
+    <h2>方案 A 的前提</h2>
+    <p>建立新期時保留操作組長的教案組長身份。建立新期、舊期轉為唯讀及切換現行期須一起完成；失敗時保留填寫資料，顯示原因以便重試。</p>
+    <div class="decide">完成第 2 步後才會建立期別。驗收標準可選擇從上一期帶入；開期後可前往 <a href="s5_add_member.html#C">S5 新增成員與授權</a>，單人新增或匯入通訊錄。</div>
   </div>
 
   <div class="opt-tabs">
     <button class="opt-tab" data-opt="A">方案 A｜兩步驟確認彈窗 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜一頁式大彈窗＋即時預覽</button>
-    <button class="opt-tab" data-opt="C">方案 C｜「準備下一期」檢查清單頁</button>
   </div>
 
   <!-- ===================== 方案 A ===================== -->
   <section class="opt" data-opt="A">
     <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>使用者選單 → 設定，組長才看得到「期別管理」卡片。按「開始新的一期」開兩步驟彈窗：第 1 步填新期資料與時程（成員家別與角色固定帶入，驗收標準可選）；第 2 步列出切換後會發生的事，確認後按「建立並切換到 27 冬」。</p></div>
+      <div class="panel"><h3>版面與互動</h3><p>使用者選單 → 設定，組長才看得到「期別管理」卡片。按「開始新的一期」開兩步驟彈窗：第 1 步填新期資料與時程（驗收標準可選）；第 2 步列出切換後會發生的事，確認後按「建立並切換到 27 冬」。</p></div>
       <div class="panel pros"><h3>優點</h3><ul><li>最貼近原需求（設定 → 按鈕 → 彈窗）</li><li>先填完再確認，低頻但影響全團的動作不容易誤觸</li><li>沿用現有 Dialog，實作量最小</li></ul></div>
       <div class="panel cons"><h3>缺點</h3><ul><li>比一頁式多一步</li><li>時程欄位多，彈窗要捲動</li></ul></div>
     </div>
@@ -328,11 +326,8 @@ a { color: var(--p900); }
                 <tr><td><b>總驗</b></td><td><span class="ctl ph">未設定</span></td><td><span class="ctl ph">未設定</span></td></tr>
               </tbody></table></div>
               <div class="hr"></div>
-              <span class="flabel">從上一期（26 夏）帶入</span>
-              <div class="stack">
-                <div class="row" style="gap:8px"><span class="chip done">固定帶入</span><b>成員的家別與角色</b><span class="muted small">9 人・13 個角色（含你自己的教案組長身份），帶入後可在成員管理調整</span></div>
-                <div><span class="check"><span class="box on"></span>驗收標準</span><span class="muted small">初驗標準 v1、總驗標準 v1</span></div>
-              </div>
+              <span class="flabel">驗收標準</span>
+              <div><span class="check"><span class="box on"></span>從 26 夏帶入驗收標準</span><span class="muted small">初驗標準 v1、總驗標準 v1</span></div>
             </div>
             <div class="df"><span class="left">尚未建立任何資料</span><span class="btn">取消</span><span class="btn primary">下一步：確認影響</span></div>
           </div>
@@ -355,7 +350,7 @@ a { color: var(--p900); }
               <div class="tbl"><table><tbody>
                 <tr><td style="width:150px" class="muted">26 夏</td><td><span class="chip locked">轉為唯讀</span>　資料保留，不能再送件、分配或修改</td></tr>
                 <tr><td class="muted">27 冬</td><td><span class="chip done">成為現行期</span>　空白驗收流程，尚無任何送件</td></tr>
-                <tr><td class="muted">成員</td><td>帶入 9 人・13 個角色（含你自己的「教案組長」）</td></tr>
+                <tr><td class="muted">成員</td><td>保留你自己的「教案組長」身份；其他成員於開期後至 S5 新增與授權</td></tr>
                 <tr><td class="muted">驗收標準</td><td>帶入初驗 v1、總驗 v1</td></tr>
                 <tr><td class="muted">驗收時程</td><td>初驗 01/05、01/12；總驗未設定</td></tr>
               </tbody></table></div>
@@ -368,93 +363,10 @@ a { color: var(--p900); }
     </div></div>
   </section>
 
-  <!-- ===================== 方案 B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>同一個入口打開大彈窗，左邊填新期資料、時程與帶入選項，右邊即時預覽「切換後會發生什麼」。所有資訊同時可見，底部一顆按鈕完成。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>一眼看到全部設定與結果，熟手最快</li><li>預覽隨輸入即時更新，比較不會漏看</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>資訊密度高，第一次使用比較吃力</li><li>小螢幕要上下捲動，預覽會被擠到下面</li><li>確認與填寫混在一起，比較容易一路按到底</li></ul></div>
-    </div>
-    <div class="verdict">適合每學期都由同一位熟悉流程的組長操作；如果組長每期換人，A 的分步確認比較保險。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>設定</h1><div class="sub">檢視個人基本資料；需要修改時再進入編輯模式。</div></div></div>
-        <div class="scrim">
-          <div class="dialog lg">
-            <div class="dh"><div><small>期別管理</small><b>開始新的一期</b></div><span class="x">×</span></div>
-            <div class="db" style="display:grid;grid-template-columns:1.1fr .9fr;gap:20px">
-              <div>
-                <div class="fgrid">
-                  <div><span class="flabel">學年度</span><span class="ctl sel full">27</span></div>
-                  <div><span class="flabel">營期</span><div><span class="radio on"><i></i>冬</span><span class="radio"><i></i>夏</span></div></div>
-                </div>
-                <div style="margin-top:12px"><span class="flabel">顯示名稱</span><span class="ctl full">27 冬</span></div>
-                <div class="hr"></div>
-                <span class="flabel">驗收時程（台北時間）</span>
-                <div class="fgrid">
-                  <div><span class="fhint" style="margin:0 0 4px">初驗送件截止</span><span class="ctl full">2027/01/05 23:59</span></div>
-                  <div><span class="fhint" style="margin:0 0 4px">初驗驗收截止</span><span class="ctl full">2027/01/12 23:59</span></div>
-                  <div><span class="fhint" style="margin:0 0 4px">總驗送件截止</span><span class="ctl ph full">未設定</span></div>
-                  <div><span class="fhint" style="margin:0 0 4px">總驗驗收截止</span><span class="ctl ph full">未設定</span></div>
-                </div>
-                <div class="hr"></div>
-                <span class="flabel">從 26 夏帶入</span>
-                <div class="stack">
-                  <div class="row" style="gap:8px"><span class="chip done">固定帶入</span>成員家別與角色（9 人，含你自己）</div>
-                  <div><span class="check"><span class="box on"></span>驗收標準（初驗 v1、總驗 v1）</span></div>
-                </div>
-              </div>
-              <div style="background:var(--b100);border-radius:12px;padding:16px">
-                <div class="ct" style="font-weight:700;margin-bottom:10px">切換後會發生什麼</div>
-                <ul class="timeline">
-                  <li><b>26 夏轉為唯讀</b><small>19 份教案與驗收紀錄保留，可查閱不可修改</small></li>
-                  <li><b>建立 27 冬並設為現行期</b><small>空白驗收流程，尚無送件</small></li>
-                  <li><b>帶入 9 位成員（固定）</b><small>利稻 3、霧鹿 2、電光 2、新武 1、加拿 1</small></li>
-                  <li><b>帶入驗收標準</b><small>初驗 v1（20 項）、總驗 v1（18 項）</small></li>
-                  <li><b>時程</b><small>初驗已設定；總驗尚未設定，之後補也可以</small></li>
-                </ul>
-                <div class="banner alert" style="margin:6px 0 0"><b>切換後不能自行把現行期改回 26 夏</b><p>26 夏仍可查閱；如需改回，請聯絡網站管理員。</p></div>
-              </div>
-            </div>
-            <div class="df"><span class="left"><span class="check" style="margin:0"><span class="box on"></span>我了解以上影響</span></span><span class="btn">取消</span><span class="btn primary">建立並切換到 27 冬</span></div>
-          </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== 方案 C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動 <span class="variant">變體：比原方案多了草稿期別與公告</span></h3><p>設定裡的「準備下一期」連到一個檢查清單頁。新期先以「準備中（尚未啟用）」建立，組長逐項完成時程、成員、驗收標準，全部必要項目打勾後，最後一步才「啟用 27 冬」，並跳出與 A-2 相同內容的確認彈窗。啟用前全團仍在 26 夏工作。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>開期前就能把成員與標準調好，啟用當下大家就能工作</li><li>準備期間組長仍在舊期、有完整權限；啟用時系統仍須確認新期已有組長身份，才能避開 C-02</li><li>可延伸成每學期的開期 SOP</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>多一頁與「準備中」狀態，實作成本最高</li><li>成員、標準頁面都要能編輯「尚未啟用的期別」</li><li>對 Milestone 1 可能做太多</li></ul></div>
-    </div>
-    <div class="verdict">如果你們希望開期當天就能讓家長、撰寫者直接上傳，C 最完整；只想先解決「開得了期、不被鎖」，A 就夠了。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>準備下一期：27 冬</h1><div class="sub">27 冬目前是「準備中」，只有教案組看得到；全團仍在 26 夏。完成必要項目後即可啟用。</div></div><div class="acts"><span class="btn">刪除草稿</span><span class="btn primary" disabled>啟用 27 冬</span></div></div>
-        <div class="banner active"><b>還差 1 項必要設定才能啟用</b><p>啟用時 26 夏會轉為唯讀。</p></div>
-        <div class="tbl"><table><thead><tr><th style="width:44px"></th><th>項目</th><th>狀態</th><th>說明</th><th></th></tr></thead><tbody>
-          <tr><td><span class="box on"></span></td><td><b>新期資料</b><small>學年度、營期、顯示名稱</small></td><td><span class="chip done">已完成</span></td><td>27 冬</td><td><span class="btn sm">修改</span></td></tr>
-          <tr><td><span class="box on"></span></td><td><b>成員與角色</b><small>必要：至少要有一位教案組長</small></td><td><span class="chip done">已完成</span></td><td>已從 26 夏帶入 9 人・13 個角色；撰寫者小美改為電光</td><td><span class="btn sm">前往成員管理</span></td></tr>
-          <tr class="hl"><td><span class="box"></span></td><td><b>初驗時程</b><small>必要：送件截止</small></td><td><span class="chip active">待設定</span></td><td class="muted">未設定</td><td><span class="btn primary sm">設定時程</span></td></tr>
-          <tr><td><span class="box on"></span></td><td><b>驗收標準</b><small>建議</small></td><td><span class="chip done">已完成</span></td><td>初驗 v1、總驗 v1（帶入 26 夏）</td><td><span class="btn sm">檢視</span></td></tr>
-          <tr><td><span class="box"></span></td><td><b>開期公告</b><small>選擇性</small></td><td><span class="chip idle">未建立</span></td><td class="muted">啟用後可在訊息公告發布</td><td><span class="btn sm">建立草稿</span></td></tr>
-        </tbody></table></div>
-        <p class="muted small" style="margin-top:10px">「準備中」的期別不會出現在家長、撰寫者的畫面上；啟用後才會切換。</p>
-      </div>
-    </div></div>
-  </section>
-
   <div class="pager"><a href="index.html">← 回到總覽</a><a href="s2_member_list.html">S2 成員搜尋與篩選 →</a></div>
 </div>
 <script>
-// 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
+// 原型共用腳本：依角色畫出側欄，並顯示方案 A。
 (function () {
   const PEOPLE = {
     leader: { name: '組長阿凱', mail: 'demo-leader@tutoref.tw', av: '組' },

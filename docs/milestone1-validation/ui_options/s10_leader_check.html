@@ -273,14 +273,12 @@ a { color: var(--p900); }
     </div>
   </div>
   <div class="panel">
-    <h2>三個方案共同的規則</h2>
+    <h2>方案 A 的共用規則</h2>
     <p>附件連結開的是<b>送出當下凍結的版本</b>；「缺交教案」和「附件異常」分開計算；尚未送出的家顯示「尚未送出」，不要顯示 0 份，以免看起來像已經交齊。</p>
   </div>
 
   <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜各家進度表＋家別抽屜 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜摘要卡＋全團教案／缺交分頁</button>
-    <button class="opt-tab" data-opt="C">方案 C｜待追蹤事項優先</button>
+    <button class="opt-tab" data-opt="A">方案 A｜各家進度表＋家別抽屜 <span class="rec">已選定</span></button>
   </div>
 
   <!-- ===================== A ===================== -->
@@ -290,7 +288,7 @@ a { color: var(--p900); }
       <div class="panel pros"><h3>優點</h3><ul><li>從全團概況一路點到單份教案，路徑最清楚</li><li>六家的規模剛好適合一張總表</li><li>改動集中在現有頁面</li></ul></div>
       <div class="panel cons"><h3>缺點</h3><ul><li>想跨家一起看所有缺交時，要一家一家點</li></ul></div>
     </div>
-    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>組長的問題通常是「某一家狀況如何」，先看總表再點進該家最符合追件習慣。</div>
+    <div class="verdict"><b>採用方案 A：各家進度表＋家別抽屜。</b>組長的問題通常是「某一家狀況如何」，先看總表再點進該家最符合追件習慣。</div>
     <div class="stage-cap">畫面 A-1：各家進度總表（抽屜關閉時）</div>
     <div class="stage"><div class="frame">
       <div class="sb" data-sb="leader" data-on="review"></div>
@@ -357,95 +355,6 @@ a { color: var(--p900); }
             </tbody></table></div>
           </div>
           <div class="df"><span class="btn">複製缺交名單</span><span class="btn primary">前往分配</span></div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>頁首六張小卡顯示各家狀態（送驗／缺交／附件異常），可以多選當篩選。下方用分頁切換「全團教案」與「全團缺交」：教案表每份都有附件連結、輪次與送出批次；缺交表跨家列出所有缺交教案。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>跨家搜尋、篩選最有效率</li><li>缺交名單一次看完全團，方便發公告</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>六張卡片佔高度，手機要折疊</li><li>和現有版面差異較大</li></ul></div>
-    </div>
-    <div class="verdict">如果組長習慣把全團缺交名單整理成一則公告，B 的「全團缺交」分頁最方便。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬・初驗</div></div></div>
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px">
-          <div class="metric" style="padding:10px 12px"><small>加拿</small><div class="chip idle" style="margin-top:4px">尚未送出</div></div>
-          <div class="metric" style="padding:10px 12px"><small>初來</small><div class="chip idle" style="margin-top:4px">尚未送出</div></div>
-          <div class="metric" style="padding:10px 12px"><small>新武</small><div class="chip idle" style="margin-top:4px">尚未送出</div></div>
-          <div class="metric" style="padding:10px 12px"><small>霧鹿</small><div class="chip idle" style="margin-top:4px">尚未送出</div></div>
-          <div class="metric" style="padding:10px 12px;border-color:var(--p900)"><small>利稻</small><div class="chip done" style="margin-top:4px">送 4・缺 0・<span class="alert-text">異常 1</span></div></div>
-          <div class="metric" style="padding:10px 12px;border-color:var(--p900)"><small>電光</small><div class="chip done" style="margin-top:4px">送 2・<span class="alert-text">缺 2</span>・異常 0</div></div>
-        </div>
-        <div class="tabs"><span>全團教案（6）</span><span class="on">全團缺交（2）</span></div>
-        <div class="tbl"><table><thead><tr><th>家別</th><th>預計教案名稱</th><th>姓名</th><th>缺交內容</th><th>登記人</th><th>送出時間</th></tr></thead><tbody>
-          <tr><td>電光</td><td><b>小小氣象員</b></td><td>王小明</td><td><span class="chip alert">教案紙</span></td><td class="muted small">電光家長</td><td class="muted small">01/04 21:10</td></tr>
-          <tr><td>電光</td><td><b>彩虹從哪裡來</b></td><td>李小華</td><td><span class="chip alert">教案紙</span></td><td class="muted small">黃柏翰</td><td class="muted small">01/04 21:10</td></tr>
-        </tbody></table></div>
-        <p class="muted small" style="margin-top:8px">目前篩選：利稻、電光（點上方卡片切換）。尚未送出的家，家長登記的缺交草稿不會出現在這裡。</p>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>頁首三個可點的待追蹤數字：「尚未送出 4 家」「缺交 2 份」「附件異常 1 份」。下方依問題種類分組列出要追的事（尚未送出、逐份缺交、附件異常），每列都有對應的家別、聯絡對象與連結；完整的各家總表收在最下面。尚未送出的家只顯示「正式數量未確認」，不讀家內草稿。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>截止前追件最有效率，先處理異常</li><li>每個數字都能點進去，不會只看到總數</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>完整進度變得不顯眼</li><li>平時沒有異常時，畫面價值較低</li></ul></div>
-    </div>
-    <div class="verdict">如果組長最常在「截止前一兩天」使用這頁，C 的待辦導向最貼近當下的需求。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="review"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬・初驗　送件截止 01/05 23:59（還有 1 天）</div></div></div>
-        <div class="metrics three">
-          <div class="metric" style="border-color:var(--p900)"><small>尚未送出</small><b>4 家</b><span>加拿、初來、新武、霧鹿</span></div>
-          <div class="metric"><small>缺交</small><b class="alert-text">2 份</b><span>電光 2</span></div>
-          <div class="metric"><small>附件異常</small><b class="alert-text">1 份</b><span>利稻 1</span></div>
-        </div>
-        <div class="card" style="padding:14px 16px">
-          <div class="row between"><b>尚未送出（4 家）</b><span class="btn sm">複製提醒文字</span></div>
-          <div class="tbl" style="margin-top:10px;box-shadow:none"><table><tbody>
-            <tr><td><b>加拿</b></td><td class="muted">家長：加拿家長</td><td class="muted small">尚未送出，正式數量未確認</td><td></td></tr>
-            <tr><td><b>新武</b></td><td class="alert-text">本期尚未指派家長</td><td class="muted small">尚未送出，正式數量未確認</td><td><a class="link small">前往成員管理</a></td></tr>
-            <tr><td><b>初來</b></td><td class="muted">家長：—</td><td class="muted small">尚未送出，正式數量未確認</td><td></td></tr>
-            <tr><td><b>霧鹿</b></td><td class="muted">家長：霧鹿家長</td><td class="muted small">尚未送出，正式數量未確認</td><td></td></tr>
-          </tbody></table></div>
-        </div>
-        <div class="card" style="padding:14px 16px">
-          <div class="row between"><b>缺交（2 份）</b><span class="btn sm">複製缺交名單</span></div>
-          <div class="tbl" style="margin-top:10px;box-shadow:none"><table><tbody>
-            <tr><td><b>小小氣象員</b><small>電光・王小明</small></td><td><span class="chip alert">缺教案紙</span></td><td class="muted small">電光家長登記</td></tr>
-            <tr><td><b>彩虹從哪裡來</b><small>電光・李小華</small></td><td><span class="chip alert">缺教案紙</span></td><td class="muted small">黃柏翰登記</td></tr>
-          </tbody></table></div>
-        </div>
-        <div class="card" style="padding:14px 16px">
-          <div class="row between"><b>附件異常（1 份）</b></div>
-          <div class="tbl" style="margin-top:10px;box-shadow:none"><table><tbody>
-            <tr><td><b>水的三態</b><small>利稻・撰寫者小美</small></td><td><span class="chip alert">教案紙沒有檔案</span></td><td class="muted small">新流程上線前送出的歷史異常；新流程會在送出前擋下</td></tr>
-          </tbody></table></div>
-        </div>
-        <div class="card" style="padding:14px 16px">
-          <div class="row between"><b>全部家別總表</b><span class="muted small">收合 ▾</span></div>
-          <div class="tbl" style="margin-top:10px;box-shadow:none"><table>
-            <thead><tr><th>家別</th><th>送件狀態</th><th>送出時間</th><th>送驗</th><th>缺交</th><th>附件異常</th></tr></thead>
-            <tbody>
-              <tr><td>加拿</td><td><span class="chip idle">尚未送出</span></td><td class="muted small" colspan="4">尚未送出，正式數量未確認</td></tr>
-              <tr><td>初來</td><td><span class="chip idle">尚未送出</span></td><td class="muted small" colspan="4">尚未送出，正式數量未確認</td></tr>
-              <tr><td>新武</td><td><span class="chip idle">尚未送出</span></td><td class="muted small" colspan="4">尚未送出，正式數量未確認</td></tr>
-              <tr><td>霧鹿</td><td><span class="chip idle">尚未送出</span></td><td class="muted small" colspan="4">尚未送出，正式數量未確認</td></tr>
-              <tr><td>利稻</td><td><span class="chip done">已送出</span></td><td>01/03 18:22</td><td>4</td><td>0</td><td class="alert-text">1</td></tr>
-              <tr><td>電光</td><td><span class="chip done">已送出</span></td><td>01/04 21:10</td><td>2</td><td class="alert-text">2</td><td>0</td></tr>
-            </tbody>
-          </table></div>
         </div>
       </div>
     </div></div>

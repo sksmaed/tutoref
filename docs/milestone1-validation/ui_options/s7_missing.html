@@ -273,7 +273,7 @@ a { color: var(--p900); }
     </div>
   </div>
   <div class="panel">
-    <h2>三個方案共同的規則</h2>
+    <h2>方案 A 的共用規則</h2>
     <ul>
       <li>每筆缺交都即時存到後端（草稿），同家家長都看得到、改得到；送出時一起凍結。</li>
       <li>「姓名」可從本家成員選，也可以手動輸入（還沒加入系統的人）。</li>
@@ -283,9 +283,7 @@ a { color: var(--p900); }
   </div>
 
   <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜缺交表格＋單筆彈窗 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜表格內直接新增多列 <span class="variant">變體</span></button>
-    <button class="opt-tab" data-opt="C">方案 C｜缺交教案併入家內教案清單</button>
+    <button class="opt-tab" data-opt="A">方案 A｜缺交表格＋單筆彈窗 <span class="rec">已選定</span></button>
   </div>
 
   <!-- ===================== A ===================== -->
@@ -295,7 +293,7 @@ a { color: var(--p900); }
       <div class="panel pros"><h3>優點</h3><ul><li>一列＝一份教案，欄位與需求完全對應</li><li>彈窗內可以做必填檢查，資料最乾淨</li><li>和實際上傳的教案分開，不會混淆</li></ul></div>
       <div class="panel cons"><h3>缺點</h3><ul><li>一次登記很多筆時要反覆開彈窗</li></ul></div>
     </div>
-    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>每家每輪缺交通常只有幾份，彈窗多一步不是問題；換來的是名稱、姓名、內容都不會漏填。</div>
+    <div class="verdict"><b>採用方案 A：缺交表格＋單筆彈窗。</b>每家每輪缺交通常只有幾份，彈窗多一步不是問題；換來的是名稱、姓名、內容都不會漏填。</div>
     <div class="stage-cap">這張圖示範王小明缺兩份時的樣子，所以比 S8、S10 的範例多一列。</div>
     <div class="stage"><div class="frame tall">
       <div class="sb" data-sb="parent" data-on="family" data-archived></div>
@@ -325,61 +323,6 @@ a { color: var(--p900); }
             <div class="df"><span class="btn">取消</span><span class="btn primary">儲存</span></div>
           </div>
         </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動 <span class="variant">變體：原方案 B 是統一按「儲存」，這裡改成離開該列就自動儲存</span></h3><p>缺交區塊本身就是可編輯表格：按「＋ 新增一份」多一列空白列，直接在格子裡填名稱、選姓名、勾缺交內容；每列離開時自動儲存，並在該列顯示「已儲存／儲存中／待修正」。有錯誤的列會保留輸入、標紅，<b>不會被悄悄丟掉</b>；所有列都儲存成功才能送出驗收。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>一次登記多份最快</li><li>畫面和現有的「註記缺交」最接近，改動直覺</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>「還在編輯」和「已儲存」的狀態要做得很清楚</li><li>表格內的下拉、勾選在手機上比較難按</li></ul></div>
-    </div>
-    <div class="verdict">如果某幾家每輪常常缺很多份，B 的連續輸入會比較順手。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="parent" data-on="family" data-archived></div>
-      <div class="main">
-        <div class="userbtn">電</div>
-        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗</div></div><div class="acts"><span class="btn primary">送出驗收</span></div></div>
-        <div class="card">
-          <div class="card-head"><div><div class="ct">缺交教案（3）</div><div class="cd">每列一份教案，離開該列時自動儲存。</div></div><span class="muted small"><span class="dot done"></span>2 筆已儲存　<span class="dot alert"></span>1 筆待修正</span></div>
-          <div class="tbl"><table>
-            <thead><tr><th>預計教案名稱</th><th style="width:160px">姓名</th><th style="width:200px">缺交內容</th><th style="width:90px">狀態</th><th style="width:60px"></th></tr></thead>
-            <tbody>
-              <tr><td><span class="ctl full">小小氣象員</span></td><td><span class="ctl sel full">王小明</span></td><td><span class="check"><span class="box on"></span>教案紙</span><span class="check muted"><span class="box" style="background:var(--b100)"></span>投影片</span></td><td><span class="chip done">已儲存</span></td><td><span class="btn danger sm">刪除</span></td></tr>
-              <tr><td><span class="ctl full">彩虹從哪裡來</span></td><td><span class="ctl sel full">李小華</span></td><td><span class="check"><span class="box on"></span>教案紙</span><span class="check muted"><span class="box" style="background:var(--b100)"></span>投影片</span></td><td><span class="chip done">已儲存</span></td><td><span class="btn danger sm">刪除</span></td></tr>
-              <tr class="hl"><td><span class="ctl full" style="border-color:var(--alert)"><span class="muted">輸入預計教案名稱</span></span><small class="alert-text">請填教案名稱</small></td><td><span class="ctl sel full">林小安</span></td><td><span class="check"><span class="box"></span>教案紙</span><small class="alert-text">請勾選缺交內容</small></td><td><span class="chip alert">待修正</span></td><td><span class="btn danger sm">刪除</span></td></tr>
-            </tbody>
-          </table></div>
-          <div style="margin-top:10px"><span class="btn sm">＋ 新增一份</span></div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>缺交不另開區塊，而是在家內教案清單裡建立「預計教案」列，狀態標「缺交」，附件欄顯示缺的是哪一份。之後撰寫者真的上傳時，可以把新教案對應到這一列，缺交改成已上傳。自動對應只限<b>還沒送出</b>的草稿，送出後的缺交紀錄不會被改寫；同名不同人時要由撰寫者確認，不靠名稱猜。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>從「預計要交」到「已交」可以完整追蹤</li><li>不會發生同一份教案既缺交又已上傳的矛盾</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>要新增「預計教案」與正式教案的配對機制，超出 Milestone 1</li><li>清單裡混著真教案與預計教案，閱讀負擔較重</li></ul></div>
-    </div>
-    <div class="verdict">長期最完整，但工程量大；建議作為之後的方向，Milestone 1 先做 A 或 B。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="parent" data-on="family" data-archived></div>
-      <div class="main">
-        <div class="userbtn">電</div>
-        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗</div></div><div class="acts"><span class="btn">＋ 登記預計教案</span><span class="btn primary">送出驗收</span></div></div>
-        <div class="tbl"><table>
-          <thead><tr><th>教案名稱</th><th>撰寫者</th><th>類別</th><th>教案紙</th><th>投影片</th><th>本輪</th><th>狀態</th></tr></thead>
-          <tbody>
-            <tr><td><b>網路世界放大鏡!</b></td><td>撰寫者小美</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip active">納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-            <tr class="hl"><td><b>小小氣象員</b><small>預計教案・電光家長登記　<a class="link">編輯</a>　<a class="link">刪除</a></small></td><td>王小明</td><td class="muted">—</td><td><span class="chip alert">缺交</span></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip idle">不送驗</span></td><td><span class="chip alert">缺交</span></td></tr>
-            <tr class="hl"><td><b>彩虹從哪裡來</b><small>預計教案・黃柏翰登記　<a class="link">編輯</a>　<a class="link">刪除</a></small></td><td>李小華</td><td class="muted">—</td><td><span class="chip alert">缺交</span></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip idle">不送驗</span></td><td><span class="chip alert">缺交</span></td></tr>
-          </tbody>
-        </table></div>
-        <div class="banner info" style="margin-top:14px"><b>撰寫者上傳時</b><p>上傳頁會問「這是不是預計教案『小小氣象員』？」，選是就會把缺交改成已上傳。</p></div>
       </div>
     </div></div>
   </section>

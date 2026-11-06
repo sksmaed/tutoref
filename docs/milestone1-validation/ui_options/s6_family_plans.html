@@ -250,283 +250,222 @@ a { color: var(--p900); }
 .legend li { display: flex; gap: 6px; align-items: center; }
 .legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
+
+/* A 與 C 共用同一套欄位、工具列與狀態樣式。 */
+[hidden] { display: none !important; }
+button, select, summary { cursor: pointer; }
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--p900); outline-offset: 3px; }
+button.link, button.link-file { background: none; border: 0; padding: 0; font: inherit; color: var(--p900); font-weight: 700; cursor: pointer; text-align: left; }
+button.link-file { font-size: 13px; }
+a.btn { text-decoration: none; cursor: pointer; }
+.preview-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+.preview-controls label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--b700); }
+.preview-controls .ctl { min-width: 160px; }
+.preview-controls p { margin: 0; }
+.frame { width: 100%; min-width: 980px; }
+.main { padding-left: 24px; padding-right: 24px; }
+.ph { align-items: flex-start; }
+.ph .acts { justify-content: flex-end; }
+.round-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.round-tabs button { padding: 10px 16px; font: inherit; font-weight: 700; color: var(--b500); background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.round-tabs button.on { color: var(--p900); border-color: var(--p900); }
+.metrics .metric b { font-size: 24px; }
+.plan-table { box-shadow: none; }
+.plan-table table { min-width: 900px; table-layout: fixed; }
+.plan-table th, .plan-table td { padding: 12px 10px; }
+.plan-table th:first-child { width: 19%; }
+.plan-table th:nth-child(2) { width: 14%; }
+.plan-table th:nth-child(3), .plan-table th:nth-child(4) { width: 6%; }
+.plan-table th:nth-child(5) { width: 17%; }
+.plan-table th:nth-child(6) { width: 14%; }
+.plan-table th:nth-child(7), .plan-table th:nth-child(8) { width: 12%; }
+.plan-group { padding: 0; margin-bottom: 14px; overflow: hidden; }
+.plan-group summary { padding: 16px 18px; font-size: 15px; font-weight: 700; }
+.plan-group summary small { margin-left: 8px; color: var(--b500); font-size: 12px; font-weight: 400; }
+.plan-group .plan-table { border-radius: 0; border-width: 1px 0 0; }
+.empty { padding: 24px; text-align: center; color: var(--b500); margin: 0; }
+.view-note { font-size: 12px; color: var(--b500); margin: 10px 0 0; }
+.filter-count { font-size: 12px; color: var(--b500); margin-left: auto; }
+.toolbar input { min-width: 180px; flex: 1; }
+.dialog-preview { border: 1px solid var(--b200); padding: 0; max-width: min(760px, calc(100vw - 32px)); color: var(--b900); font: inherit; }
+.dialog-preview:not([open]) { display: none; }
+.dialog-preview::backdrop { background: rgba(13,13,13,.4); }
+.dialog-preview .db { min-height: 160px; }
+.dialog-preview .dh button { background: none; border: 0; font: inherit; }
+@media (max-width: 700px) { .doc { padding: 20px 12px 48px; } .preview-controls { align-items: stretch; } .preview-controls label { flex: 1; } }
 </style>
 </head>
 <body>
 <div class="doc">
   <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S6</div>
-  <h1>S6｜家內教案（撰寫者、驗收者、家長共用）</h1>
-  <p class="lead">對應 US-09、Workflow 5，以及 US-11 的「同家所有人都能檢視已送出的教案」、US-12 的「家內教案頁有上傳按鈕」。</p>
-
+  <h1>S6｜家內教案（採用 A＋C）</h1>
+  <p class="lead">撰寫者與非家長成員採方案 A 的完整表格；家長採方案 C 的階段分組，可依驗收階段查看。兩種視角共用相同的欄位、輪次切換、附件連結與狀態樣式。</p>
   <div class="grid2">
-    <div class="panel">
-      <h2>情境</h2>
-      <p>27 冬初驗期間，電光家的撰寫者小美、驗收者一、電光家長都打開「家內教案」：撰寫者要上傳、看自己的教案狀態；家長要確認後送出；驗收者想先看看家裡有哪些教案。送出後大家都還要能點開教案紙。</p>
-    </div>
-    <div class="panel">
-      <h2>目前遇到的問題</h2>
-      <ul>
-        <li><span class="issue-ref">C-04</span> 撰寫者、驗收者側欄沒有「家內教案」，直接開是空白頁；也沒有上傳按鈕。</li>
-        <li><span class="issue-ref">C-18</span> 表格沒有家別欄、沒有教案紙／投影片連結。</li>
-        <li><span class="issue-ref">C-05</span> 附件上傳失敗時畫面沒有提示，還顯示「已繳」。</li>
-      </ul>
-    </div>
+    <div class="panel"><h2>角色與呈現方式</h2><ul>
+      <li><b>撰寫者、驗收者及其他非家長成員：</b>完整表格檢視本家教案；只有撰寫者能在送出前上傳及管理自己的附件。</li>
+      <li><b>家長：</b>依「本輪待驗收／準備中／已驗收」分組，可篩選階段、展開或收合；負責納入本輪、缺交登記與送出驗收。</li>
+      <li>同時具有家長與撰寫者身份時，採家長分組視角，另依撰寫權限顯示自己的上傳入口。查看範圍限本人所屬家別。</li>
+    </ul></div>
+    <div class="panel"><h2>共用規則與視覺</h2><ul>
+      <li>共用八個欄位；家長分組仍保留完整表頭，避免切換視角後找不到資訊。</li>
+      <li>「初驗／總驗」是驗收輪次；「準備中／本輪待驗收／已驗收」是該輪教案階段，兩者分開切換。</li>
+      <li>初驗僅檢查教案紙，投影片於總驗開放且選填；附件失敗或處理中不標示已繳，也不能納入本輪。</li>
+      <li>送出後唯讀，附件保留送出時版本；缺交不進本輪驗收，結果公布後才呈現驗收結果。</li>
+    </ul></div>
   </div>
   <div class="panel">
-    <h2>三個方案共同的規則</h2>
-    <ul>
-      <li>「能看本家」和「能代表本家送件」分開：側欄的家內教案對本期有家別的撰寫者、驗收者、家長都顯示；只有家長有「送出驗收」與缺交登記。</li>
-      <li>初驗只檢查教案紙；投影片欄在初驗顯示「總驗開放（選填）」，<b>不會</b>因為沒有投影片就標「缺附件」。</li>
-      <li>附件以具名連結呈現（「查看教案紙」），上傳失敗明確標示並讓撰寫者重新上傳。</li>
-    </ul>
-    <div class="decide"><b>需要你決定：</b>「撰寫者」欄顯示上傳的帳號（撰寫者小美），還是教案紙上寫的設計者（○○○）？原型以帳號為主、在下方小字附上教案紙上的名字。</div>
+    <h2>互動原型預覽</h2>
+    <div class="preview-controls">
+      <label>預覽身份<select class="ctl" id="preview-role"><option value="writer">撰寫者（A）</option><option value="reviewer">驗收者（A）</option><option value="member">其他非家長成員（A）</option><option value="parent">家長（C）</option></select></label>
+      <label>預覽情境<select class="ctl" id="preview-state"><option value="draft">送出前</option><option value="submitted">送出後・驗收中</option><option value="published">結果已公布</option></select></label>
+      <p class="small muted">此區僅供原型切換身份與情境；正式站依登入權限決定。下方皆為示意資料，未串接 API 或真實附件。</p>
+    </div>
   </div>
-
-  <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜完整欄位共用表格 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜精簡表格＋教案詳情抽屜</button>
-    <button class="opt-tab" data-opt="C">方案 C｜依驗收階段分組</button>
-  </div>
-
-  <!-- ===================== A ===================== -->
-  <section class="opt" data-opt="A">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>一張表放齊 US-09 的欄位：教案名稱、撰寫者、家別、類別、教案紙、投影片（總驗才顯示連結）、待驗收（本輪是否納入）、驗收狀態。頁首依角色顯示不同按鈕：撰寫者看到「上傳教案」，家長看到「送出驗收」。送出後表格與連結都還在，只是變成唯讀。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>欄位和需求一一對應，大家看到的是同一張表</li><li>附件直接點開，不用多一步</li><li>現有頁面加欄位即可，改動最小</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>欄位多，窄螢幕要橫向捲動</li><li>同一頁給三種角色用，按鈕要依權限細分</li></ul></div>
+  <div class="stage-cap" id="preview-caption" aria-live="polite"></div>
+  <div class="stage"><div class="frame tall">
+    <div class="sb" id="family-sidebar"></div>
+    <div class="main">
+      <div class="userbtn" id="user-avatar"></div>
+      <div class="ph"><div><h1>家內教案</h1><div class="sub" id="page-context"></div></div><div class="acts" id="page-actions"></div></div>
+      <div class="round-tabs" aria-label="驗收輪次"><button type="button" data-round="initial">初驗</button><button type="button" data-round="final">總驗</button></div>
+      <div id="round-banner" class="banner"></div>
+      <div class="metrics three" id="round-metrics"></div>
+      <div class="toolbar">
+        <label class="grow"><span class="flabel">搜尋教案或撰寫者</span><input type="search" class="ctl full" id="plan-search" placeholder="輸入教案名稱或撰寫者…"></label>
+        <label id="phase-control"><span class="flabel">驗收階段</span><select class="ctl" id="phase-filter"><option value="all">全部階段</option><option value="pending">本輪待驗收</option><option value="preparing">準備中</option><option value="completed">已驗收</option></select></label>
+        <span class="filter-count" id="filter-count" role="status"></span>
+      </div>
+      <div id="plan-content"></div>
+      <p class="view-note" id="role-note"></p>
     </div>
-    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>需求明確列出表格欄位；把它們全部放進同一張表，最不需要額外說明。</div>
-    <div class="stage-cap">畫面 A-1：撰寫者的視角（送出前）</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="writer" data-on="family" data-family data-archived></div>
-      <div class="main">
-        <div class="userbtn">撰</div>
-        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗　送件截止 2027/01/05 23:59（還有 12 天）</div></div><div class="acts"><span class="btn primary">＋ 上傳教案</span></div></div>
-        <div class="tabs"><span class="on">初驗</span><span>總驗</span></div>
-        <div class="tbl"><table>
-          <thead><tr><th>教案名稱</th><th>撰寫者</th><th>家別</th><th>類別</th><th>教案紙</th><th>投影片</th><th>待驗收</th><th>驗收狀態</th></tr></thead>
-          <tbody>
-            <tr><td><a class="link">網路世界放大鏡!</a><small>全年級・40 分鐘</small></td><td>撰寫者小美<small>教案紙：○○○</small></td><td>電光</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip active">本輪納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-            <tr class="hl"><td><a class="link">電光的秘密</a><small>中高年級・90 分鐘</small></td><td>陳怡君</td><td>電光</td><td><span class="cat social">社會</span></td><td><span class="chip alert">上傳失敗</span><small><a class="link">重新上傳</a></small></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip active">本輪納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-            <tr><td><a class="link">空氣的力量</a><small>低年級・40 分鐘</small></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><span class="chip active">處理中…</span></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip active">本輪納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-          </tbody>
-        </table></div>
-        <p class="muted small" style="margin-top:10px">驗收者只能檢視；撰寫者在送出前可以上傳、管理自己教案的附件；送出驗收與登記缺交由電光家長操作。教案名稱可點開詳情。同一期屬於兩家的人，頁首可切換家別。</p>
-        <div class="pin" style="left:234px;top:390px">1</div>
-        <div class="pin" style="left:800px;top:284px">2</div>
-      </div>
-    </div></div>
-    <ul class="legend"><li><b>1</b>撰寫者、驗收者的側欄也會出現「家內教案」</li><li><b>2</b>附件上傳失敗要看得到，並提供重新上傳</li></ul>
-    <div class="stage-cap" style="margin-top:22px">畫面 A-2：家長送出後，同家的人看到的唯讀狀態（附件仍可開）</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="reviewer" data-on="family" data-family></div>
-      <div class="main">
-        <div class="userbtn">驗</div>
-        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗</div></div></div>
-        <div class="tabs"><span class="on">初驗</span><span>總驗</span></div>
-        <div class="banner locked"><b>電光家已於 2027/01/04 21:10 送出初驗（電光家長）</b><p>本輪 2 份進入驗收、登記缺交 2 份。教案與附件已鎖定，只能檢視。</p></div>
-        <div class="tbl"><table>
-          <thead><tr><th>教案名稱</th><th>撰寫者</th><th>家別</th><th>類別</th><th>教案紙</th><th>投影片</th><th>待驗收</th><th>驗收狀態</th></tr></thead>
-          <tbody>
-            <tr><td><a class="link">網路世界放大鏡!</a><small>全年級・40 分鐘</small></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a><small>送出時的版本</small></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip done">已送出</span></td><td><span class="chip active">驗收中</span></td></tr>
-            <tr><td><a class="link">空氣的力量</a><small>低年級・40 分鐘</small></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a><small>送出時的版本</small></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip done">已送出</span></td><td><span class="chip idle">待分配</span></td></tr>
-            <tr><td><a class="link">電光的秘密</a></td><td>陳怡君</td><td>電光</td><td><span class="cat social">社會</span></td><td><span class="chip alert">缺交</span></td><td><span class="muted small">—</span></td><td><span class="chip idle">未納入本輪</span></td><td><span class="muted">—</span></td></tr>
-          </tbody>
-        </table></div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>主表只留最常看的欄位（教案名稱、撰寫者、類別、附件摘要、驗收狀態），家別寫在頁首。點教案名稱從右側打開教案詳情抽屜：教案紙、投影片連結、簡介、送出快照與驗收歷程都在裡面。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>主表欄位少、好掃讀，窄螢幕比較好排（原型未畫手機版）</li><li>抽屜可以放更多資訊（簡介、歷程），日後好擴充</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>不符合「欄位都在表格上」的嚴格解讀</li><li>看附件要多點一次</li></ul></div>
-    </div>
-    <div class="verdict">如果家長常在小螢幕上確認，或之後想在同一處看驗收回饋，B 比較有延伸空間。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="parent" data-on="family" data-archived></div>
-      <div class="main">
-        <div class="userbtn">電</div>
-        <div class="ph" style="padding-right:590px"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗</div></div></div>
-        <div class="tbl" style="width:500px"><table>
-          <thead><tr><th>教案名稱</th><th>撰寫者</th><th>附件</th><th>本輪</th><th>狀態</th></tr></thead>
-          <tbody>
-            <tr class="sel"><td><a class="link">網路世界放大鏡!</a><small><span class="cat nature">自然</span></small></td><td>撰寫者小美</td><td><span class="chip done">教案紙 ✓</span></td><td><span class="chip active">納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-            <tr><td><a class="link">電光的秘密</a><small><span class="cat social">社會</span></small></td><td>陳怡君</td><td><span class="chip alert">上傳失敗</span></td><td><span class="chip active">納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-            <tr><td><a class="link">空氣的力量</a><small><span class="cat nature">自然</span></small></td><td>撰寫者小美</td><td><span class="chip done">教案紙 ✓</span></td><td><span class="chip active">納入</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-          </tbody>
-        </table></div>
-        <div class="drawer">
-          <div class="dh"><div><small>27 冬・電光家・初驗・自然・全年級・40 分鐘</small><b>網路世界放大鏡!</b></div><span style="font-size:22px;color:var(--b500)">×</span></div>
-          <div class="db">
-            <dl class="kv"><dt>撰寫者</dt><dd>撰寫者小美（教案紙上：○○○）</dd><dt>家別</dt><dd>電光</dd><dt>本輪</dt><dd><span class="chip active">本輪納入</span></dd><dt>驗收狀態</dt><dd><span class="chip idle">尚未送出</span></dd></dl>
-            <div class="hr"></div>
-            <b>附件</b>
-            <div class="tbl" style="margin-top:8px"><table><tbody>
-              <tr><td>教案紙</td><td><a class="link-file">網路世界放大鏡!_○○○.pdf</a></td><td class="muted small">6.5 MB・01/02 上傳</td></tr>
-              <tr><td>投影片</td><td class="muted">總驗開放（選填）</td><td></td></tr>
-            </tbody></table></div>
-            <div class="hr"></div>
-            <b>課程簡介</b>
-            <p class="muted" style="margin:6px 0 0">介紹什麼是假新聞與出現原因，判別假新聞，並讓小朋友實際進行事實查核……</p>
-            <div class="hr"></div>
-            <b>送件與驗收歷程</b>
-            <ul class="timeline" style="margin-top:8px"><li>01/02 21:02 撰寫者小美上傳教案紙</li><li class="muted">尚未送出：送出後這裡會顯示「送出時的版本」與驗收進度</li></ul>
-          </div>
-        </div>
-      </div>
-    </div></div>
-      <div class="stage-cap" style="margin-top:22px">畫面 B-2：家長送出後，再打開同一份教案的抽屜</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="parent" data-on="family"></div>
-      <div class="main">
-        <div class="userbtn">電</div>
-        <div class="ph" style="padding-right:590px"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗（已送出）</div></div></div>
-        <div class="tbl" style="width:500px"><table>
-          <thead><tr><th>教案名稱</th><th>撰寫者</th><th>附件</th><th>本輪</th><th>狀態</th></tr></thead>
-          <tbody>
-            <tr class="sel"><td><a class="link">網路世界放大鏡!</a></td><td>撰寫者小美</td><td><span class="chip done">教案紙 ✓</span></td><td><span class="chip done">已送出</span></td><td><span class="chip active">驗收中</span></td></tr>
-            <tr><td><a class="link">空氣的力量</a></td><td>撰寫者小美</td><td><span class="chip done">教案紙 ✓</span></td><td><span class="chip done">已送出</span></td><td><span class="chip idle">待分配</span></td></tr>
-          </tbody>
-        </table></div>
-        <div class="drawer">
-          <div class="dh"><div><small>27 冬・電光家・初驗・自然・全年級・40 分鐘</small><b>網路世界放大鏡!</b></div><span style="font-size:22px;color:var(--b500)">×</span></div>
-          <div class="db">
-            <dl class="kv"><dt>撰寫者</dt><dd>撰寫者小美（教案紙上：○○○）</dd><dt>本輪</dt><dd><span class="chip done">已送出</span></dd><dt>驗收狀態</dt><dd><span class="chip active">驗收中</span> <span class="muted small">2 位驗收者中 1 位已提交</span></dd></dl>
-            <div class="hr"></div>
-            <b>附件（送出時的版本）</b>
-            <div class="tbl" style="margin-top:8px"><table><tbody>
-              <tr><td>教案紙</td><td><a class="link-file">網路世界放大鏡!_○○○.pdf</a></td><td class="muted small">01/04 21:10 凍結</td></tr>
-              <tr><td>投影片</td><td class="muted">總驗開放（選填）</td><td></td></tr>
-            </tbody></table></div>
-            <div class="hr"></div>
-            <b>送件與驗收歷程</b>
-            <ul class="timeline" style="margin-top:8px">
-              <li>01/02 21:02 撰寫者小美上傳教案紙</li>
-              <li>01/04 21:10 電光家長送出初驗，凍結教案紙（6.5 MB）</li>
-              <li>01/05 10:30 分配給 2 位驗收者</li>
-              <li>01/06 20:15 1 位驗收者已提交</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>同一頁依階段分成三個可收合的區塊：「準備中（還沒納入本輪）」「本輪待驗收」「已驗收」。每個區塊用同樣的完整欄位表格；家長在「本輪待驗收」上方看到送出摘要與按鈕。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>「全家所有教案」和「這輪實際送出的」分得最清楚</li><li>已驗收完的不會干擾目前要處理的</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>一頁多張表，教案在區塊間移動時容易找不到</li><li>改動量比 A 大</li></ul></div>
-    </div>
-    <div class="verdict">如果一家每輪有十幾份教案、又常有「這輪先不送」的情況，C 的分組會比較好管理。規則：只有家長能改「納入本輪」；附件失敗的教案不能納入，送出時要登記成缺交（見 S8）。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="parent" data-on="family" data-archived></div>
-      <div class="main">
-        <div class="userbtn">電</div>
-        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗　送件截止 2027/01/05 23:59</div></div><div class="acts"><span class="btn primary">送出驗收</span></div></div>
-        <div class="card" style="padding:14px 16px">
-          <div class="row between"><b>本輪待驗收・2 份</b><span class="muted small">送出時會一起附上缺交紀錄 2 筆</span></div>
-          <div class="tbl" style="margin-top:10px;box-shadow:none"><table>
-            <thead><tr><th>教案名稱</th><th>撰寫者</th><th>家別</th><th>類別</th><th>教案紙</th><th>投影片</th><th>驗收狀態</th></tr></thead>
-            <tbody>
-              <tr><td><a class="link">網路世界放大鏡!</a></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-              <tr><td><a class="link">空氣的力量</a></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip idle">尚未送出</span></td></tr>
-            </tbody>
-          </table></div>
-        </div>
-        <div class="card" style="padding:14px 16px">
-          <div class="row between"><b>準備中・1 份</b><span class="muted small">不會在本輪送出；欄位同上方表格（原型省略部分欄位）　▾</span></div>
-          <div class="tbl" style="margin-top:10px;box-shadow:none"><table><tbody>
-            <tr><td><a class="link">電光的秘密</a></td><td>陳怡君</td><td>電光</td><td><span class="cat social">社會</span></td><td><span class="chip alert">上傳失敗</span></td><td><span class="btn sm" disabled>納入本輪</span><small>附件修好才能納入</small></td></tr>
-          </tbody></table></div>
-        </div>
-        <div class="card" style="padding:14px 16px"><div class="row between"><b>已驗收・0 份</b><span class="muted small">展開後沿用同一張完整欄位表格 ▸</span></div></div>
-      </div>
-    </div></div>
-      <div class="stage-cap" style="margin-top:22px">畫面 C-2：初驗結果公布後，「已驗收」區塊展開</div>
-    <div class="stage"><div class="frame">
-      <div class="sb" data-sb="parent" data-on="family"></div>
-      <div class="main">
-        <div class="userbtn">電</div>
-        <div class="ph"><div><h1>家內教案</h1><div class="sub">27 冬・電光家・初驗（結果已公布）</div></div></div>
-        <div class="card" style="padding:14px 16px">
-          <div class="row between"><b>已驗收・2 份</b><span class="muted small">收合 ▾</span></div>
-          <div class="tbl" style="margin-top:10px;box-shadow:none"><table>
-            <thead><tr><th>教案名稱</th><th>撰寫者</th><th>家別</th><th>類別</th><th>教案紙</th><th>投影片</th><th>驗收結果</th></tr></thead>
-            <tbody>
-              <tr><td><a class="link">網路世界放大鏡!</a></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip done">已通過</span></td></tr>
-              <tr><td><a class="link">空氣的力量</a></td><td>撰寫者小美</td><td>電光</td><td><span class="cat nature">自然</span></td><td><a class="link-file">查看教案紙</a></td><td><span class="muted small">總驗開放（選填）</span></td><td><span class="chip alert">補驗</span></td></tr>
-            </tbody>
-          </table></div>
-        </div>
-        <div class="card" style="padding:12px 16px"><div class="row between"><b>本輪待驗收・0 份</b><span class="muted small">展開 ▸</span></div></div>
-      </div>
-    </div></div>
-  </section>
-
+  </div></div>
+  <div class="panel" style="margin-top:18px"><h2>流程銜接與邊界</h2><p>上傳教案連至 <a href="s9_upload.html">S9 上傳流程</a>，家長的缺交登記連至 <a href="s7_missing.html">S7 缺交登記</a>，送出前確認連至 <a href="s8_submit.html">S8 送出驗收</a>。以上為其他情境的獨立原型，不會帶入本頁資料或執行真實送件。</p><p class="small muted">撰寫者欄暫沿用帳號姓名，教案紙設計者附在下方。送出前有 2 份附件就緒、2 份尚未就緒；送出後情境示範家長已將後兩份登記為缺交。此預覽不模擬實際檔案上傳或修改缺交紀錄。</p></div>
   <div class="pager"><a href="s5_add_member.html">← S5 新增成員與帳號認領</a><a href="s7_missing.html">S7 缺交登記 →</a></div>
 </div>
+<dialog class="dialog dialog-preview" id="plan-dialog" aria-labelledby="dialog-title">
+  <div class="dh"><div><small id="dialog-context"></small><b id="dialog-title"></b></div><button type="button" id="close-dialog" aria-label="關閉預覽">×</button></div>
+  <div class="db" id="dialog-content"></div>
+</dialog>
 <script>
-// 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
-(function () {
-  const PEOPLE = {
-    leader: { name: '組長阿凱', mail: 'demo-leader@tutoref.tw', av: '組' },
-    parent: { name: '電光家長', mail: 'demo-parent-dianguang@…', av: '電' },
-    writer: { name: '撰寫者小美', mail: 'demo-writer@tutoref.tw', av: '撰' },
-    reviewer: { name: '驗收者一', mail: 'demo-reviewer-1@tutoref.tw', av: '驗' },
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const roles = {
+    writer: { name: '撰寫者小美', avatar: '撰', label: '撰寫者', layout: 'A' },
+    reviewer: { name: '驗收者一', avatar: '驗', label: '驗收者', layout: 'A' },
+    member: { name: '家內成員小安', avatar: '安', label: '其他非家長成員', layout: 'A' },
+    parent: { name: '電光家長', avatar: '電', label: '家長', layout: 'C' }
   };
-
-  // data-sb="leader|parent|writer|reviewer"、data-on="<key>"、data-archived（改名「已歸檔教案」）、data-family（顯示家內教案）
-  document.querySelectorAll('.sb[data-sb]').forEach((sb) => {
-    const role = sb.dataset.sb;
-    const on = sb.dataset.on || '';
-    // 原型呈現的都是改版後的狀態，預設顯示「已歸檔教案」；data-legacy 才顯示舊名，data-archived 額外標「改名」
-    const archived = !sb.hasAttribute('data-legacy');
-    const family = sb.hasAttribute('data-family') || role === 'parent';
-    // data-name / data-mail / data-av 可覆寫側欄底部顯示的人（例如加拿家長）
-    const base = PEOPLE[role] || PEOPLE.leader;
-    const person = sb.dataset.name ? { name: sb.dataset.name, mail: sb.dataset.mail || '', av: sb.dataset.av || sb.dataset.name[0] } : base;
-    const item = (key, label, extra = '') =>
-      `<div class="it${key === on ? ' on' : ''}"><i></i>${label}${extra}</div>`;
-    let html = '<div class="logo">Tut<span>★</span>ref</div>';
-    html += item('search', '教案檢索') + item('package', '學習資源') + item('news', '訊息公告');
-    html += '<div class="grp">我的教案</div>';
-    html += item('mine', archived ? '已歸檔教案' : '已上傳教案', archived && sb.hasAttribute('data-archived') ? '<span class="new">改名</span>' : '');
-    html += item('likes', '已收藏教案');
-    html += '<div class="grp">教案驗收</div>';
-    if (family) html += item('family', '家內教案', role !== 'parent' && sb.hasAttribute('data-family') ? '<span class="new">開放</span>' : '');
-    html += item('tasks', '我的驗收任務');
-    if (role === 'leader') {
-      html += item('review', '本期驗收管理');
-      html += '<div class="grp">教案組管理</div>';
-      html += item('members', '成員管理') + item('plans', '教案管理') + item('rubric', '驗收標準');
-    }
-    html += '<div class="spacer"></div>';
-    html += `<div class="me"><div class="av">${person.av}</div><div><b>${person.name}</b><small>${person.mail}</small></div></div>`;
-    sb.innerHTML = html;
-  });
-
-  const tabs = Array.from(document.querySelectorAll('.opt-tab'));
-  const opts = Array.from(document.querySelectorAll('.opt'));
-  if (!tabs.length) return;
-  function show(key) {
-    tabs.forEach((t) => t.classList.toggle('on', t.dataset.opt === key));
-    opts.forEach((o) => o.classList.toggle('on', o.dataset.opt === key));
+  const phases = { pending: '本輪待驗收', preparing: '準備中', completed: '已驗收' };
+  const plans = [
+    { id: 1, title: '網路世界放大鏡!', author: '撰寫者小美', designer: '○○○', category: '自然', cat: 'nature', info: '全年級・40 分鐘', file: 'ready' },
+    { id: 2, title: '空氣的力量', author: '撰寫者小美', category: '自然', cat: 'nature', info: '低年級・40 分鐘', file: 'ready' },
+    { id: 3, title: '電光的秘密', author: '陳怡君', category: '社會', cat: 'social', info: '中高年級・90 分鐘', file: 'failed' },
+    { id: 4, title: '生活中的水', author: '撰寫者小美', category: '自然', cat: 'nature', info: '中年級・40 分鐘', file: 'processing' }
+  ];
+  const params = new URLSearchParams(location.search);
+  const legacyParent = location.hash.toUpperCase() === '#C';
+  let role = Object.hasOwn(roles, params.get('role')) ? params.get('role') : legacyParent ? 'parent' : 'writer';
+  let state = ['draft', 'submitted', 'published'].includes(params.get('state')) ? params.get('state') : 'draft';
+  let round = params.get('round') === 'final' ? 'final' : 'initial';
+  let phase = Object.hasOwn(phases, params.get('phase')) ? params.get('phase') : 'all';
+  const included = new Set([1, 2]);
+  const openGroups = { pending: true, preparing: true, completed: true };
+  const chip = (text, kind) => `<span class="chip ${kind}">${text}</span>`;
+  const roundName = () => round === 'initial' ? '初驗' : '總驗';
+  const isMissing = (p) => state !== 'draft' && !included.has(p.id);
+  const planPhase = (p) => !included.has(p.id) ? 'preparing' : state === 'published' ? 'completed' : 'pending';
+  const fileButton = (p, type) => `<button type="button" class="link-file" data-plan="${p.id}" data-preview="${type}">查看${type}</button>`;
+  function syncUrl() {
+    const url = new URL(location.href);
+    Object.entries({ role, state, round, phase: role === 'parent' ? phase : 'all' }).forEach(([k, v]) => url.searchParams.set(k, v));
+    url.hash = roles[role].layout;
+    history.replaceState(null, '', url);
   }
-  tabs.forEach((t) =>
-    t.addEventListener('click', () => {
-      show(t.dataset.opt);
-      history.replaceState(null, '', '#' + t.dataset.opt);
-    })
-  );
-  const fromHash = location.hash.replace('#', '').toUpperCase();
-  show(tabs.some((t) => t.dataset.opt === fromHash) ? fromHash : tabs[0].dataset.opt);
+  function sidebar() {
+    const person = roles[role];
+    const item = (text, active = false) => `<div class="it${active ? ' on' : ''}"><i></i>${text}</div>`;
+    $('family-sidebar').innerHTML = '<div class="logo">Tut<span>★</span>ref</div>' + item('教案檢索') + item('學習資源') + item('訊息公告') + '<div class="grp">我的教案</div>' + item('已歸檔教案') + item('已收藏教案') + '<div class="grp">教案驗收</div>' + item('家內教案', true) + item('我的驗收任務') + `<div class="spacer"></div><div class="me"><div class="av">${person.avatar}</div><div><b>${person.name}</b><small>27 冬・電光家</small></div></div>`;
+    $('user-avatar').textContent = person.avatar;
+  }
+  function table(rows) {
+    if (!rows.length) return '<p class="empty">此階段沒有符合條件的教案。</p>';
+    return `<div class="tbl plan-table" tabindex="0" role="region" aria-label="教案完整欄位表格，可橫向捲動"><table><thead><tr>${['教案名稱','撰寫者','家別','類別','教案紙','投影片','待驗收','驗收狀態'].map(t => `<th scope="col">${t}</th>`).join('')}</tr></thead><tbody>${rows.map(p => {
+      const missing = isMissing(p);
+      const own = role === 'writer' && p.author === roles.writer.name;
+      let paper = p.file === 'ready' ? fileButton(p, '教案紙') : chip(p.file === 'failed' ? '上傳失敗' : '處理中…', p.file === 'failed' ? 'alert' : 'active');
+      if (state === 'draft' && p.file === 'ready' && own) paper += '<small><a class="link" href="s9_upload.html">管理自己的附件</a></small>';
+      if (state === 'draft' && p.file !== 'ready') paper += `<small>${own ? '<a class="link" href="s9_upload.html">管理自己的附件</a>' : '等待撰寫者處理'}</small>`;
+      if (missing) paper = chip('缺交', 'alert') + '<small>本輪無送出附件</small>';
+      if (state !== 'draft' && !missing) paper += '<small>送出時的版本</small>';
+      let intake = included.has(p.id) ? chip(state === 'draft' ? '本輪納入' : '已送出', state === 'draft' ? 'active' : 'done') : chip('未納入本輪', 'idle');
+      if (role === 'parent' && state === 'draft') intake += `<small><button type="button" class="btn sm" data-toggle="${p.id}" ${p.file !== 'ready' ? 'disabled title="教案紙就緒後才能納入"' : ''}>${included.has(p.id) ? '移至準備中' : '納入本輪'}</button></small>`;
+      const status = !included.has(p.id) ? '<span class="muted">—</span>' : state === 'draft' ? chip('尚未送出', 'idle') : state === 'submitted' ? chip(p.id === 1 ? '驗收中' : '待分配', p.id === 1 ? 'active' : 'idle') : chip(p.id === 1 ? '已通過' : '補驗', p.id === 1 ? 'done' : 'alert');
+      const slides = round === 'initial' ? '<span class="muted small">總驗開放（選填）</span>' : p.id === 1 && !missing ? fileButton(p, '投影片') : '<span class="muted small">未附（選填）</span>';
+      return `<tr><td><button type="button" class="link" data-plan="${p.id}" data-preview="詳情">${p.title}</button><small>${p.info}</small></td><td>${p.author}${p.designer ? `<small>教案紙：${p.designer}</small>` : ''}</td><td>電光</td><td><span class="cat ${p.cat}">${p.category}</span></td><td>${paper}</td><td>${slides}</td><td>${intake}</td><td>${status}</td></tr>`;
+    }).join('')}</tbody></table></div>`;
+  }
+  function renderContent() {
+    const query = $('plan-search').value.trim().toLowerCase();
+    const rows = plans.filter(p => `${p.title} ${p.author}`.toLowerCase().includes(query));
+    const visible = rows.filter(p => role !== 'parent' || phase === 'all' || planPhase(p) === phase);
+    $('filter-count').textContent = `顯示 ${visible.length} / ${plans.length} 份`;
+    $('plan-content').innerHTML = role !== 'parent' ? table(visible) : (phase === 'all' ? ['pending','preparing','completed'] : [phase]).map(key => {
+      const group = visible.filter(p => planPhase(p) === key);
+      const total = plans.filter(p => planPhase(p) === key).length;
+      const note = key === 'preparing' ? state === 'draft' ? '不會在本輪送出' : '含本輪缺交教案，不進行驗收' : key === 'pending' ? state === 'draft' ? '附件就緒，待家長確認送出' : '已送出，等待驗收結果' : '結果已公布，補驗教案亦列於此';
+      return `<details class="card plan-group" data-phase="${key}" ${openGroups[key] ? 'open' : ''}><summary>${phases[key]}・${query ? `${group.length} / ${total}` : total} 份<small>${note}</small></summary>${table(group)}</details>`;
+    }).join('');
+    $('plan-content').querySelectorAll('details').forEach(el => el.addEventListener('toggle', () => { openGroups[el.dataset.phase] = el.open; }));
+  }
+  function render() {
+    const parent = role === 'parent';
+    const count = included.size;
+    $('preview-role').value = role;
+    $('preview-state').value = state;
+    $('phase-filter').value = phase;
+    $('phase-control').hidden = !parent;
+    $('preview-caption').textContent = `${roles[role].label}視角｜方案 ${roles[role].layout}・${parent ? '依驗收階段分組' : '完整欄位表格'}・${$('preview-state').selectedOptions[0].textContent}`;
+    $('page-context').textContent = `27 冬・電光家・${roundName()}　送件截止 ${round === 'initial' ? '2027/01/05' : '2027/01/20'} 23:59`;
+    $('page-actions').innerHTML = state === 'draft' ? parent ? '<a class="btn" href="s7_missing.html">登記缺交</a><a class="btn primary" href="s8_submit.html">送出驗收前確認</a>' : role === 'writer' ? '<a class="btn primary" href="s9_upload.html">＋ 上傳教案</a>' : '' : '';
+    document.querySelectorAll('[data-round]').forEach(btn => { btn.classList.toggle('on', btn.dataset.round === round); btn.setAttribute('aria-pressed', String(btn.dataset.round === round)); });
+    const banner = $('round-banner');
+    banner.className = `banner ${state === 'draft' ? 'active' : state === 'submitted' ? 'locked' : 'done'}`;
+    banner.innerHTML = state === 'draft' ? `<b>${roundName()}送件準備中・${count} 份已納入本輪</b><p>${plans.length - count} 份仍在準備中。家長送出前需確認納入名單及缺交紀錄；缺交教案本輪不進行驗收。</p>` : state === 'submitted' ? `<b>電光家已送出${roundName()}・教案與附件已鎖定</b><p>電光家長於 ${round === 'initial' ? '2027/01/04' : '2027/01/19'} 21:10 送出；2 份進入驗收、2 份登記缺交。附件仍可查看送出時版本。</p>` : `<b>${roundName()}結果已公布・1 份通過、1 份補驗</b><p>教案與附件維持唯讀；補驗教案可由撰寫者至「我的驗收任務」查看回饋與後續處理。</p>`;
+    $('round-metrics').innerHTML = ['pending','preparing','completed'].map(key => `<div class="metric"><small>${phases[key]}</small><b>${plans.filter(p => planPhase(p) === key).length}<span> 份</span></b><span>${key === 'preparing' ? '未納入本輪' : key === 'completed' ? '含已通過與補驗' : '本輪已納入的教案'}</span></div>`).join('');
+    $('role-note').textContent = parent ? '階段篩選只改變顯示，不改變送件範圍；送件範圍以「本輪納入」為準。分組與完整表格共用欄位及附件呈現。' : role === 'writer' ? '可檢視全家教案；送出前僅能管理自己的附件。由家長決定納入本輪、登記缺交與送出驗收。' : '可檢視本家所有教案與送出附件；上傳及管理附件由撰寫者操作，送件與缺交由家長處理。';
+    sidebar();
+    renderContent();
+    syncUrl();
+  }
+  $('preview-role').addEventListener('change', e => { role = e.target.value; render(); });
+  $('preview-state').addEventListener('change', e => { state = e.target.value; included.clear(); included.add(1); included.add(2); render(); });
+  $('phase-filter').addEventListener('change', e => { phase = e.target.value; renderContent(); syncUrl(); });
+  $('plan-search').addEventListener('input', renderContent);
+  document.querySelectorAll('[data-round]').forEach(btn => btn.addEventListener('click', () => { round = btn.dataset.round; included.clear(); included.add(1); included.add(2); render(); }));
+  $('plan-content').addEventListener('click', e => {
+    const toggle = e.target.closest('[data-toggle]');
+    if (toggle && role === 'parent' && state === 'draft') {
+      const id = Number(toggle.dataset.toggle);
+      if (plans.find(p => p.id === id)?.file !== 'ready') return;
+      included.has(id) ? included.delete(id) : included.add(id);
+      render();
+      const replacement = $('plan-content').querySelector(`[data-toggle="${id}"]`);
+      const group = replacement?.closest('details');
+      if (group) group.open = true;
+      (replacement || $('phase-filter')).focus();
+      return;
+    }
+    const button = e.target.closest('[data-preview]');
+    if (!button) return;
+    const plan = plans.find(p => p.id === Number(button.dataset.plan));
+    $('dialog-title').textContent = `${plan.title}・${button.dataset.preview}`;
+    $('dialog-context').textContent = `27 冬・電光家・${roundName()}`;
+    $('dialog-content').innerHTML = `<dl class="kv"><dt>撰寫者</dt><dd>${plan.author}</dd><dt>家別／類別</dt><dd>電光／${plan.category}</dd><dt>驗收階段</dt><dd>${phases[planPhase(plan)]}</dd><dt>附件版本</dt><dd>${isMissing(plan) ? '缺交，本輪無送出附件' : state === 'draft' ? '送出前版本' : '送出時的版本（唯讀）'}</dd></dl><p class="muted small">此為 UI 示意預覽，未提供真實 PDF 或投影片檔案；正式站點擊附件將開啟對應檔案。</p>`;
+    $('plan-dialog').showModal();
+  });
+  $('close-dialog').addEventListener('click', () => $('plan-dialog').close());
+  render();
 })();
-
 </script>
 </body>
 </html>

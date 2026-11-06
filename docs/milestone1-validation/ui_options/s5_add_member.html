@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>S5 新增成員與帳號認領</title>
+<title>S5 新增成員、通訊錄匯入與授權認領</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -163,6 +163,7 @@ a { color: var(--p900); }
 
 .ctl { border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; color: var(--b900); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
 .ctl.ph { color: var(--b400); }
+.ctl.search-placeholder { color: var(--b400); }
 .ctl.sel::after { content: '▾'; margin-left: auto; color: var(--b500); font-size: 12px; padding-left: 8px; }
 .ctl.req { border-color: var(--p700); }
 .ctl.full { width: 100%; }
@@ -250,172 +251,327 @@ a { color: var(--p900); }
 .legend li { display: flex; gap: 6px; align-items: center; }
 .legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
+[hidden] { display: none !important; }
+#assignment-frame button, #assignment-frame input { cursor: pointer; }
+button.pill { font-family: var(--font); cursor: pointer; }
+button.pill:focus-visible { outline: 2px solid var(--p900); outline-offset: 2px; }
+.preview-list { max-height: 360px; overflow: auto; }
+.preview-list thead th { position: sticky; top: 0; z-index: 1; }
+.preview-list:focus-visible { outline: 2px solid var(--p900); outline-offset: 2px; }
 </style>
 </head>
 <body>
 <div class="doc">
   <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S5</div>
-  <h1>S5｜新增成員與帳號認領</h1>
-  <p class="lead">對應 US-02：只新增一位；TBD 的「匯入通訊錄」與兩種認領方式（①組長建帳號、本人登入後改密碼 ②本人註冊後輸入驗證碼認領身份）。</p>
+  <h1>S5｜新增成員、通訊錄匯入與授權認領</h1>
+  <p class="lead">採用方案 C，整合原 S2.5：單人新增或批量匯入 → 預覽 → 確認儲存 → 選取成員、指派角色與寄送授權信 → 本人選擇帳號連結認領。</p>
+  <div class="panel">
+    <h2>User story</h2>
+    <p>身為組長，我希望能單人新增或批量匯入通訊錄，預覽確認儲存後，能在與 S2 相同的成員管理介面中選取一位或多位成員，透過一頁式彈窗統一指派系統角色並寄送授權信，讓成員點擊信中連結、自行選擇帳號登入並確認連結認領後完成啟用，並讓我從狀態欄確認誰已啟用。</p>
+    <div class="decide">單人新增／批量匯入 → 預覽名單 → 確認儲存 → 選取成員 → 寄送授權彈窗確認成員與權限 → 寄出授權信 → 成員點擊信中連結 → 自行選擇帳號登入並確認連結認領 → 狀態顯示「已啟用」</div>
+    <p class="muted small">桌機 UI 原型：可切換新增方式、預覽、儲存至示意名單、選取成員、指派角色及模擬寄信。通訊錄使用內建 xlsx 示意資料，不會讀取真實檔案、寫入正式資料、寄信或登入；重新整理會還原。</p>
+  </div>
 
+
+  <div class="opt-tabs"><button class="opt-tab on" data-opt="C">方案 C｜單人／批量匯入＋預覽＋授權認領</button></div>
+  <h2 style="font-size:18px;margin-top:28px" id="add-members">01｜新增成員：單人或批量匯入</h2>
+  <div class="stage"><div class="frame" style="min-height:520px">
+    <div class="sb" data-sb="leader" data-on="members"></div><div class="main">
+      <div class="userbtn">組</div><div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬・新增成員</div></div></div>
+      <div class="scrim"><div class="dialog md"><div class="dh"><div><small>27 冬</small><b>新增成員</b></div></div><div class="db">
+        <div class="pills" style="margin-bottom:20px" aria-label="新增方式"><button type="button" class="pill on" id="single-tab" aria-pressed="true">單人新增</button><button type="button" class="pill" id="import-tab" aria-pressed="false">批量通訊錄匯入</button></div>
+        <form id="single-form">
+          <div class="fgrid"><label><span class="flabel">姓名</span><input class="ctl full" name="name" value="林小安" required></label><label><span class="flabel">通知信箱</span><input class="ctl full" name="email" type="email" value="lin.xiaoan@example.com" required></label><label class="span2"><span class="flabel">團內職務（可輸入）</span><input class="ctl full" name="duty" value="團員" list="duty-options" required><datalist id="duty-options"><option value="團員"><option value="家長"><option value="副組長"><option value="總務"><option value="隊輔"></datalist></label></div>
+          <span class="flabel" style="margin-top:16px">家別（可複選）</span><div class="pills" id="single-families"><button type="button" class="pill" data-single-family="加拿" aria-pressed="false">加拿</button><button type="button" class="pill" data-single-family="初來" aria-pressed="false">初來</button><button type="button" class="pill" data-single-family="新武" aria-pressed="false">新武</button><button type="button" class="pill" data-single-family="霧鹿" aria-pressed="false">霧鹿</button><button type="button" class="pill" data-single-family="利稻" aria-pressed="false">利稻</button><button type="button" class="pill on" data-single-family="電光" aria-pressed="true">電光</button></div>
+          <p id="single-error" class="small" role="alert" style="color:var(--alert)"></p>
+          <div style="margin-top:16px"><button class="btn primary" type="submit">預覽名單</button></div>
+        </form>
+        <div id="import-form" hidden>
+          <span class="flabel">通訊錄檔案（.xlsx）</span>
+          <div class="row"><input type="file" id="import-file" accept=".xlsx" hidden><button type="button" class="btn" id="choose-file">選擇 xlsx 檔案</button><button type="button" class="btn sm" id="use-demo-file">使用示意檔案</button><span id="file-name" class="muted small">尚未選擇檔案</span></div>
+          <p class="muted small">選檔後按「預覽名單」，下一步才顯示各家別及團員清單。此原型使用示意通訊錄內容。</p>
+          <div style="margin-top:16px"><button class="btn primary" type="button" id="preview-import" disabled>預覽名單</button></div>
+        </div>
+      </div></div></div>
+    </div>
+  </div></div>
+  <h2 style="font-size:18px;margin-top:28px" id="member-preview">02｜預覽名單，確認後儲存</h2>
+  <p class="stage-cap">以下直接展示「27冬通訊錄.xlsx」的 02 預覽畫面：六個家別、共 12 位團員。可點擊橢圓家別篩選查看名單，確認儲存後才會加入 03。</p>
+  <p class="stage-cap" id="preview-placeholder" hidden>在 01 填寫單人成員，或選擇通訊錄後按「預覽名單」，此處才會顯示各家別的團員資料。</p>
+  <div class="panel" id="preview-panel">
+    <div class="row between"><h3 style="margin:0">新增成員預覽</h3><span class="chip idle">尚未儲存</span></div>
+    <p id="preview-summary" aria-live="polite"></p>
+    <div class="pills" style="margin-bottom:16px" id="preview-tabs" aria-label="預覽家別"></div>
+    <div class="tbl preview-list" tabindex="0" role="region" aria-label="預覽名單，可向下捲動查看"><table><thead><tr><th>姓名</th><th>通知信箱</th><th>團內職務</th><th>家別</th><th>檢查結果</th></tr></thead><tbody id="preview-rows"></tbody></table></div>
+    <p class="muted small">家別橢圓選項可切換檢視；「全部家別」依家別分組列出所有團員。確認儲存會包含整份預覽名單，篩選不會排除資料。缺少欄位、信箱格式錯誤或重複資料須先修正。確認前不加入名單；儲存後角色保持空白，於寄送授權彈窗中選擇權限後寄出，不會建立帳號。</p>
+    <div class="row" style="justify-content:flex-end"><a class="btn" href="#add-members">返回修改</a><button class="btn primary" id="save-members" type="button">確認儲存，前往選人寄送授權</button></div>
+  </div>
+  <h2 style="font-size:18px;margin-top:28px">03｜選取成員，在寄送授權彈窗確認權限並寄出</h2>
+  <p class="stage-cap">下方先展示已儲存的 6 位示範成員；上方新增資料須在 02 確認儲存後才會加入。保留 S2 的家別分頁、固定篩選列與表格欄位。新增與匯入後的角色欄先保持空白。點選單人成員列或勾選多人，再點「寄送授權」；彈窗列出所選成員與通知信箱，選擇要指派的權限後按「寄出授權」。</p>
+    <div class="stage" id="saved-members"><div class="frame tall" id="assignment-frame">
+      <div class="sb" data-sb="leader" data-on="members"></div>
+      <div class="main">
+        <div class="userbtn">組</div>
+        <div class="ph"><div><h1>成員管理</h1><div class="sub">依期別與家別管理成員身份；同一位成員可以同時擁有多個角色。</div></div><div class="acts"><a class="btn primary" href="#add-members">＋ 新增成員</a></div></div>
+        <div class="tabs" aria-label="匯入工作表檢視"><span class="on">全部成員</span><span>電光</span><span>利稻</span><span>新武</span></div>
+        <p class="muted small">匯入工作表依家別歸類；分頁也顯示既有家別，篩選條件適用目前分頁。同一成員可屬於多個家別，全部成員依家別身份分列。</p>
+        <div class="toolbar">
+          <span class="ctl sel req" style="min-width:132px"><span class="muted small">期別</span>&nbsp;27 冬（現行）</span>
+          <span class="ctl search-placeholder grow">搜尋姓名…</span>
+          <span class="ctl sel" style="min-width:150px;border-color:var(--p900)"><span class="muted small">角色</span>&nbsp;全部</span>
+          <span class="ctl sel" style="min-width:140px"><span class="muted small">團內職務</span>&nbsp;全部</span>
+          <span class="ctl sel" style="min-width:140px"><span class="muted small">帳號狀態</span>&nbsp;全部</span>
+        </div>
+        <div class="row between" style="margin-bottom:12px">
+          <div class="row" style="gap:6px"><span class="muted small">已儲存的示範成員名單</span></div>
+          <span class="muted small" id="saved-count">共 6 筆身份／6 人</span>
+        </div>
+        <div class="bulk" id="assignment-bulk" hidden><span><b id="selection-count">已選 0 位成員</b></span><span class="row"><button type="button" class="btn sm" id="clear-selection">取消選取</button><button type="button" class="btn primary sm" id="send-authorization">寄送授權</button></span></div>
+        <div class="tbl clickable"><table>
+          <thead><tr><th class="cb"><input type="checkbox" aria-label="全選成員" id="select-all"></th><th>姓名</th><th>信箱</th><th>團內職務</th><th>家別</th><th>角色</th><th>帳號狀態</th></tr></thead>
+          <tbody id="saved-member-rows">
+<tr data-member="demo-writer@tutoref.tw"><td class="cb"><input type="checkbox" class="member-select" aria-label="選取 撰寫者小美"></td><td><b>撰寫者小美</b></td><td>demo-writer@tutoref.tw</td><td>團員</td><td>電光</td><td aria-label="尚未指派權限"></td><td><span class="chip idle">未寄送</span></td></tr>
+<tr data-member="ming@example.com"><td class="cb"><input type="checkbox" class="member-select" aria-label="選取 林小明"></td><td><b>林小明</b></td><td>ming@example.com</td><td>家長</td><td>利稻</td><td aria-label="尚未指派權限"></td><td><span class="chip idle">未寄送</span></td></tr>
+<tr data-member="hua@example.com"><td class="cb"><input type="checkbox" class="member-select" aria-label="選取 王小華"></td><td><b>王小華</b></td><td>hua@example.com</td><td>團員</td><td>新武</td><td aria-label="尚未指派權限"></td><td><span class="chip idle">未寄送</span></td></tr>
+<tr data-member="yiqing@example.com"><td class="cb"><input type="checkbox" class="member-select" aria-label="選取 周以晴"></td><td><b>周以晴</b></td><td>yiqing@example.com</td><td>總務</td><td>加拿</td><td aria-label="尚未指派權限"></td><td><span class="chip idle">未寄送</span></td></tr>
+<tr data-member="jiahao@example.com"><td class="cb"><input type="checkbox" class="member-select" aria-label="選取 張家豪"></td><td><b>張家豪</b></td><td>jiahao@example.com</td><td>團員</td><td>初來</td><td aria-label="尚未指派權限"></td><td><span class="chip idle">未寄送</span></td></tr>
+<tr data-member="bohan@example.com"><td class="cb"><input type="checkbox" class="member-select" aria-label="選取 黃柏翰"></td><td><b>黃柏翰</b></td><td>bohan@example.com</td><td>隊輔</td><td>霧鹿</td><td aria-label="尚未指派權限"></td><td><span class="chip idle">未寄送</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="muted small" style="margin-top:8px">點選一位成員或勾選多位成員後，點「寄送授權」開啟確認視窗；選擇權限並寄出前，角色欄保持空白。同一成員跨家別分列時只寄一封授權信。</p>
+        <div class="scrim" id="assignment-modal" hidden>
+          <div class="dialog sm" role="dialog" aria-modal="true" aria-labelledby="assignment-title" tabindex="-1">
+            <div class="dh"><div><small>27 冬・系統角色</small><b id="assignment-title">寄送授權・確認成員與權限</b></div><button type="button" class="btn ghost sm" id="close-assignment" aria-label="關閉">×</button></div>
+            <div class="db">
+              <p style="margin-top:0">已選成員：<b id="assignment-targets"></b></p><div class="tbl" style="max-height:180px;overflow:auto;margin-bottom:16px"><table><thead><tr><th>成員</th><th>通知信箱</th><th>家別</th></tr></thead><tbody id="authorization-target-rows"></tbody></table></div>
+              <span class="flabel">系統角色（可複選）</span>
+              <div class="pills" style="margin-top:10px">
+                <label class="pill"><input type="checkbox" name="assigned-role" value="撰寫者"> 撰寫者</label>
+                <label class="pill"><input type="checkbox" name="assigned-role" value="家長"> 家長</label>
+                <label class="pill"><input type="checkbox" name="assigned-role" value="驗收者"> 驗收者</label>
+                <label class="pill"><input type="checkbox" name="assigned-role" value="教案組長"> 教案組長</label>
+              </div>
+              <p class="muted small">以下權限統一指派給上述成員。按「寄出授權」後才儲存權限並寄送授權信；取消不會修改角色。</p>
+              <p id="assignment-error" class="small" style="color:var(--alert)" role="alert"></p>
+            </div>
+            <div class="df"><button type="button" class="btn" id="cancel-assignment">取消</button><button type="button" class="btn primary" id="confirm-authorization">寄出授權</button></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  <p id="assignment-feedback" class="stage-cap" aria-live="polite">可直接操作下方 6 位已儲存的示範成員；新增名單需先經 02 預覽並確認儲存。</p>
+
+  <h2 style="font-size:18px;margin-top:28px">04｜成員點擊授權信，自行選擇帳號連結認領</h2>
   <div class="grid2">
     <div class="panel">
-      <h2>情境</h2>
-      <p>新加入的隊輔林小安還沒有 Tutoref 帳號。組長要把她加進 27 冬電光家、角色是撰寫者，並且讓她知道怎麼開始登入。另一位舊成員撰寫者小美已經有帳號，只要加進本期即可。</p>
+      <h3 style="margin-top:0">授權信預覽</h3>
+      <p class="muted small">收件人：yijun@example.com<br>主旨：Tutoref｜27 冬成員權限授權邀請</p>
+      <div class="hr"></div>
+      <p>怡君你好，組長已邀請你加入 27 冬，並指派以下權限：</p>
+      <p><b>家別：</b>電光<br><b>系統角色：</b>撰寫者、驗收者</p>
+      <p>請點擊下方連結，選擇你要連結的 Tutoref 帳號，登入後確認認領本期身份與角色。</p>
+      <span class="btn primary">選擇帳號並連結認領</span>
     </div>
     <div class="panel">
-      <h2>目前遇到的問題</h2>
-      <ul>
-        <li><span class="issue-ref">C-19</span> 可以用 email 建立「沒有密碼的帳號」，但本人不會收到通知；用同一個 email 註冊會被拒絕，只能自己想到去按「忘記密碼」。</li>
-        <li>沒有匯入通訊錄，也沒有驗證碼認領。</li>
-      </ul>
+      <h3 style="margin-top:0">由授權連結進入的帳號選擇與認領頁</h3>
+      <p><span class="chip active">待連結認領</span></p>
+      <p>你正在接受 <b>27 冬・電光</b> 的授權邀請。<br>授權角色：<b>撰寫者、驗收者</b></p>
+      <div class="card" style="box-shadow:none">
+        <span class="flabel">要連結的帳號（由成員自行選擇）</span><span class="ctl full">怡君的帳號・my.account@example.com</span><p class="muted small">邀請寄送至 yijun@example.com；這是通知信箱，不會預先建立帳號或決定要連結的帳號。</p>
+        <span class="flabel" style="margin-top:12px">密碼</span><span class="ctl full">••••••••••</span>
+        <div style="margin-top:16px"><span class="btn primary">登入並確認連結認領</span></div>
+        <p class="muted small"><span class="link">改用其他帳號</span>　尚無帳號？先自行註冊，再回到此邀請完成連結認領。</p>
+      </div>
+      <p class="muted small">點擊信件連結後，由成員確認選定的帳號，將本期身份與角色連結至該帳號後，才顯示已啟用。</p>
     </div>
   </div>
-  <div class="panel">
-    <h2>需要你決定</h2>
-    <div class="decide">認領方式要二選一，介面才能寫清楚：<b>①組長建帳號＋本人設定密碼</b>（A、B 採用：系統產生「設定密碼連結」或請本人用「忘記密碼」）；<b>②本人自己註冊＋輸入認領碼</b>（C 採用：組長匯入名單時系統產生認領碼，本人註冊後輸入）。②要改註冊流程（同 email 不能被擋），工程量較大。</div>
-  </div>
 
-  <div class="opt-tabs">
-    <button class="opt-tab" data-opt="A">方案 A｜單人新增彈窗＋設定密碼連結 <span class="rec">Claude 推薦</span><span class="rec codex">Codex 審查後推薦</span></button>
-    <button class="opt-tab" data-opt="B">方案 B｜連續新增抽屜</button>
-    <button class="opt-tab" data-opt="C">方案 C｜匯入名單＋認領碼</button>
-  </div>
-
-  <!-- ===================== A ===================== -->
-  <section class="opt" data-opt="A">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動 <span class="variant">假設：設定密碼連結與效期待決定</span></h3><p>「＋ 新增成員」開彈窗。輸入 email 後立刻判斷：已有帳號就顯示「加入本期」，沒有帳號就顯示「建立待認領成員」。家別＋角色用和 S3 相同的「一列一個家別」編輯。儲存後彈窗變成完成畫面，提供「複製設定密碼連結」，組長貼到 LINE 給本人即可。還要處理：信箱已在本期、信箱格式錯誤、連結失效時重新產生。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>完整滿足「只新增一位」</li><li>組長清楚知道對方是新帳號還是舊帳號</li><li>不必依賴寄信（目前寄信設定也不穩）</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>一次只能加一位，開期大量加人時較慢</li><li>後端要新增「產生設定密碼連結」的 API</li></ul></div>
-    </div>
-    <div class="verdict"><b>Claude 與 Codex（審查後）都推薦 A。</b>推薦的是「單人新增＋一條真的能用的認領路徑」；用設定密碼連結只是其中一種做法，選 A 不代表已決定這個機制。匯入名單（C）等格式確定後再做。</div>
-    <div class="stage-cap">畫面 A-1：輸入 email 後，判斷為新帳號</div>
+  <h2 style="font-size:18px;margin-top:28px">05｜組長查看「已啟用」</h2>
+  <p class="stage-cap">成員端顯示「授權已啟用」；組長重新查看成員管理時，同一筆帳號狀態顯示「已啟用」。</p>
     <div class="stage"><div class="frame tall">
       <div class="sb" data-sb="leader" data-on="members"></div>
       <div class="main">
         <div class="userbtn">組</div>
-        <div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬</div></div><div class="acts"><span class="btn primary">＋ 新增成員</span></div></div>
-        <div class="scrim">
-          <div class="dialog md">
-            <div class="dh"><div><small>27 冬</small><b>新增成員</b></div><span class="x">×</span></div>
-            <div class="db">
-              <div class="fgrid">
-                <div><span class="flabel">信箱（必填）</span><span class="ctl full">lin.xiaoan@example.com</span></div>
-                <div><span class="flabel">姓名（必填）</span><span class="ctl full">林小安</span></div>
-              </div>
-              <div class="banner info" style="margin:12px 0 0"><b>這是新帳號</b><p>系統會建立「待認領」帳號，儲存後提供設定密碼連結給本人。</p></div>
-              <div class="hr"></div>
-              <span class="flabel">27 冬的身份</span>
-              <div class="tbl" style="margin-top:6px"><table><thead><tr><th style="width:150px">家別</th><th>角色（可複選）</th><th style="width:70px"></th></tr></thead><tbody>
-                <tr><td><span class="ctl sel full">電光</span></td><td><span class="check"><span class="box on"></span>撰寫者</span><span class="check"><span class="box"></span>家長</span></td><td><span class="btn danger sm">移除</span></td></tr>
-              </tbody></table></div>
-              <div style="margin-top:8px"><span class="btn sm">＋ 新增一個家別身份</span></div>
-              <div style="margin-top:10px"><span class="flabel">全期角色（不分家別）</span><span class="check"><span class="box"></span>驗收者</span><span class="check"><span class="box"></span>教案組長</span></div>
-            </div>
-            <div class="df"><span class="btn">取消</span><span class="btn primary">建立並加入 27 冬</span></div>
-          </div>
+        <div class="ph"><div><h1>成員管理</h1><div class="sub">依期別與家別管理成員身份；同一位成員可以同時擁有多個角色。</div></div><div class="acts"><span class="btn primary">＋ 新增成員</span></div></div>
+        <div class="tabs" aria-label="匯入工作表檢視"><span class="on">全部成員</span><span>電光</span><span>利稻</span><span>新武</span></div>
+        <p class="muted small">匯入工作表依家別歸類；分頁也顯示既有家別，篩選條件適用目前分頁。同一成員可屬於多個家別，全部成員依家別身份分列。</p>
+        <div class="toolbar">
+          <span class="ctl sel req" style="min-width:132px"><span class="muted small">期別</span>&nbsp;27 冬（現行）</span>
+          <span class="ctl search-placeholder grow">搜尋姓名…</span>
+          <span class="ctl sel" style="min-width:150px;border-color:var(--p900)"><span class="muted small">角色</span>&nbsp;撰寫者</span>
+          <span class="ctl sel" style="min-width:140px"><span class="muted small">團內職務</span>&nbsp;全部</span>
+          <span class="ctl sel" style="min-width:140px"><span class="muted small">帳號狀態</span>&nbsp;全部</span>
         </div>
+        <div class="row between" style="margin-bottom:12px">
+          <div class="row" style="gap:6px"><span class="tag">角色：撰寫者 <span class="x">×</span></span><a class="link small" style="margin-left:6px">清除篩選</a></div>
+          <span class="muted small">共 3 筆身份／2 人</span>
+        </div>
+        <div class="tbl"><table>
+          <thead><tr><th class="cb"><span class="box"></span></th><th>姓名</th><th>信箱</th><th>團內職務</th><th>家別</th><th>角色</th><th>帳號狀態</th></tr></thead>
+          <tbody>
+            <tr><td class="cb"><span class="box"></span></td><td><b>撰寫者小美</b></td><td class="muted">demo-writer@tutoref.tw</td><td>團員</td><td>電光</td><td><span class="role">撰寫者</span><span class="role">驗收者</span></td><td><span class="chip done">已啟用</span></td></tr>
+            <tr><td class="cb"><span class="box"></span></td><td><b>陳怡君</b></td><td class="muted">yijun@example.com</td><td>團員</td><td>電光</td><td><span class="role">撰寫者</span><span class="role">驗收者</span></td><td><span class="chip done">已啟用</span></td></tr>
+            <tr><td class="cb"><span class="box"></span></td><td><b>陳怡君</b><small>同一成員，另一家</small></td><td class="muted">yijun@example.com</td><td>團員</td><td>新武</td><td><span class="role">撰寫者</span><span class="role">驗收者</span></td><td><span class="chip done">已啟用</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="muted small" style="margin-top:8px">成員由授權信連結登入並確認連結認領後，原本的「帳號狀態」欄更新為「已啟用」。同一成員跨家別的列同步顯示。</p>
       </div>
     </div></div>
-    <div class="stage-cap" style="margin-top:22px">畫面 A-2：儲存後的完成畫面</div>
-    <div class="stage"><div class="frame">
-      <div class="sb" data-sb="leader" data-on="members"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="scrim">
-          <div class="dialog sm">
-            <div class="dh"><div><small>新增成員</small><b>已加入林小安</b></div><span class="x">×</span></div>
-            <div class="db">
-              <div class="banner done" style="margin-top:0"><b>電光・撰寫者</b><p>帳號狀態：<span class="chip active">待認領</span></p></div>
-              <p style="margin:0 0 8px"><b>下一步：請把設定密碼連結傳給林小安</b></p>
-              <div class="row"><span class="ctl full" style="font-size:12px">https://tutoref.tw/reset-password/MjY…/c3k…</span><span class="btn primary sm">複製</span></div>
-              <p class="muted small" style="margin:10px 0 0">（假設）連結 7 天內有效、只能用一次，可重新產生。她設定密碼後，狀態會變成「已啟用」。</p>
-            </div>
-            <div class="df"><span class="btn">再新增一位</span><span class="btn primary">完成</span></div>
-          </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
 
-  <!-- ===================== B ===================== -->
-  <section class="opt" data-opt="B">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動</h3><p>「＋ 新增成員」打開右側抽屜，填一位後按「儲存並新增下一位」：個資清空、家別與角色保留，方便連續加同一家的成員。左邊表格即時多出新的一列，新帳號標示「待認領」，每列都能「複製認領資訊」。認領方式同 A。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>開期時連續加同一家多人最快</li><li>不離開成員表格，加完立刻看得到</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>保留上一位的角色，可能誤加錯角色</li><li>設定密碼連結要逐位到表格裡複製</li></ul></div>
-    </div>
-    <div class="verdict">如果開期時常常一口氣加十幾位新成員、又還沒有通訊錄格式，B 是 A 和 C 之間的折衷。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="members"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph" style="padding-right:600px"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="tbl" style="width:470px"><table><thead><tr><th>姓名</th><th>家別</th><th>帳號狀態</th></tr></thead><tbody>
-          <tr class="hl"><td><b>林小安</b> <span class="chip info" style="font-size:11px">剛新增</span><small><a class="link">複製認領資訊</a></small></td><td>電光</td><td><span class="chip active">待認領</span></td></tr>
-          <tr class="hl"><td><b>周以晴</b> <span class="chip info" style="font-size:11px">剛新增</span><small><a class="link">複製認領資訊</a></small></td><td>電光</td><td><span class="chip active">待認領</span></td></tr>
-          <tr><td>撰寫者小美</td><td>電光</td><td><span class="chip done">已啟用</span></td></tr>
-          <tr><td>電光家長</td><td>電光</td><td><span class="chip done">已啟用</span></td></tr>
-        </tbody></table></div>
-        <div class="drawer">
-          <div class="dh"><div><small>27 冬・本次已新增 2 位</small><b>新增成員</b></div><span style="font-size:22px;color:var(--b500)">×</span></div>
-          <div class="db">
-            <div class="fgrid">
-              <div><span class="flabel">信箱（必填）</span><span class="ctl ph full">輸入信箱</span></div>
-              <div><span class="flabel">姓名</span><span class="ctl ph full">輸入姓名</span></div>
-            </div>
-            <div class="hr"></div>
-            <span class="flabel">27 冬的身份 <span class="muted small" style="font-weight:400">（沿用上一位：電光・撰寫者）</span></span>
-            <div class="tbl" style="margin-top:6px"><table><tbody>
-              <tr><td style="width:150px"><span class="ctl sel full">電光</span></td><td><span class="check"><span class="box on"></span>撰寫者</span><span class="check"><span class="box"></span>家長</span></td></tr>
-            </tbody></table></div>
-            <div style="margin-top:8px"><span class="btn sm">＋ 新增一個家別身份</span></div>
-          </div>
-          <div class="df"><span class="btn">完成</span><span class="btn primary">儲存並新增下一位</span></div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- ===================== C ===================== -->
-  <section class="opt" data-opt="C">
-    <div class="opt-meta">
-      <div class="panel"><h3>版面與互動 <span class="variant">變體：把「匯入」和「註冊＋認領碼」綁在一起示範</span></h3><p>「新增成員」彈窗分「單筆／匯入名單」兩個分頁。匯入通訊錄 CSV（姓名、信箱、家別、角色）後先逐列預覽：新帳號、已存在、格式錯誤分開標示，只建立有效的列。新帳號各自產生一組認領碼，本人自行註冊後在設定頁輸入認領碼，就會綁上 27 冬的身份。「匯入名單」是輸入方式、「認領碼」是認領機制，兩者可以分開決定（匯入也可以搭配 A 的設定密碼連結）。</p></div>
-      <div class="panel pros"><h3>優點</h3><ul><li>開期大量加人最快，也能在建立前抓出錯誤</li><li>認領碼不需要組長代管密碼</li></ul></div>
-      <div class="panel cons"><h3>缺點</h3><ul><li>要定 CSV 格式、處理重複與部分成功，屬於 TBD 範圍</li><li>要改註冊流程與新增「輸入認領碼」頁，工程量最大</li></ul></div>
-    </div>
-    <div class="verdict">TBD 的兩個項目都做的話是 C；建議 Milestone 1 先做 A，C 排到之後的里程碑。</div>
-    <div class="stage"><div class="frame tall">
-      <div class="sb" data-sb="leader" data-on="members"></div>
-      <div class="main">
-        <div class="userbtn">組</div>
-        <div class="ph"><div><h1>成員管理</h1><div class="sub">27 冬</div></div></div>
-        <div class="scrim">
-          <div class="dialog lg">
-            <div class="dh"><div><small>27 冬</small><b>新增成員</b></div><span class="x">×</span></div>
-            <div class="db">
-              <div class="tabs" style="margin-bottom:14px"><span>單筆新增</span><span class="on">匯入名單</span></div>
-              <div class="row between" style="margin-bottom:10px"><span><b>電光家通訊錄.csv</b>　<span class="muted small">5 列：新帳號 3、已存在 1、錯誤 1</span></span><span class="btn sm">重新選擇檔案</span></div>
-              <div class="tbl"><table><thead><tr><th>姓名</th><th>信箱</th><th>家別</th><th>角色</th><th>結果</th><th>認領碼</th></tr></thead><tbody>
-                <tr><td>林小安</td><td class="muted">lin.xiaoan@example.com</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip info">新帳號</span></td><td class="muted small">建立後產生</td></tr>
-                <tr><td>周以晴</td><td class="muted">yiqing@example.com</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip info">新帳號</span></td><td class="muted small">建立後產生</td></tr>
-                <tr><td>黃柏翰</td><td class="muted">bohan@example.com</td><td>電光</td><td><span class="role">家長</span></td><td><span class="chip info">新帳號</span></td><td class="muted small">建立後產生</td></tr>
-                <tr><td>撰寫者小美</td><td class="muted">demo-writer@tutoref.tw</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip done">已有帳號，加入本期身份</span></td><td class="muted">—</td></tr>
-                <tr class="hl"><td>王曉明</td><td class="alert-text">wang@example</td><td>電光</td><td><span class="role">撰寫者</span></td><td><span class="chip alert">信箱格式錯誤</span></td><td class="muted">略過</td></tr>
-              </tbody></table></div>
-              <p class="muted small" style="margin:10px 0 0">新成員自行到 Tutoref 註冊，再到「設定 → 認領身份」輸入認領碼，就會綁定上表的家別與角色。</p>
-            </div>
-            <div class="df"><span class="left">只會建立 4 列有效資料</span><span class="btn">取消</span><span class="btn primary">建立 4 位並下載認領碼</span></div>
-          </div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
+  <div class="panel" style="margin-top:18px">
+    <h2>狀態欄說明</h2>
+    <p>沿用 S2 的「帳號狀態」欄呈現本次流程：未寄送 → 待認領 → 已啟用。成員由授權信連結以自己的帳號登入並確認連結認領後，才顯示已啟用；組長只管理名單與角色，不會建立成員帳號；匯入通訊錄與儲存角色都不會自動啟用。</p>
+  </div>
   <div class="pager"><a href="s4_batch_edit.html">← S4 批量編輯</a><a href="s6_family_plans.html">S6 家內教案 →</a></div>
 </div>
+<script>
+// UI 原型：僅使用記憶體示意資料，不讀取檔案、不寄信、不呼叫正式 API。
+(function () {
+  const byId = id => document.getElementById(id);
+  const sheets = {
+    '加拿': [['周以晴','yiqing@example.com','總務','加拿'],['李佳穎','jiaying@example.com','團員','加拿']],
+    '初來': [['張家豪','jiahao@example.com','團員','初來'],['劉品妤','pinyu@example.com','隊輔','初來']],
+    '新武': [['王小華','hua@example.com','團員','新武'],['蔡承恩','chengen@example.com','副組長','新武']],
+    '霧鹿': [['黃柏翰','bohan@example.com','隊輔','霧鹿'],['許庭瑋','tingwei@example.com','團員','霧鹿']],
+    '利稻': [['林小明','ming@example.com','家長','利稻'],['吳小安','an@example.com','副組長','利稻']],
+    '電光': [['撰寫者小美','demo-writer@tutoref.tw','團員','電光'],['陳怡君','yijun@example.com','團員','電光']]
+  };
+  const members = Object.values(sheets).map(data => { const [name,email,duty,family] = data[0]; return {name,email,duty,family,roles:[],sent:false}; });
+  let preview = [], visibleFamily = '', opener;
+  const frame = byId('assignment-frame'), modal = byId('assignment-modal');
+  const dialog = modal.querySelector('[role="dialog"]');
+  const key = row => row.email.toLowerCase() + '|' + row.family;
+  const valid = row => row.name.trim() && row.duty.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email);
+  const rows = () => Array.from(byId('saved-member-rows').querySelectorAll('tr'));
+  const selected = () => rows().filter(row => row.querySelector('input').checked);
+  const selectedPeople = () => [...new Set(selected().map(row => row.dataset.member))];
+  function chip(text, cls) { const el = document.createElement('span'); el.className = cls; el.textContent = text; return el; }
+  function mode(single) {
+    byId('preview-panel').hidden = true; byId('preview-placeholder').hidden = false;
+    byId('single-form').hidden = !single; byId('import-form').hidden = single;
+    [['single-tab',single],['import-tab',!single]].forEach(([id,on]) => {
+      byId(id).classList.toggle('on',on); byId(id).setAttribute('aria-pressed',String(on));
+    });
+  }
+  byId('single-tab').addEventListener('click', () => mode(true));
+  byId('import-tab').addEventListener('click', () => mode(false));
+  function renderPreview() {
+    const invalid = preview.some(row => !valid(row));
+    const identities = preview.map(key);
+    const duplicate = new Set(identities).size !== identities.length;
+    byId('preview-summary').textContent = `共 ${preview.length} 筆身份／${new Set(preview.map(row => row.email.toLowerCase())).size} 人` + (invalid ? '・含格式錯誤，請返回修改或排除錯誤工作表。' : duplicate ? '・含重複資料，請返回修改。' : '・檢查通過，尚未儲存。');
+    byId('save-members').disabled = !preview.length || invalid || duplicate;
+    const shown = preview.filter(row => !visibleFamily || row.family === visibleFamily);
+    const rendered = [];
+    [...new Set(shown.map(row => row.family))].forEach(family => {
+      const group = document.createElement('tr'); group.className = 'group'; const title = document.createElement('td'); title.colSpan = 5; title.textContent = family + '家・' + shown.filter(row => row.family === family).length + ' 位成員'; group.append(title); rendered.push(group);
+      shown.filter(row => row.family === family).forEach(row => {
+        const tr = document.createElement('tr'); tr.dataset.previewMember = row.email;
+        [row.name,row.email,row.duty,row.family,valid(row) ? (members.some(m => key(m) === key(row)) ? '已在名單，保留原資料' : '可新增') : '欄位或信箱格式錯誤'].forEach((value,i) => {
+          const td = document.createElement('td'); if (i === 4) td.append(chip(value, 'chip ' + (valid(row) ? 'done' : 'alert'))); else td.textContent = value; tr.append(td);
+        }); rendered.push(tr);
+      });
+    });
+    byId('preview-rows').replaceChildren(...rendered);
+    byId('preview-tabs').replaceChildren(...['',...new Set(preview.map(row => row.family))].map(family => {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'pill' + (family === visibleFamily ? ' on' : ''); button.setAttribute('aria-pressed',String(family === visibleFamily)); button.textContent = family ? family + '（' + preview.filter(row => row.family === family).length + '）' : '全部家別（' + preview.length + '）';
+      button.addEventListener('click', () => { visibleFamily = family; renderPreview(); }); return button;
+    }));
+  }
+  function revealPreview() { byId('preview-panel').hidden = false; byId('preview-placeholder').hidden = true; visibleFamily = ''; renderPreview(); byId('member-preview').scrollIntoView({behavior:'smooth'}); }
+  byId('choose-file').addEventListener('click', () => byId('import-file').click());
+  byId('use-demo-file').addEventListener('click', () => { byId('file-name').textContent = '27冬通訊錄.xlsx（示意檔案）'; byId('preview-import').disabled = false; });
+  byId('import-file').addEventListener('change', event => {
+    const file = event.target.files[0]; const ok = !!file && /\.xlsx$/i.test(file.name);
+    byId('file-name').textContent = ok ? file.name + '（以下預覽使用示意資料）' : '請選擇 .xlsx 檔案'; byId('preview-import').disabled = !ok;
+    byId('preview-panel').hidden = true; byId('preview-placeholder').hidden = false;
+  });
+  byId('preview-import').addEventListener('click', () => {
+    if (byId('preview-import').disabled) return;
+    preview = Object.values(sheets).flat().map(([name,email,duty,family]) => ({name,email,duty,family})); revealPreview();
+  });
+  document.querySelectorAll('[data-single-family]').forEach(button => button.addEventListener('click', () => {
+    const on = button.getAttribute('aria-pressed') !== 'true'; button.setAttribute('aria-pressed',String(on)); button.classList.toggle('on',on);
+  }));
+  byId('single-form').addEventListener('submit', event => {
+    event.preventDefault(); const form = new FormData(event.currentTarget);
+    const families = Array.from(document.querySelectorAll('[data-single-family][aria-pressed="true"]')).map(button => button.dataset.singleFamily);
+    byId('single-error').textContent = families.length ? '' : '請至少選擇一個家別。'; if (!families.length) return;
+    preview = families.map(family => ({name:form.get('name').trim(),email:form.get('email').trim(),duty:form.get('duty').trim(),family})); revealPreview();
+  });
+  function refreshSelection() {
+    const chosen = selected(); byId('assignment-bulk').hidden = !chosen.length;
+    byId('selection-count').textContent = `已選 ${chosen.length} 筆身份（${selectedPeople().length} 人）`;
+    byId('select-all').checked = !!rows().length && chosen.length === rows().length;
+    byId('select-all').indeterminate = chosen.length > 0 && chosen.length < rows().length;
+    rows().forEach(row => row.classList.toggle('sel',row.querySelector('input').checked));
+  }
+  function renderMembers() {
+    byId('saved-member-rows').replaceChildren(...members.map(member => {
+      const tr = document.createElement('tr'); tr.dataset.member = member.email.toLowerCase();
+      const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.setAttribute('aria-label','選取 ' + member.name); checkbox.className = 'member-select';
+      const td = document.createElement('td'); td.className = 'cb'; td.append(checkbox); tr.append(td);
+      const name = document.createElement('td'); const b = document.createElement('b'); b.textContent = member.name; name.append(b); tr.append(name);
+      [member.email,member.duty,member.family].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; tr.append(cell); });
+      const role = document.createElement('td'); if (member.roles.length) member.roles.forEach(value => role.append(chip(value,'role'))); else role.setAttribute('aria-label','尚未指派權限'); tr.append(role);
+      const state = document.createElement('td'); state.append(chip(member.sent ? '待認領' : '未寄送', 'chip ' + (member.sent ? 'active' : 'idle'))); tr.append(state); return tr;
+    }));
+    byId('saved-count').textContent = `共 ${members.length} 筆身份／${new Set(members.map(m => m.email.toLowerCase())).size} 人`;
+    refreshSelection();
+  }
+  byId('save-members').addEventListener('click', () => {
+    if (byId('save-members').disabled) return;
+    preview.forEach(row => { if (!members.some(member => key(member) === key(row))) members.push({...row,roles:[],sent:false}); });
+    renderMembers();
+    byId('assignment-feedback').textContent = '名單已儲存，角色欄保持空白。請選取成員，點「寄送授權」在彈窗選擇權限並寄出。';
+    byId('saved-members').scrollIntoView({behavior:'smooth'}); renderPreview();
+  });
+  byId('saved-member-rows').addEventListener('click', event => {
+    const row = event.target.closest('tr'); if (!row) return;
+    if (!event.target.closest('input')) rows().forEach(other => { other.querySelector('input').checked = other === row; });
+    refreshSelection();
+  });
+  byId('select-all').addEventListener('change', event => { rows().forEach(row => { row.querySelector('input').checked = event.target.checked; }); refreshSelection(); });
+  byId('clear-selection').addEventListener('click', () => { rows().forEach(row => { row.querySelector('input').checked = false; }); refreshSelection(); });
+  let authorizationIds = [];
+  byId('send-authorization').addEventListener('click', event => {
+    const ids = selectedPeople(); if (!ids.length) return; opener = event.currentTarget;
+    byId('assignment-targets').textContent = ids.map(id => members.find(m => m.email.toLowerCase() === id).name).join('、') + `（${ids.length} 人）`;
+    authorizationIds = ids;
+    byId('authorization-target-rows').replaceChildren(...ids.map(id => {
+      const targets = members.filter(member => member.email.toLowerCase() === id); const member = targets[0]; const row = document.createElement('tr');
+      [member.name,member.email,[...new Set(targets.map(target => target.family))].join('、')].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.append(cell); }); return row;
+    }));
+    modal.querySelectorAll('input').forEach(input => { input.checked = false; }); updateRolePills();
+    byId('assignment-error').textContent = ''; modal.hidden = false; dialog.focus();
+  });
+  function close() { modal.hidden = true; if (opener) opener.focus(); }
+  ['close-assignment','cancel-assignment'].forEach(id => byId(id).addEventListener('click',close));
+  modal.addEventListener('click', event => { if (event.target === modal) close(); });
+  modal.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.preventDefault(); close(); }
+    if (event.key !== 'Tab') return;
+    const controls = Array.from(dialog.querySelectorAll('button,input')); const first = controls[0], last = controls[controls.length-1];
+    if (event.shiftKey && [first,dialog].includes(document.activeElement)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
+  const updateRolePills = () => modal.querySelectorAll('label.pill').forEach(label => label.classList.toggle('on',label.querySelector('input').checked));
+  modal.querySelectorAll('input').forEach(input => input.addEventListener('change',updateRolePills)); updateRolePills();
+  byId('confirm-authorization').addEventListener('click', () => {
+    const roles = Array.from(modal.querySelectorAll('input:checked')).map(input => input.value);
+    if (!roles.length) { byId('assignment-error').textContent = '請至少選擇一種要指派的權限，再寄出授權。'; return; }
+    const ids = authorizationIds;
+    members.filter(member => ids.includes(member.email.toLowerCase())).forEach(member => {
+      member.roles = [...new Set([...member.roles,...roles])]; member.sent = true;
+    });
+    close(); renderMembers();
+    byId('assignment-feedback').textContent = `已為 ${ids.length} 人指派「${roles.join('、')}」，並模擬寄出 ${ids.length} 封授權信；狀態為待認領。本人選擇帳號登入並完成連結認領後，才會顯示已啟用。`;
+  });
+  preview = Object.values(sheets).flat().map(([name,email,duty,family]) => ({name,email,duty,family}));
+  renderPreview();
+  renderMembers();
+})();
+</script>
 <script>
 // 原型共用腳本：①依角色畫出與正式站相同結構的側欄 ②方案 A / B / C 切換（記在網址 #A、#B、#C）。
 (function () {

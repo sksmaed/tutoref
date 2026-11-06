@@ -7,7 +7,7 @@ Claude 與 Codex 對 `dev/mvp-review-tp-workflow`（前端 `34105800`、後端 `
 | 檔案 | 內容 |
 | --- | --- |
 | [`Milestone1_驗證總結.md`](Milestone1_驗證總結.md) | 結論、Workflow 1～8 判定、問題清單（阻斷／重要／次要，含發生情境）、6 個需求衝突與建議做法、UI 方案推薦、建議修正順序 |
-| [`ui_options/index.html`](ui_options/index.html) | UI 方案原型總覽：S1～S12 各有 A／B／C 三種方案。每個 HTML 都已內嵌樣式，下載後直接用瀏覽器打開即可 |
+| [`ui_options/index.html`](ui_options/index.html) | UI 方案原型總覽：S1～S12 的候選與已選定方案。S5 採 C，整合新增／通訊錄匯入、預覽儲存及原 S2.5 的授權認領流程。每個 HTML 都已內嵌樣式，下載後直接用瀏覽器打開即可 |
 
 ## 細節與討論過程
 
