@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S6 家內教案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Milestone 1 UI 方案原型：只沿用 tutoref/src/app/globals.css 的色票與 lib/*-styles.ts 的尺寸，不新增品牌色。 */
+:root {
+  --p100: #fef7f1; --p300: #fbcf9e; --p700: #f1994a; --p900: #ed7a13;
+  --s100: #f4f7f0; --s700: #728a47;
+  --b100: #f1f1f1; --b200: #d4d4d4; --b300: #b8b8b8; --b400: #9c9c9c; --b500: #808080; --b700: #474747; --b900: #0d0d0d;
+  --idle: var(--b400); --idle-bg: var(--b100);
+  --active: var(--p900); --active-bg: var(--p100);
+  --done: var(--s700); --done-bg: var(--s100);
+  --alert: #c85f5f; --alert-bg: #faf0f0;
+  --locked: var(--b500); --locked-bg: var(--b100);
+  --info: #6392b5; --info-bg: #edf4fb;
+  --cat-nature: #728a47; --cat-social: #f1994a; --cat-general: #7f478a; --cat-info: #6392b5; --cat-art: #c85f5f;
+  --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); color: var(--b900); background: var(--b100); font-size: 14px; line-height: 1.55; }
+a { color: var(--p900); }
+
+/* ---------- 文件外框（說明區，不是原型本體） ---------- */
+.doc { max-width: 1260px; margin: 0 auto; padding: 28px 16px 80px; }
+.crumb { font-size: 12px; color: var(--b500); margin-bottom: 6px; }
+.crumb a { color: var(--b500); text-decoration: none; }
+.crumb a:hover { color: var(--p900); }
+.doc h1 { font-size: 24px; margin: 0 0 6px; }
+.doc .lead { color: var(--b700); font-size: 14px; margin: 0 0 18px; max-width: 900px; }
+.panel { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 18px 20px; margin-bottom: 16px; }
+.panel h2 { font-size: 16px; margin: 0 0 8px; }
+.panel h3 { font-size: 14px; margin: 14px 0 6px; }
+.panel p, .panel li { font-size: 14px; color: var(--b700); }
+.panel ul { margin: 6px 0 0; padding-left: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.issue-ref { display: inline-block; font-size: 12px; color: var(--alert); background: var(--alert-bg); border-radius: 6px; padding: 0 6px; margin: 0 2px; }
+.decide { border-left: 3px solid var(--p900); background: var(--p100); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 10px; font-size: 13px; color: var(--b700); }
+
+.opt-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 14px; }
+.opt-tab { cursor: pointer; border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 700; color: var(--b900); display: inline-flex; gap: 8px; align-items: center; }
+.opt-tab:hover { border-color: var(--b300); }
+.opt-tab.on { border-color: var(--p900); background: var(--p100); color: var(--p900); }
+.opt-tab .rec { font-size: 11px; font-weight: 700; color: #fff; background: var(--p900); border-radius: 6px; padding: 1px 6px; }
+.opt-tab .rec.codex { background: var(--b700); }
+.opt { display: none; }
+.opt.on { display: block; }
+.opt-meta { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 960px) { .opt-meta { grid-template-columns: 1fr; } }
+.opt-meta .panel { margin: 0; }
+.opt-meta h3 { margin-top: 0; }
+.pros li::marker { color: var(--s700); }
+.cons li::marker { color: var(--alert); }
+.verdict { font-size: 13px; color: var(--b700); background: #fff; border: 1px dashed var(--b300); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+.verdict b { color: var(--b900); }
+
+.stage { overflow-x: auto; padding-bottom: 6px; }
+.stage-cap { font-size: 12px; color: var(--b500); margin: 6px 2px 10px; }
+.pager { display: flex; justify-content: space-between; margin-top: 26px; font-size: 14px; }
+.pager a { text-decoration: none; font-weight: 700; }
+
+/* ---------- 原型：AppShell ---------- */
+.frame { position: relative; width: 1180px; min-height: 660px; display: flex; background: var(--b100); border: 1px solid var(--b200); border-radius: 14px; overflow: hidden; }
+.frame.tall { min-height: 780px; }
+.sb { width: 206px; margin: 20px 0 20px 20px; flex-shrink: 0; background: #fff; border-radius: 10px; box-shadow: 0 5px 16px rgba(0,0,0,.08); padding: 18px 16px; display: flex; flex-direction: column; }
+.sb .logo { font-size: 19px; font-weight: 700; letter-spacing: .5px; padding: 0 8px 16px; border-bottom: 1px solid var(--b100); margin-bottom: 8px; }
+.sb .logo span { color: var(--p900); }
+.sb .grp { font-size: 12px; color: var(--b400); padding: 12px 8px 5px; }
+.sb .it { display: flex; gap: 8px; align-items: center; border-radius: 7px; padding: 8px 9px; font-size: 15px; font-weight: 500; margin: 2px 0; }
+.sb .it i { width: 14px; height: 14px; border: 1.5px solid var(--b500); border-radius: 4px; display: inline-block; }
+.sb .it.on { background: var(--p100); color: var(--b900); }
+.sb .it.on i { border-color: var(--p900); }
+.sb .it .new { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--p900); background: var(--p100); border: 1px solid var(--p300); border-radius: 6px; padding: 0 5px; }
+.sb .spacer { flex: 1; }
+.sb .me { border-top: 1px solid var(--b100); padding: 14px 8px 0; display: flex; gap: 10px; align-items: center; }
+.sb .me .av { width: 29px; height: 29px; border-radius: 50%; background: var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--b700); }
+.sb .me b { display: block; font-size: 12px; }
+.sb .me small { display: block; font-size: 10px; color: var(--b400); }
+/* .main 不設 position，讓彈窗遮罩與抽屜以整個 .frame 為範圍（正式站的 Dialog 會連側欄一起蓋住）。 */
+.main { flex: 1; min-width: 0; padding: 20px 34px 40px 34px; }
+.userbtn { position: absolute; right: 24px; top: 20px; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 3px 10px rgba(0,0,0,.05); }
+.ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; padding-right: 64px; margin-bottom: 22px; }
+.ph h1 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.5; }
+.ph .sub { font-size: 13px; color: var(--b500); margin-top: 2px; }
+.ph .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- 原型：元件 ---------- */
+.card { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 20px; }
+.card + .card { margin-top: 14px; }
+.card .ct { font-size: 15px; font-weight: 700; }
+.card .cd { font-size: 12px; color: var(--b500); margin-top: 3px; line-height: 1.55; }
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.metric { background: #fff; border: 1px solid var(--b200); border-radius: 10px; padding: 16px 18px; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.metric small { font-size: 12px; color: var(--b500); }
+.metric b { display: block; font-size: 28px; font-weight: 800; line-height: 1.2; margin: 3px 0; }
+.metric span { font-size: 12px; color: var(--b500); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.metrics.three { grid-template-columns: repeat(3, 1fr); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 10px; border: 1px solid var(--b200); background: #fff; color: var(--b900); padding: 9px 13px; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: default; }
+.btn.primary { background: var(--p900); border-color: var(--p900); color: #fff; }
+.btn.danger { background: #fff; border-color: var(--alert-bg); color: var(--alert); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--b700); }
+.btn.sm { border-radius: 8px; padding: 6px 9px; font-size: 12px; }
+.btn[disabled] { opacity: .5; }
+.link { color: var(--p900); font-weight: 700; text-decoration: none; }
+.link-file { display: inline-flex; gap: 5px; align-items: center; color: var(--p900); font-weight: 700; font-size: 13px; text-decoration: none; white-space: nowrap; }
+.link-file::before { content: ''; width: 11px; height: 13px; border: 1.5px solid currentColor; border-radius: 2px; display: inline-block; }
+
+.chip { display: inline-flex; align-items: center; border-radius: 8px; padding: 2px 8px; font-size: 13px; font-weight: 500; white-space: nowrap; line-height: 1.5; }
+.chip.idle { background: var(--idle-bg); color: var(--idle); }
+.chip.active { background: var(--active-bg); color: var(--active); }
+.chip.done { background: var(--done-bg); color: var(--done); }
+.chip.alert { background: var(--alert-bg); color: var(--alert); }
+.chip.locked { background: var(--locked-bg); color: var(--locked); }
+.chip.info { background: var(--info-bg); color: var(--info); }
+.role { display: inline-flex; border-radius: 6px; background: var(--b100); color: var(--b700); font-size: 12px; padding: 1px 7px; margin: 1px 3px 1px 0; white-space: nowrap; }
+.variant { display: inline-flex; font-size: 11px; font-weight: 700; color: var(--b700); background: var(--b100); border: 1px solid var(--b200); border-radius: 6px; padding: 0 6px; margin-left: 4px; }
+.tag { display: inline-flex; gap: 4px; align-items: center; border-radius: 999px; border: 1px solid var(--p300); background: var(--p100); color: var(--p900); font-size: 12px; font-weight: 700; padding: 2px 9px; white-space: nowrap; }
+.tag .x { color: var(--b500); font-weight: 400; }
+
+/* 與 lib/table-styles.ts 的 TABLE_WRAP 相同：容器可橫向捲動 */
+.tbl { overflow-x: auto; border: 1px solid var(--b200); border-radius: 10px; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { background: var(--p100); text-align: left; font-size: 13px; font-weight: 700; padding: 13px 14px; border-bottom: 1px solid var(--b100); white-space: nowrap; }
+.tbl td { padding: 13px 14px; border-bottom: 1px solid var(--b100); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tr.hl td { background: rgba(254,247,241,.6); }
+.tbl tr.sel td { background: var(--p100); }
+.tbl td small, .tbl th small { display: block; font-size: 12px; color: var(--b500); font-weight: 400; }
+.tbl .cb { width: 42px; text-align: center; }
+.tbl tr.group td { background: #fafafa; font-size: 12px; font-weight: 700; color: var(--b700); padding: 7px 14px; }
+.tbl.clickable tbody tr:not(.group) { cursor: pointer; }
+.box { width: 15px; height: 15px; border: 1.5px solid var(--b300); border-radius: 4px; display: inline-block; vertical-align: middle; background: #fff; }
+.box.on { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.on::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.box.mixed { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.mixed::after { content: ''; position: absolute; left: 3px; top: 6px; width: 7px; height: 2px; background: #fff; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.tabs span { padding: 10px 16px; font-size: 15px; font-weight: 700; color: var(--b500); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs span.on { color: var(--p900); border-color: var(--p900); }
+.seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 10px; background: #fff; border: 1px solid var(--b200); }
+.seg span { padding: 6px 12px; border-radius: 7px; font-size: 14px; font-weight: 700; color: var(--b700); }
+.seg span.on { background: var(--p900); color: #fff; }
+
+.bulk { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--p300); background: var(--p100); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; color: var(--b700); }
+.bulk b { color: var(--b900); }
+.banner { border-radius: 8px; border: 1px solid; padding: 12px 16px; margin-bottom: 14px; }
+.banner b { display: block; font-size: 15px; }
+.banner p { margin: 3px 0 0; font-size: 14px; }
+.banner.locked { background: var(--locked-bg); border-color: var(--b200); color: var(--b700); }
+.banner.active { background: var(--active-bg); border-color: var(--p300); color: var(--b900); }
+.banner.alert { background: var(--alert-bg); border-color: #efcfcf; color: var(--alert); }
+.banner.done { background: var(--done-bg); border-color: #dbe4cf; color: var(--b900); }
+.banner.info { background: var(--info-bg); border-color: #cfe0ef; color: var(--b900); }
+
+.ctl { border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; color: var(--b900); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.ctl.ph { color: var(--b400); }
+.ctl.sel::after { content: '▾'; margin-left: auto; color: var(--b500); font-size: 12px; padding-left: 8px; }
+.ctl.req { border-color: var(--p700); }
+.ctl.full { width: 100%; }
+.ctl.dis { background: var(--b100); color: var(--b500); }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.toolbar .grow { flex: 1; min-width: 220px; }
+.flabel { display: block; font-size: 12px; font-weight: 700; color: var(--b700); margin-bottom: 6px; }
+.fhint { display: block; font-size: 12px; color: var(--b500); margin-top: 5px; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fgrid .span2 { grid-column: span 2; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { border: 1px solid var(--b200); border-radius: 999px; padding: 4px 11px; font-size: 13px; background: #fff; color: var(--b700); white-space: nowrap; }
+.pill.on { border-color: var(--p900); background: var(--p100); color: var(--p900); font-weight: 700; }
+.pill.dis { color: var(--b400); background: var(--b100); }
+.radio { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; margin-right: 14px; }
+.radio i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--b300); display: inline-block; background: #fff; }
+.radio.on i { border: 5px solid var(--p900); }
+.check { display: inline-flex; gap: 7px; align-items: center; font-size: 14px; margin-right: 14px; white-space: nowrap; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 9px 16px; font-size: 14px; margin: 0; }
+.kv dt { color: var(--b500); }
+.kv dd { margin: 0; font-weight: 500; }
+.muted { color: var(--b500); }
+.small { font-size: 12px; }
+.alert-text { color: var(--alert); }
+.ok-text { color: var(--s700); }
+.row { display: flex; gap: 10px; align-items: center; }
+.row.between { justify-content: space-between; }
+.stack > * + * { margin-top: 12px; }
+.hr { height: 1px; background: var(--b100); margin: 14px 0; }
+.steps { display: flex; gap: 8px; margin-bottom: 16px; }
+.steps span { flex: 1; font-size: 12px; font-weight: 700; color: var(--b400); border-top: 3px solid var(--b200); padding-top: 6px; }
+.steps span.on { color: var(--p900); border-color: var(--p900); }
+.steps span.done { color: var(--s700); border-color: var(--s700); }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 14px 22px; }
+.timeline li::before { content: ''; position: absolute; left: 4px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--p900); }
+.timeline li::after { content: ''; position: absolute; left: 8px; top: 18px; bottom: 2px; width: 1px; background: var(--b200); }
+.timeline li:last-child::after { display: none; }
+.timeline small { display: block; font-size: 12px; color: var(--b500); }
+.drop { border: 1.5px dashed var(--b300); border-radius: 12px; background: #fff; padding: 20px; text-align: center; color: var(--p900); font-weight: 700; font-size: 14px; }
+.drop small { display: block; color: var(--b500); font-weight: 400; font-size: 12px; margin-top: 4px; }
+.drop.filled { border-style: solid; border-color: var(--p300); background: var(--p100); color: var(--b900); text-align: left; }
+.drop.off { color: var(--b400); background: var(--b100); }
+.pdf { background: #fff; border: 1px solid var(--b200); border-radius: 8px; height: 100%; min-height: 380px; padding: 14px; font-size: 11px; color: var(--b500); }
+.pdf .ln { height: 7px; background: var(--b100); border-radius: 3px; margin: 7px 0; }
+.pdf .ln.w6 { width: 60%; } .pdf .ln.w8 { width: 80%; } .pdf .ln.w4 { width: 40%; }
+.cat { font-size: 13px; font-weight: 700; }
+.cat.nature { color: var(--cat-nature); } .cat.social { color: var(--cat-social); } .cat.general { color: var(--cat-general); } .cat.art { color: var(--cat-art); } .cat.info { color: var(--cat-info); }
+.diff { font-size: 13px; }
+.diff s { color: var(--b400); }
+.diff b { color: var(--p900); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--b300); margin-right: 6px; }
+.dot.done { background: var(--s700); } .dot.alert { background: var(--alert); } .dot.active { background: var(--p900); }
+
+/* ---------- 原型：覆蓋層 ---------- */
+.scrim { position: absolute; inset: 0; background: rgba(13,13,13,.4); display: flex; align-items: center; justify-content: center; padding: 30px; z-index: 5; }
+.scrim.light { background: rgba(13,13,13,.25); }
+.dialog { background: #fff; border-radius: 18px; box-shadow: 0 24px 90px rgba(0,0,0,.25); width: 760px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+/* 與 components/ui/Dialog.tsx 的 SIZE_CLASS 相同：sm 500、md 760、lg 1040 */
+.dialog.md { width: 760px; } .dialog.lg { width: 1040px; } .dialog.sm { width: 500px; }
+.dialog .dh { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid var(--b200); padding: 18px 20px; }
+.dialog .dh small { display: block; font-size: 12px; color: var(--b500); }
+.dialog .dh b { display: block; font-size: 17px; }
+.dialog .dh .x { font-size: 22px; color: var(--b500); line-height: 1; }
+.dialog .db { padding: 20px; overflow: auto; }
+.dialog .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+.dialog .df .left { margin-right: auto; font-size: 12px; color: var(--b500); }
+/* 與 components/ui/Drawer.tsx 相同：寬 min(620px, 92vw)，底下有半透明遮罩 */
+.frame:has(.drawer)::before { content: ''; position: absolute; inset: 0; background: rgba(13,13,13,.25); z-index: 5; }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 620px; background: #fff; border-left: 1px solid var(--b200); box-shadow: -20px 0 60px rgba(0,0,0,.12); z-index: 6; display: flex; flex-direction: column; }
+.drawer .dh { border-bottom: 1px solid var(--b200); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+.drawer .dh small { display: block; font-size: 12px; color: var(--b500); }
+.drawer .dh b { font-size: 18px; }
+.drawer .db { padding: 20px; overflow: auto; flex: 1; }
+.drawer .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.menu { position: absolute; right: 24px; top: 66px; width: 220px; background: #fff; border: 1px solid var(--b200); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 8px; z-index: 4; font-size: 14px; }
+.menu .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--b100); margin-bottom: 4px; }
+.menu .who b { display: block; }
+.menu .who small { color: var(--b500); font-size: 12px; }
+.menu .mi { padding: 8px 10px; border-radius: 8px; }
+.menu .mi.on { background: var(--p100); color: var(--p900); font-weight: 700; }
+/* 原型上的編號標記；說明寫在原型下方的 .legend，避免遮住畫面。 */
+.pin { position: absolute; z-index: 9; width: 22px; height: 22px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,0,0,.25); }
+.legend { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--b700); }
+.legend li { display: flex; gap: 6px; align-items: center; }
+.legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+
+/* A 與 C 共用同一套欄位、工具列與狀態樣式。 */
+[hidden] { display: none !important; }
+button, select, summary { cursor: pointer; }
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--p900); outline-offset: 3px; }
+button.link, button.link-file { background: none; border: 0; padding: 0; font: inherit; color: var(--p900); font-weight: 700; cursor: pointer; text-align: left; }
+button.link-file { font-size: 13px; }
+a.btn { text-decoration: none; cursor: pointer; }
+.preview-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+.preview-controls label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--b700); }
+.preview-controls .ctl { min-width: 160px; }
+.preview-controls p { margin: 0; }
+.frame { width: 100%; min-width: 980px; }
+.main { padding-left: 24px; padding-right: 24px; }
+.ph { align-items: flex-start; }
+.ph .acts { justify-content: flex-end; }
+.round-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.round-tabs button { padding: 10px 16px; font: inherit; font-weight: 700; color: var(--b500); background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.round-tabs button.on { color: var(--p900); border-color: var(--p900); }
+.metrics .metric b { font-size: 24px; }
+.plan-table { box-shadow: none; }
+.plan-table table { min-width: 900px; table-layout: fixed; }
+.plan-table th, .plan-table td { padding: 12px 10px; }
+.plan-table th:first-child { width: 19%; }
+.plan-table th:nth-child(2) { width: 14%; }
+.plan-table th:nth-child(3), .plan-table th:nth-child(4) { width: 6%; }
+.plan-table th:nth-child(5) { width: 17%; }
+.plan-table th:nth-child(6) { width: 14%; }
+.plan-table th:nth-child(7), .plan-table th:nth-child(8) { width: 12%; }
+.plan-group { padding: 0; margin-bottom: 14px; overflow: hidden; }
+.plan-group summary { padding: 16px 18px; font-size: 15px; font-weight: 700; }
+.plan-group summary small { margin-left: 8px; color: var(--b500); font-size: 12px; font-weight: 400; }
+.plan-group .plan-table { border-radius: 0; border-width: 1px 0 0; }
+.empty { padding: 24px; text-align: center; color: var(--b500); margin: 0; }
+.view-note { font-size: 12px; color: var(--b500); margin: 10px 0 0; }
+.filter-count { font-size: 12px; color: var(--b500); margin-left: auto; }
+.toolbar input { min-width: 180px; flex: 1; }
+.dialog-preview { border: 1px solid var(--b200); padding: 0; max-width: min(760px, calc(100vw - 32px)); color: var(--b900); font: inherit; }
+.dialog-preview:not([open]) { display: none; }
+.dialog-preview::backdrop { background: rgba(13,13,13,.4); }
+.dialog-preview .db { min-height: 160px; }
+.dialog-preview .dh button { background: none; border: 0; font: inherit; }
+@media (max-width: 700px) { .doc { padding: 20px 12px 48px; } .preview-controls { align-items: stretch; } .preview-controls label { flex: 1; } }
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S6</div>
+  <h1>S6｜家內教案（採用 A＋C）</h1>
+  <p class="lead">撰寫者與非家長成員採方案 A 的完整表格；家長採方案 C 的階段分組，可依驗收階段查看。兩種視角共用相同的欄位、輪次切換、附件連結與狀態樣式。</p>
+  <div class="grid2">
+    <div class="panel"><h2>角色與呈現方式</h2><ul>
+      <li><b>撰寫者、驗收者及其他非家長成員：</b>完整表格檢視本家教案；只有撰寫者能在送出前上傳及管理自己的附件。</li>
+      <li><b>家長：</b>依「本輪待驗收／準備中／已驗收」分組，可篩選階段、展開或收合；負責納入本輪、缺交登記與送出驗收。</li>
+      <li>同時具有家長與撰寫者身份時，採家長分組視角，另依撰寫權限顯示自己的上傳入口。查看範圍限本人所屬家別。</li>
+    </ul></div>
+    <div class="panel"><h2>共用規則與視覺</h2><ul>
+      <li>共用八個欄位；家長分組仍保留完整表頭，避免切換視角後找不到資訊。</li>
+      <li>「初驗／總驗」是驗收輪次；「準備中／本輪待驗收／已驗收」是該輪教案階段，兩者分開切換。</li>
+      <li>初驗僅檢查教案紙，投影片於總驗開放且選填；附件失敗或處理中不標示已繳，也不能納入本輪。</li>
+      <li>送出後唯讀，附件保留送出時版本；缺交不進本輪驗收，結果公布後才呈現驗收結果。</li>
+    </ul></div>
+  </div>
+  <div class="panel">
+    <h2>互動原型預覽</h2>
+    <div class="preview-controls">
+      <label>預覽身份<select class="ctl" id="preview-role"><option value="writer">撰寫者（A）</option><option value="reviewer">驗收者（A）</option><option value="member">其他非家長成員（A）</option><option value="parent">家長（C）</option></select></label>
+      <label>預覽情境<select class="ctl" id="preview-state"><option value="draft">送出前</option><option value="submitted">送出後・驗收中</option><option value="published">結果已公布</option></select></label>
+      <p class="small muted">此區僅供原型切換身份與情境；正式站依登入權限決定。下方皆為示意資料，未串接 API 或真實附件。</p>
+    </div>
+  </div>
+  <div class="stage-cap" id="preview-caption" aria-live="polite"></div>
+  <div class="stage"><div class="frame tall">
+    <div class="sb" id="family-sidebar"></div>
+    <div class="main">
+      <div class="userbtn" id="user-avatar"></div>
+      <div class="ph"><div><h1>家內教案</h1><div class="sub" id="page-context"></div></div><div class="acts" id="page-actions"></div></div>
+      <div class="round-tabs" aria-label="驗收輪次"><button type="button" data-round="initial">初驗</button><button type="button" data-round="final">總驗</button></div>
+      <div id="round-banner" class="banner"></div>
+      <div class="metrics three" id="round-metrics"></div>
+      <div class="toolbar">
+        <label class="grow"><span class="flabel">搜尋教案或撰寫者</span><input type="search" class="ctl full" id="plan-search" placeholder="輸入教案名稱或撰寫者…"></label>
+        <label id="phase-control"><span class="flabel">驗收階段</span><select class="ctl" id="phase-filter"><option value="all">全部階段</option><option value="pending">本輪待驗收</option><option value="preparing">準備中</option><option value="completed">已驗收</option></select></label>
+        <span class="filter-count" id="filter-count" role="status"></span>
+      </div>
+      <div id="plan-content"></div>
+      <p class="view-note" id="role-note"></p>
+    </div>
+  </div></div>
+  <div class="panel" style="margin-top:18px"><h2>流程銜接與邊界</h2><p>上傳教案連至 <a href="s9_upload.html">S9 上傳流程</a>，家長的缺交登記連至 <a href="s7_missing.html">S7 缺交登記</a>，送出前確認連至 <a href="s8_submit.html">S8 送出驗收</a>。以上為其他情境的獨立原型，不會帶入本頁資料或執行真實送件。</p><p class="small muted">撰寫者欄暫沿用帳號姓名，教案紙設計者附在下方。送出前有 2 份附件就緒、2 份尚未就緒；送出後情境示範家長已將後兩份登記為缺交。此預覽不模擬實際檔案上傳或修改缺交紀錄。</p></div>
+  <div class="pager"><a href="s5_add_member.html">← S5 新增成員與帳號認領</a><a href="s7_missing.html">S7 缺交登記 →</a></div>
+</div>
+<dialog class="dialog dialog-preview" id="plan-dialog" aria-labelledby="dialog-title">
+  <div class="dh"><div><small id="dialog-context"></small><b id="dialog-title"></b></div><button type="button" id="close-dialog" aria-label="關閉預覽">×</button></div>
+  <div class="db" id="dialog-content"></div>
+</dialog>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const roles = {
+    writer: { name: '撰寫者小美', avatar: '撰', label: '撰寫者', layout: 'A' },
+    reviewer: { name: '驗收者一', avatar: '驗', label: '驗收者', layout: 'A' },
+    member: { name: '家內成員小安', avatar: '安', label: '其他非家長成員', layout: 'A' },
+    parent: { name: '電光家長', avatar: '電', label: '家長', layout: 'C' }
+  };
+  const phases = { pending: '本輪待驗收', preparing: '準備中', completed: '已驗收' };
+  const plans = [
+    { id: 1, title: '網路世界放大鏡!', author: '撰寫者小美', designer: '○○○', category: '自然', cat: 'nature', info: '全年級・40 分鐘', file: 'ready' },
+    { id: 2, title: '空氣的力量', author: '撰寫者小美', category: '自然', cat: 'nature', info: '低年級・40 分鐘', file: 'ready' },
+    { id: 3, title: '電光的秘密', author: '陳怡君', category: '社會', cat: 'social', info: '中高年級・90 分鐘', file: 'failed' },
+    { id: 4, title: '生活中的水', author: '撰寫者小美', category: '自然', cat: 'nature', info: '中年級・40 分鐘', file: 'processing' }
+  ];
+  const params = new URLSearchParams(location.search);
+  const legacyParent = location.hash.toUpperCase() === '#C';
+  let role = Object.hasOwn(roles, params.get('role')) ? params.get('role') : legacyParent ? 'parent' : 'writer';
+  let state = ['draft', 'submitted', 'published'].includes(params.get('state')) ? params.get('state') : 'draft';
+  let round = params.get('round') === 'final' ? 'final' : 'initial';
+  let phase = Object.hasOwn(phases, params.get('phase')) ? params.get('phase') : 'all';
+  const included = new Set([1, 2]);
+  const openGroups = { pending: true, preparing: true, completed: true };
+  const chip = (text, kind) => `<span class="chip ${kind}">${text}</span>`;
+  const roundName = () => round === 'initial' ? '初驗' : '總驗';
+  const isMissing = (p) => state !== 'draft' && !included.has(p.id);
+  const planPhase = (p) => !included.has(p.id) ? 'preparing' : state === 'published' ? 'completed' : 'pending';
+  const fileButton = (p, type) => `<button type="button" class="link-file" data-plan="${p.id}" data-preview="${type}">查看${type}</button>`;
+  function syncUrl() {
+    const url = new URL(location.href);
+    Object.entries({ role, state, round, phase: role === 'parent' ? phase : 'all' }).forEach(([k, v]) => url.searchParams.set(k, v));
+    url.hash = roles[role].layout;
+    history.replaceState(null, '', url);
+  }
+  function sidebar() {
+    const person = roles[role];
+    const item = (text, active = false) => `<div class="it${active ? ' on' : ''}"><i></i>${text}</div>`;
+    $('family-sidebar').innerHTML = '<div class="logo">Tut<span>★</span>ref</div>' + item('教案檢索') + item('學習資源') + item('訊息公告') + '<div class="grp">我的教案</div>' + item('已歸檔教案') + item('已收藏教案') + '<div class="grp">教案驗收</div>' + item('家內教案', true) + item('我的驗收任務') + `<div class="spacer"></div><div class="me"><div class="av">${person.avatar}</div><div><b>${person.name}</b><small>27 冬・電光家</small></div></div>`;
+    $('user-avatar').textContent = person.avatar;
+  }
+  function table(rows) {
+    if (!rows.length) return '<p class="empty">此階段沒有符合條件的教案。</p>';
+    return `<div class="tbl plan-table" tabindex="0" role="region" aria-label="教案完整欄位表格，可橫向捲動"><table><thead><tr>${['教案名稱','撰寫者','家別','類別','教案紙','投影片','待驗收','驗收狀態'].map(t => `<th scope="col">${t}</th>`).join('')}</tr></thead><tbody>${rows.map(p => {
+      const missing = isMissing(p);
+      const own = role === 'writer' && p.author === roles.writer.name;
+      let paper = p.file === 'ready' ? fileButton(p, '教案紙') : chip(p.file === 'failed' ? '上傳失敗' : '處理中…', p.file === 'failed' ? 'alert' : 'active');
+      if (state === 'draft' && p.file === 'ready' && own) paper += '<small><a class="link" href="s9_upload.html">管理自己的附件</a></small>';
+      if (state === 'draft' && p.file !== 'ready') paper += `<small>${own ? '<a class="link" href="s9_upload.html">管理自己的附件</a>' : '等待撰寫者處理'}</small>`;
+      if (missing) paper = chip('缺交', 'alert') + '<small>本輪無送出附件</small>';
+      if (state !== 'draft' && !missing) paper += '<small>送出時的版本</small>';
+      let intake = included.has(p.id) ? chip(state === 'draft' ? '本輪納入' : '已送出', state === 'draft' ? 'active' : 'done') : chip('未納入本輪', 'idle');
+      if (role === 'parent' && state === 'draft') intake += `<small><button type="button" class="btn sm" data-toggle="${p.id}" ${p.file !== 'ready' ? 'disabled title="教案紙就緒後才能納入"' : ''}>${included.has(p.id) ? '移至準備中' : '納入本輪'}</button></small>`;
+      const status = !included.has(p.id) ? '<span class="muted">—</span>' : state === 'draft' ? chip('尚未送出', 'idle') : state === 'submitted' ? chip(p.id === 1 ? '驗收中' : '待分配', p.id === 1 ? 'active' : 'idle') : chip(p.id === 1 ? '已通過' : '補驗', p.id === 1 ? 'done' : 'alert');
+      const slides = round === 'initial' ? '<span class="muted small">總驗開放（選填）</span>' : p.id === 1 && !missing ? fileButton(p, '投影片') : '<span class="muted small">未附（選填）</span>';
+      return `<tr><td><button type="button" class="link" data-plan="${p.id}" data-preview="詳情">${p.title}</button><small>${p.info}</small></td><td>${p.author}${p.designer ? `<small>教案紙：${p.designer}</small>` : ''}</td><td>電光</td><td><span class="cat ${p.cat}">${p.category}</span></td><td>${paper}</td><td>${slides}</td><td>${intake}</td><td>${status}</td></tr>`;
+    }).join('')}</tbody></table></div>`;
+  }
+  function renderContent() {
+    const query = $('plan-search').value.trim().toLowerCase();
+    const rows = plans.filter(p => `${p.title} ${p.author}`.toLowerCase().includes(query));
+    const visible = rows.filter(p => role !== 'parent' || phase === 'all' || planPhase(p) === phase);
+    $('filter-count').textContent = `顯示 ${visible.length} / ${plans.length} 份`;
+    $('plan-content').innerHTML = role !== 'parent' ? table(visible) : (phase === 'all' ? ['pending','preparing','completed'] : [phase]).map(key => {
+      const group = visible.filter(p => planPhase(p) === key);
+      const total = plans.filter(p => planPhase(p) === key).length;
+      const note = key === 'preparing' ? state === 'draft' ? '不會在本輪送出' : '含本輪缺交教案，不進行驗收' : key === 'pending' ? state === 'draft' ? '附件就緒，待家長確認送出' : '已送出，等待驗收結果' : '結果已公布，補驗教案亦列於此';
+      return `<details class="card plan-group" data-phase="${key}" ${openGroups[key] ? 'open' : ''}><summary>${phases[key]}・${query ? `${group.length} / ${total}` : total} 份<small>${note}</small></summary>${table(group)}</details>`;
+    }).join('');
+    $('plan-content').querySelectorAll('details').forEach(el => el.addEventListener('toggle', () => { openGroups[el.dataset.phase] = el.open; }));
+  }
+  function render() {
+    const parent = role === 'parent';
+    const count = included.size;
+    $('preview-role').value = role;
+    $('preview-state').value = state;
+    $('phase-filter').value = phase;
+    $('phase-control').hidden = !parent;
+    $('preview-caption').textContent = `${roles[role].label}視角｜方案 ${roles[role].layout}・${parent ? '依驗收階段分組' : '完整欄位表格'}・${$('preview-state').selectedOptions[0].textContent}`;
+    $('page-context').textContent = `27 冬・電光家・${roundName()}　送件截止 ${round === 'initial' ? '2027/01/05' : '2027/01/20'} 23:59`;
+    $('page-actions').innerHTML = state === 'draft' ? parent ? '<a class="btn" href="s7_missing.html">登記缺交</a><a class="btn primary" href="s8_submit.html">送出驗收前確認</a>' : role === 'writer' ? '<a class="btn primary" href="s9_upload.html">＋ 上傳教案</a>' : '' : '';
+    document.querySelectorAll('[data-round]').forEach(btn => { btn.classList.toggle('on', btn.dataset.round === round); btn.setAttribute('aria-pressed', String(btn.dataset.round === round)); });
+    const banner = $('round-banner');
+    banner.className = `banner ${state === 'draft' ? 'active' : state === 'submitted' ? 'locked' : 'done'}`;
+    banner.innerHTML = state === 'draft' ? `<b>${roundName()}送件準備中・${count} 份已納入本輪</b><p>${plans.length - count} 份仍在準備中。家長送出前需確認納入名單及缺交紀錄；缺交教案本輪不進行驗收。</p>` : state === 'submitted' ? `<b>電光家已送出${roundName()}・教案與附件已鎖定</b><p>電光家長於 ${round === 'initial' ? '2027/01/04' : '2027/01/19'} 21:10 送出；2 份進入驗收、2 份登記缺交。附件仍可查看送出時版本。</p>` : `<b>${roundName()}結果已公布・1 份通過、1 份補驗</b><p>教案與附件維持唯讀；補驗教案可由撰寫者至「我的驗收任務」查看回饋與後續處理。</p>`;
+    $('round-metrics').innerHTML = ['pending','preparing','completed'].map(key => `<div class="metric"><small>${phases[key]}</small><b>${plans.filter(p => planPhase(p) === key).length}<span> 份</span></b><span>${key === 'preparing' ? '未納入本輪' : key === 'completed' ? '含已通過與補驗' : '本輪已納入的教案'}</span></div>`).join('');
+    $('role-note').textContent = parent ? '階段篩選只改變顯示，不改變送件範圍；送件範圍以「本輪納入」為準。分組與完整表格共用欄位及附件呈現。' : role === 'writer' ? '可檢視全家教案；送出前僅能管理自己的附件。由家長決定納入本輪、登記缺交與送出驗收。' : '可檢視本家所有教案與送出附件；上傳及管理附件由撰寫者操作，送件與缺交由家長處理。';
+    sidebar();
+    renderContent();
+    syncUrl();
+  }
+  $('preview-role').addEventListener('change', e => { role = e.target.value; render(); });
+  $('preview-state').addEventListener('change', e => { state = e.target.value; included.clear(); included.add(1); included.add(2); render(); });
+  $('phase-filter').addEventListener('change', e => { phase = e.target.value; renderContent(); syncUrl(); });
+  $('plan-search').addEventListener('input', renderContent);
+  document.querySelectorAll('[data-round]').forEach(btn => btn.addEventListener('click', () => { round = btn.dataset.round; included.clear(); included.add(1); included.add(2); render(); }));
+  $('plan-content').addEventListener('click', e => {
+    const toggle = e.target.closest('[data-toggle]');
+    if (toggle && role === 'parent' && state === 'draft') {
+      const id = Number(toggle.dataset.toggle);
+      if (plans.find(p => p.id === id)?.file !== 'ready') return;
+      included.has(id) ? included.delete(id) : included.add(id);
+      render();
+      const replacement = $('plan-content').querySelector(`[data-toggle="${id}"]`);
+      const group = replacement?.closest('details');
+      if (group) group.open = true;
+      (replacement || $('phase-filter')).focus();
+      return;
+    }
+    const button = e.target.closest('[data-preview]');
+    if (!button) return;
+    const plan = plans.find(p => p.id === Number(button.dataset.plan));
+    $('dialog-title').textContent = `${plan.title}・${button.dataset.preview}`;
+    $('dialog-context').textContent = `27 冬・電光家・${roundName()}`;
+    $('dialog-content').innerHTML = `<dl class="kv"><dt>撰寫者</dt><dd>${plan.author}</dd><dt>家別／類別</dt><dd>電光／${plan.category}</dd><dt>驗收階段</dt><dd>${phases[planPhase(plan)]}</dd><dt>附件版本</dt><dd>${isMissing(plan) ? '缺交，本輪無送出附件' : state === 'draft' ? '送出前版本' : '送出時的版本（唯讀）'}</dd></dl><p class="muted small">此為 UI 示意預覽，未提供真實 PDF 或投影片檔案；正式站點擊附件將開啟對應檔案。</p>`;
+    $('plan-dialog').showModal();
+  });
+  $('close-dialog').addEventListener('click', () => $('plan-dialog').close());
+  render();
+})();
+</script>
+</body>
+</html>

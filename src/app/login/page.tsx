@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import LoginSignupBoard from '@/features/auth/LoginSignupBoard';
 import { setFlash } from '@/lib/flash';
 import { Modal } from '@/components/ui/Modal';
-import { login as apiLogin, register as apiRegister, initiateGoogleLogin } from "@/services/auth";
+import { register as apiRegister, initiateGoogleLogin } from "@/services/auth";
 import { useAuth } from "@/features/auth/useAuth";
 
 
@@ -21,7 +21,7 @@ const LoginPage: React.FC = () => {
   const [signupOnConfirm, setSignupOnConfirm] = useState<(() => void) | undefined>(undefined);
   const [forceTab, setForceTab] = useState<'login' | 'signup' | undefined>(undefined);
 
-  const { refresh, authenticated } = useAuth();
+  const { login, authenticated } = useAuth();
 
   useEffect(() => {
     if (!authenticated) {
@@ -35,8 +35,7 @@ const LoginPage: React.FC = () => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      await apiLogin(email, password);
-      await refresh(); // 👈 讓 Navbar 立刻知道已登入
+      await login(email, password); // 內部會清掉舊的 term context 快取再 refresh
       setSubmitting(false);
 
       setFlash({

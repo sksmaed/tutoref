@@ -8,6 +8,8 @@ interface UploadDropzoneProps {
   isUploading: boolean;
   onFileUpload: (file: File | null) => void;
   onSubmit: () => void;
+  submitLabel?: string;
+  uploadingLabel?: string;
 }
 
 /** 上傳卡片：選擇檔案 + 載入狀態 + 重新選擇／確認上傳按鈕。 */
@@ -16,6 +18,8 @@ export default function UploadDropzone({
   isUploading,
   onFileUpload,
   onSubmit,
+  submitLabel = '確認上傳',
+  uploadingLabel = '正在上傳教案...',
 }: UploadDropzoneProps) {
   return (
     <div className={`w-full sm:w-[576px] flex flex-col bg-white rounded-xl sm:rounded-lg px-6 sm:px-[100px] py-10 sm:py-20`}>
@@ -30,7 +34,7 @@ export default function UploadDropzone({
         <div className="mt-6 text-center">
           <div className="inline-flex items-center space-x-2 text-primary-900">
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-900 border-t-transparent"></div>
-            <span>正在上傳教案...</span>
+            <span>{uploadingLabel}</span>
           </div>
         </div>
       )}
@@ -61,7 +65,7 @@ export default function UploadDropzone({
               ${!uploadedFile ? 'bg-black-300 text-black-500 cursor-not-allowed' : 'bg-primary-900 text-white hover:bg-primary-900/90'}
             `}
           >
-            確認上傳
+            {submitLabel}
           </Button>
         </div>
       </div>

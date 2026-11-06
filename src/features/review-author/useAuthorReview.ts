@@ -13,18 +13,22 @@ import {
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import type { Round } from '@/features/review-shared/types';
 
-export function useAuthorReview(round: Round) {
+/** enabled=false 時不打 API（例如只有驗收者身分的人）。 */
+export function useAuthorReview(round: Round, enabled = true) {
   const { context } = useTermContext();
   const termId = context?.current_term?.id ?? null;
 
   const [jobs, setJobs] = useState<AuthorJobRow[]>([]);
   const [feedback, setFeedback] = useState<Record<string, FeedbackItemRow[]>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
 
   const reload = useCallback(async () => {
-    if (!termId) return;
+    if (!termId || !enabled) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const rows = await fetchAuthorJobs(termId, round);
@@ -40,7 +44,7 @@ export function useAuthorReview(round: Round) {
     } finally {
       setLoading(false);
     }
-  }, [round, termId]);
+  }, [enabled, round, termId]);
 
   useEffect(() => {
     void reload();

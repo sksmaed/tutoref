@@ -55,10 +55,10 @@ export default function ResultsToolbar({
       {/* 桌機版：原有兩行布局 */}
       <div className="hidden md:flex flex-wrap items-end gap-x-3 gap-y-2">
         <div className="flex items-end gap-3 w-full sm:w-auto">
-          <h2 className="whitespace-nowrap h-[38px] text-[25px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black-900">
+          <h2 className="whitespace-nowrap text-[17px] leading-[150%] font-bold font-['Noto_Sans_TC'] text-black-900">
             檢索結果
           </h2>
-          <span className="h-6 text-[16px] leading-[150%] font-normal font-['Noto_Sans_TC'] text-black-900 sm:w-[120px]">
+          <span className="text-[14px] leading-[150%] font-normal font-['Noto_Sans_TC'] text-black-500 sm:w-[120px]">
             {searching ? '搜尋中…' : `（共 ${total} 筆）`}
           </span>
         </div>

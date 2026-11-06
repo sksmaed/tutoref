@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { BTN_PRIMARY, BTN_SM } from '@/lib/button-styles';
 import { StatusChip } from '@/features/review-shared/StatusChip';
 import type { FeedbackItemRow, FeedbackStatus } from '@/services/review';
 
@@ -65,7 +65,7 @@ const FeedbackRow: React.FC<{
   };
 
   return (
-    <li className="border-b border-black-100 py-3 last:border-b-0">
+    <li className="rounded-xl border border-black-200 bg-white p-[14px]">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="min-w-0 flex-1 font-['Noto_Sans_TC'] text-[14px] text-black-900">{item.body}</p>
         <span className="flex items-center gap-2">
@@ -75,13 +75,13 @@ const FeedbackRow: React.FC<{
       </div>
 
       {item.responses.map((response, index) => (
-        <p key={index} className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-700">
-          你的說明：{response.body}
+        <p key={index} className="mt-[10px] rounded-[9px] bg-black-100 px-3 py-[10px] font-['Noto_Sans_TC'] text-[13px] text-black-700">
+          <span className="font-bold">處理說明：</span>{response.body}
         </p>
       ))}
 
       {pending === null ? (
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2 border-t border-dashed border-black-200 pt-3">
           {ACTIONS.map((action) => (
             <button
               key={action.value}
@@ -104,7 +104,7 @@ const FeedbackRow: React.FC<{
           )}
         </div>
       ) : (
-        <div className="mt-2 flex flex-wrap items-start gap-2">
+        <div className="mt-3 flex flex-wrap items-start gap-2 border-t border-dashed border-black-200 pt-3">
           <input
             type="text"
             autoFocus
@@ -115,15 +115,16 @@ const FeedbackRow: React.FC<{
                 ? '已修改哪些、哪些仍未修改（必填）'
                 : '為什麼不修改（必填）'
             }
-            className="min-w-[220px] flex-1 rounded-lg border border-black-200 px-3 py-1 font-['Noto_Sans_TC'] text-[14px]"
+            className="min-w-[220px] flex-1 rounded-[10px] border border-black-200 px-3 py-[6px] font-['Noto_Sans_TC'] text-[14px]"
           />
-          <Button
+          <button
+            type="button"
             onClick={() => void submit(pending, body)}
             disabled={working || !body.trim()}
-            className="bg-primary-900 px-4 py-1 text-white"
+            className={`${BTN_PRIMARY} ${BTN_SM}`}
           >
             送出「{STATUS_LABEL[pending]}」
-          </Button>
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -150,7 +151,7 @@ export const FeedbackItemList: React.FC<FeedbackItemListProps> = ({ items, worki
   }
 
   return (
-    <ul className="flex flex-col">
+    <ul className="flex flex-col gap-3">
       {items.map((item) => (
         <FeedbackRow key={item.id} item={item} working={working} onRespond={onRespond} />
       ))}

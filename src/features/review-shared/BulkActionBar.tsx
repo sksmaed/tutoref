@@ -8,6 +8,8 @@ interface BulkActionBarProps {
   /** 右側動作按鈕。 */
   children: React.ReactNode;
   className?: string;
+  /** sticky：黏在畫面底部（預設）；inline：放在表格上方的淺色條（v13 `.bulkbar`）。 */
+  variant?: 'sticky' | 'inline';
 }
 
 /**
@@ -19,8 +21,20 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({
   summary,
   children,
   className = '',
+  variant = 'sticky',
 }) => {
   if (!visible) return null;
+
+  if (variant === 'inline') {
+    return (
+      <div
+        className={`mb-3 flex flex-wrap items-center justify-between gap-[10px] rounded-xl border border-primary-300 bg-primary-100 px-3 py-[10px] ${className}`}
+      >
+        <div className="font-['Noto_Sans_TC'] text-[14px] text-black-700">{summary}</div>
+        <div className="flex flex-wrap items-center gap-2">{children}</div>
+      </div>
+    );
+  }
 
   return (
     <div

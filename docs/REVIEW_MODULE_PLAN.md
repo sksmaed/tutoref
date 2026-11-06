@@ -1,5 +1,10 @@
 # 驗收模組實作計畫（Frontend）
 
+> **2026-10 更新：介面已依 prototype v13 改版。** 全站改成左側欄版面，路由與導覽也重整過
+> （「本期教案」併入「我的驗收任務」、「驗收公告」併入「訊息公告」、驗收管理改為
+> 時程 / 標準 / 初驗 / 總驗分頁）。**§3 路由設計、§7.1 Navbar 已被取代，現行路由與導覽以
+> `AGENTS.md` 為準。** 其餘章節（API 契約、資料 hook、色票規則、各畫面的業務規則）仍然有效。
+
 > 定位：把 Tutoref 前端從「教案檢索」擴成「教案檢索 + 教案驗收 + 管理後台」的施工圖。
 > 給 coding agent 直接照著建檔、寫元件用。
 >
@@ -37,7 +42,7 @@ git 操作要指定 repo：`git -C tutoref ...`。
 | --- | --- |
 | `src/app/globals.css` | **色票 token 的唯一來源**。新頁面只能用 `primary-*` / `secondary-*` / `black-*` / `category-*`，不准自創顏色 |
 | `src/lib/api.ts` + `src/lib/csrf.ts` | API 呼叫方式與錯誤物件形狀（`error.code` / `error.message`） |
-| `src/features/manage/usePlanManagement.ts` | hook 的寫法慣例，新 hook 照這個形狀 |
+| `src/features/review-family/useFamilyReview.ts` | hook 的寫法慣例，新 hook 照這個形狀 |
 | `src/features/teaching-plan/AllPlansTable.tsx` | 表格（含 checkbox 欄、hover、排序）直接抄它的樣式 |
 | `src/app/plans/mine/page.tsx` | 頁面容器、標題區、工具列的間距節奏 |
 | `src/components/ui/` | 可重用元件清單（Modal、ConfirmModal、Checkbox、DropdownMulti、toast…） |
@@ -102,7 +107,7 @@ git 操作要指定 repo：`git -C tutoref ...`。
 ## 2. 沿用既有慣例（agent 必讀）
 
 1. **Next.js App Router**，頁面元件保持薄，狀態與流程抽成 `features/<domain>/use*.ts`
-   （參考 `features/manage/usePlanManagement.ts`）。
+   （參考 `features/review-family/useFamilyReview.ts`）。
 2. **API 一律走 `src/lib/api.ts` 的 axios instance**（已處理 `withCredentials` 與 CSRF header），
    或 `src/services/` 的封裝。不要在元件裡直接 `fetch`。
 3. **錯誤處理**：`lib/api.ts` 的 interceptor 已把後端 `errors[0].error_code` 轉成
@@ -116,6 +121,8 @@ git 操作要指定 repo：`git -C tutoref ...`。
 ---
 
 ## 3. 路由設計
+
+> ⚠ 已被 v13 改版取代，現行路由見 `AGENTS.md`。本節保留作為當初設計脈絡。
 
 ### 3.1 與既有頁面的整併（重要）
 
@@ -422,6 +429,9 @@ export function useFamilyReview(round: 'initial' | 'final') {
 ## 7. 導覽與權限
 
 ### 7.1 Navbar 改動（`src/components/layout/Navbar.tsx`）
+
+> ⚠ 已被 v13 改版取代：上方 Navbar 已移除，改為 `src/components/layout/Sidebar.tsx`，
+> 導覽項目與顯示條件集中在 `src/components/layout/nav-config.ts`。
 
 現況：`BASE_MENU` 是寫死的陣列，登入後插入「教案管理」。
 改法：保持同樣結構，改成由 capability 決定：

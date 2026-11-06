@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import TeachingPlanEditor from '@/features/teaching-plan/TeachingPlanEditor';
 import TeachingPlanPreview from '@/features/teaching-plan/TeachingPlanPreview';
 import UploadDropzone from '@/features/upload/UploadDropzone';
+import { UploadModeModal } from '@/features/upload/UploadModeModal';
 import { useUploadFlow } from '@/features/upload/useUploadFlow';
 
 /**
@@ -22,9 +23,17 @@ const UploadPage = () => {
     showCancelConfirm,
     showErrorModal,
     setShowErrorModal,
+    isReplacingSheet,
+    uploadMode,
+    uploadModeModalOpen,
+    currentTerm,
+    currentTermLoading,
+    currentTermError,
     currentPlan,
     editorRef,
     handleFileUpload,
+    handleSelectUploadMode,
+    handleCancelUploadMode,
     handleSubmit,
     handleEditorSave,
     handleValidationChange,
@@ -38,7 +47,17 @@ const UploadPage = () => {
 
   return (
     <div className="w-full h-full bg-black-100 flex flex-col items-center pt-8 sm:pt-[60px] px-4 sm:px-0">
-      <h1 className="text-[28px] sm:text-[40px] leading-normal font-bold text-black-900 mb-6 sm:mb-10">上傳教案</h1>
+      <h1 className="text-[28px] sm:text-[40px] leading-normal font-bold text-black-900 mb-6 sm:mb-10">
+        {isReplacingSheet ? '重新上傳教案紙' : '上傳教案'}
+      </h1>
+
+      {!isReplacingSheet && uploadMode && (
+        <div className="mb-6 rounded-full bg-primary-100 px-5 py-2 text-sm font-semibold text-primary-900">
+          {uploadMode === 'current'
+            ? `本期教案${currentTerm ? `・${currentTerm.label}` : ''}`
+            : '歸檔過去教案・上傳後公開檢索'}
+        </div>
+      )}
 
       {!showPreview && !showEditor ? (
         <UploadDropzone
@@ -46,6 +65,8 @@ const UploadPage = () => {
           isUploading={isUploading}
           onFileUpload={handleFileUpload}
           onSubmit={handleSubmit}
+          submitLabel={isReplacingSheet ? '開始解析' : '確認上傳'}
+          uploadingLabel={isReplacingSheet ? '正在處理教案紙...' : '正在上傳教案...'}
         />
       ) : showPreview ? (
         /* 預覽表格 */
@@ -72,7 +93,7 @@ const UploadPage = () => {
               disabled={isUploading}
               className="text-base leading-normal bg-primary-900 text-white font-bold"
             >
-              確認上傳
+              {isReplacingSheet ? '確認替換' : '確認上傳'}
             </Button>
           </div>
         </>
@@ -90,6 +111,7 @@ const UploadPage = () => {
               onCancel={handleEditorCancel}
               onValidationChange={handleValidationChange}
               onSlideFileSelect={handleSlideFileSelect}
+              showSlideUpload={!isReplacingSheet}
             />
           )}
 
@@ -136,6 +158,15 @@ const UploadPage = () => {
         description="所選檔案格式不符，請重新上傳！"
         confirmText="我知道了"
         onClose={() => setShowErrorModal(false)}
+      />
+
+      <UploadModeModal
+        open={uploadModeModalOpen}
+        currentTerm={currentTerm}
+        loadingCurrentTerm={currentTermLoading}
+        currentTermError={currentTermError}
+        onSelect={handleSelectUploadMode}
+        onCancel={handleCancelUploadMode}
       />
     </div>
   );

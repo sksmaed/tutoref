@@ -1,10 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { compareIssues } from '@/lib/issues';
 import IssueSortDropdown, { ISSUE_SORT_OPTIONS } from '@/features/teaching-plan/IssueSortDropdown';
 import { readSessionJson, writeSessionJson } from '@/lib/session-cache';
+import { PlanStatusBadges } from '@/features/teaching-plan/PlanStatusBadges';
+import { StatusChip } from '@/features/review-shared/StatusChip';
+import { TABLE, TABLE_WRAP, TD, TH } from '@/lib/table-styles';
+import type {
+  TeachingPlanEditingStatus,
+  TeachingPlanVisibilityStatus,
+} from '@/services/teaching-plan';
 
 export type Row = {
   id: string;
@@ -21,6 +27,14 @@ export type Row = {
   searchScore?: number;
   createdAt?: number;
   hashtags?: string[];
+  editingStatus?: TeachingPlanEditingStatus;
+  visibilityStatus?: TeachingPlanVisibilityStatus;
+  /** 以下只有「已上傳教案」有；舊快取可能沒有，顯示時要容錯。 */
+  hasSheet?: boolean;
+  hasSlides?: boolean;
+  updatedAt?: string;
+  /** 已進入本期驗收流程，不能從這裡編輯。 */
+  inReview?: boolean;
 };
 
 const goodTint = {
@@ -40,24 +54,42 @@ type TableUiState = {
   page: number;
 };
 
+/** 「最後更新」欄：只顯示月/日 時:分，對齊 v13。 */
+export function formatShortDateTime(value?: string): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return `${pad2(date.getMonth() + 1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+/** 教案紙與投影片都有才算完整；舊快取沒有檔案資訊時顯示 —。 */
+export function FileCompleteness({ row }: { row: Row }) {
+  if (row.hasSheet === undefined && row.hasSlides === undefined) {
+    return <span className="text-black-500">—</span>;
+  }
+  return row.hasSheet && row.hasSlides ? (
+    <StatusChip status="完整" tone="done" />
+  ) : (
+    <StatusChip status="缺少附件" tone="active" />
+  );
+}
+
+/**
+ * 「已上傳教案」與「已收藏教案」共用的清單（v13 `renderMyLessons()` / `lessonTable()`）。
+ * 點整列交給 onView：已上傳開教案小視窗，已收藏開課程詳細資訊。
+ */
 export function AllPlansTable({
-  title,
   rowsInput,
   mode,
   uiStateStorageKey,
   onToggleFavorite,
-  onEdit,
-  onDelete,
   onView,
 }: {
-  title: string;
   rowsInput: Row[];
   mode: 'mine' | 'likes';
   /** 提供時，排序／篩選／頁碼會存進 sessionStorage，回到頁面時還原。 */
   uiStateStorageKey?: string;
   onToggleFavorite?: (row: Row, nextLiked: boolean) => Promise<void>;
-  onEdit?: (row: Row) => void;
-  onDelete?: (row: Row) => Promise<void>;
   onView?: (row: Row) => void;
 }) {
   const initialUiState = useMemo<TableUiState>(() => {
@@ -89,7 +121,6 @@ export function AllPlansTable({
   const [page, setPage] = useState<number>(initialUiState.page);
   const isFirstRender = useRef(true);
   const pageSize = 8;
-  const router = useRouter();
 
   useEffect(() => {
     if (!uiStateStorageKey) return;
@@ -180,122 +211,113 @@ export function AllPlansTable({
     return rows.slice(start, start + pageSize);
   }, [rows, total, page]);
 
+  const columns =
+    mode === 'mine'
+      ? ['教案', '期別 / 家別', '檔案完整性', '驗收狀態', '最後更新']
+      : ['教案名稱', '撰寫者', '類別', '家別', '期數', '年級', '收藏'];
+
+  const likeButton = (r: Row, size = 20) => (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        void handleToggleLike(r);
+      }}
+      aria-label={r.liked ? '取消收藏' : '加入收藏'}
+      className="shrink-0 cursor-pointer rounded-lg p-[6px] hover:bg-primary-100"
+    >
+      <img src={r.liked ? '/icons/liked.svg' : '/icons/like.svg'} alt="" width={size} height={size} />
+    </button>
+  );
+
+  const goodBadge = (
+    <span className="inline-flex shrink-0 items-center gap-[2px] rounded-full bg-status-done-bg px-2 py-[2px] text-[11px] font-bold text-status-done">
+      <img src="/icons/good.svg" alt="" width={12} height={12} style={goodTint} />
+      優良
+    </span>
+  );
+
   return (
-    <section className="mt-10 mx-auto w-full max-w-[976px] px-4 sm:px-6 lg:px-0">
-      {/* 置頂置中大標 */}
-      <h1
-        className="
-          text-center
-          font-['Noto_Sans_TC'] font-bold
-          text-[28px] sm:text-[40px] leading-[150%] tracking-normal
-          text-black-900
-        "
-      >
-        {title}
-      </h1>
-
-      {/* 左：統計句；右：控制列 */}
-      <div className="mt-6 flex flex-wrap items-end gap-x-3 gap-y-2">
-        {/* 第一行（手機）/ 同行（sm+）：統計句 */}
-        <p className="font-['Noto_Sans_TC'] font-bold text-[20px] sm:text-[25px] leading-[150%] text-black-900 w-full sm:w-auto">
-          你已{mode === 'mine' ? '上傳' : '收藏'}{' '}
-          <span className="text-primary-900">{mode === 'likes' ? baseRows.length : rowsInput.length}</span>{' '}
-          份教案！
+    <section className="w-full">
+      {/* 左：筆數；右：優良篩選 + 排序 */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <p className="font-['Noto_Sans_TC'] text-[14px] text-black-500">
+          共 <span className="font-bold text-primary-900">{mode === 'likes' ? baseRows.length : rowsInput.length}</span> 份教案
         </p>
-
-        {/* 第二行（手機）/ 靠右同行（sm+）：控制按鈕 */}
-        <div className="flex items-center gap-3 sm:ml-auto">
-          {/* 優良教案 Icon Button：102×32 */}
+        <div className="ml-auto flex items-center gap-3">
           <button
             type="button"
             aria-pressed={onlyGood}
             onClick={() => setOnlyGood((v) => !v)}
             className={[
-              'h-[32px] w-auto inline-flex items-center justify-center gap-[3px] whitespace-nowrap px-[12px]',
-              'rounded-[8px] py-[5px] bg-white shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]',
-              'border cursor-pointer',
-              onlyGood
-                ? 'border-secondary-700 text-secondary-700'
-                : 'border-transparent text-black-900 hover:bg-black-100/60',
+              'inline-flex h-[32px] items-center justify-center gap-[3px] whitespace-nowrap rounded-[8px] border bg-white px-[12px] py-[5px]',
+              'cursor-pointer shadow-[0_3px_12px_rgba(0,0,0,0.045)]',
+              onlyGood ? 'border-secondary-700 text-secondary-700' : 'border-black-200 text-black-900 hover:bg-black-100/60',
             ].join(' ')}
             title="只看優良教案"
           >
-            <img
-              src="/icons/good.svg"
-              alt=""
-              width={16}
-              height={16}
-              style={onlyGood ? goodTint : undefined}
-            />
-            <span className="text-[14px] leading-[150%] font-normal font-['Noto_Sans_TC']">
-              優良教案
-            </span>
+            <img src="/icons/good.svg" alt="" width={16} height={16} style={onlyGood ? goodTint : undefined} />
+            <span className="font-['Noto_Sans_TC'] text-[14px] leading-[150%]">優良教案</span>
           </button>
-
-          {/* 排序下拉（Default：期數由新到舊） */}
           <IssueSortDropdown value={sort} onChange={setSort} />
         </div>
       </div>
 
       {/* 桌機表格（md 以上） */}
-      <div className="mt-4 w-full hidden md:block rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] overflow-hidden">
-        <table className="w-full border-collapse text-[14px] font-['Noto_Sans_TC']">
-          <colgroup>
-            <col className="w-[9%]" /><col className="w-[9%]" /><col className="w-[9%]" />
-            <col /><col className="w-[14%]" /><col className="w-[7%]" /><col className="w-[7%]" />
-          </colgroup>
+      <div className={`mt-4 hidden md:block ${TABLE_WRAP}`}>
+        <table className={TABLE}>
           <thead>
-            <tr className="bg-primary-100 text-black-900 font-bold">
-              {['家別','期數','類別','教案名稱','撰寫者', mode === 'mine' ? '編輯' : '查看', mode === 'mine' ? '刪除' : '收藏'].map((h, i) => (
-                <th key={h} className={`h-[48px] px-3 text-center border border-black-200 whitespace-nowrap ${i === 0 ? 'rounded-tl-lg' : ''} ${i === 6 ? 'rounded-tr-lg' : ''}`}>
-                  {h}
-                </th>
+            <tr>
+              {columns.map((h) => (
+                <th key={h} className={`${TH} ${h === '收藏' ? 'text-center' : ''}`}>{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-black-200">
+          <tbody>
             {pageRows.length === 0 ? (
-              <tr><td colSpan={7} className="h-[48px] text-center text-black-700 border-x border-b border-black-200">
-                查無符合條件的教案，請調整檢索條件後再試。
-              </td></tr>
+              <tr>
+                <td colSpan={columns.length} className="py-12 text-center text-[15px] text-black-500">
+                  {mode === 'likes' ? '目前還沒有收藏教案' : '目前還沒有上傳教案'}
+                </td>
+              </tr>
             ) : pageRows.map((r) => (
-              <tr key={r.id} className="hover:bg-primary-50 transition-colors">
-                <td className="h-[48px] px-2 text-center border-x border-black-200">{r.family}</td>
-                <td className="h-[48px] px-2 text-center border-x border-black-200">{r.issue}</td>
-                <td className="h-[48px] px-2 text-center border-x border-black-200">{r.category}</td>
-                <td className="h-[48px] px-4 border-x border-black-200 max-w-0">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    {r.good && <img src="/icons/good.svg" alt="" width={16} height={16} style={goodTint} className="shrink-0" />}
-                    <span className="truncate" title={r.title}>{r.title}</span>
-                  </div>
-                </td>
-                <td className="h-[48px] px-2 text-center border-x border-black-200">{r.author}</td>
-                <td className="h-[48px] text-center border-x border-black-200">
-                  {mode === 'mine' ? (
-                    <button type="button" onClick={() => onEdit?.(r)} aria-label="編輯" disabled={!onEdit}
-                      className={!onEdit ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
-                      <img src="/icons/edit.svg" alt="編輯" width={20} height={20} />
-                    </button>
-                  ) : (
-                    <button type="button" onClick={() => onView?.(r)} aria-label="查看" disabled={!onView}
-                      className={!onView ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
-                      <img src="/icons/file-alt.svg" alt="查看" width={20} height={20} />
-                    </button>
-                  )}
-                </td>
-                <td className="h-[48px] text-center border-x border-black-200">
-                  {mode === 'mine' ? (
-                    <button type="button" onClick={() => onDelete?.(r)} aria-label="刪除" disabled={!onDelete}
-                      className={!onDelete ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:opacity-80'}>
-                      <img src="/icons/trash.svg" alt="刪除" width={20} height={20} />
-                    </button>
-                  ) : (
-                    <button type="button" onClick={() => handleToggleLike(r)} aria-label={r.liked ? '取消收藏' : '加入收藏'}
-                      className="cursor-pointer hover:opacity-80">
-                      <img src={r.liked ? '/icons/liked.svg' : '/icons/like.svg'} alt="收藏" width={20} height={20} />
-                    </button>
-                  )}
-                </td>
+              <tr
+                key={r.id}
+                onClick={() => onView?.(r)}
+                className={`transition-colors hover:bg-primary-100/40 ${onView ? 'cursor-pointer' : ''}`}
+              >
+                {mode === 'mine' ? (
+                  <>
+                    <td className={TD}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold">{r.title}</span>
+                        {r.good && goodBadge}
+                      </div>
+                      <p className="mt-[2px] text-[12px] text-black-500">{r.category || '—'}</p>
+                    </td>
+                    <td className={`${TD} whitespace-nowrap`}>{[r.issue, r.family].filter(Boolean).join('・') || '—'}</td>
+                    <td className={TD}><FileCompleteness row={r} /></td>
+                    <td className={TD}>
+                      <PlanStatusBadges editingStatus={r.editingStatus} visibilityStatus={r.visibilityStatus} align="start" />
+                    </td>
+                    <td className={`${TD} whitespace-nowrap text-[12px] text-black-500`}>{formatShortDateTime(r.updatedAt)}</td>
+                  </>
+                ) : (
+                  <>
+                    <td className={TD}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold">{r.title}</span>
+                        {r.good && goodBadge}
+                      </div>
+                    </td>
+                    <td className={TD}>{r.author}</td>
+                    <td className={TD}>{r.category}</td>
+                    <td className={TD}>{r.family}</td>
+                    <td className={`${TD} whitespace-nowrap`}>{r.issue}</td>
+                    <td className={TD}>{r.grade || '—'}</td>
+                    <td className={`${TD} text-center`}>{likeButton(r)}</td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>
@@ -303,129 +325,49 @@ export function AllPlansTable({
       </div>
 
       {/* 手機卡片（md 以下） */}
-      <div className="mt-4 md:hidden flex flex-col gap-3">
+      <div className="mt-4 flex flex-col gap-3 md:hidden">
         {pageRows.length === 0 ? (
-          <div className="py-6 text-center text-[15px] font-['Noto_Sans_TC'] text-black-700 bg-white rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-            查無符合條件的教案，請調整檢索條件後再試。
+          <div className="rounded-[10px] border border-black-200 bg-white py-6 text-center font-['Noto_Sans_TC'] text-[15px] text-black-500">
+            {mode === 'likes' ? '目前還沒有收藏教案' : '目前還沒有上傳教案'}
           </div>
         ) : pageRows.map((r) => (
-          <div key={r.id} className="bg-white rounded-lg shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] overflow-hidden">
-            {/* 上區塊 */}
-            <div className="px-4 py-2 flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-                  {r.good && (
-                    <>
-                      <img src="/icons/good.svg" alt="" width={14} height={14} style={goodTint} className="shrink-0" />
-                      <span className="text-[13px] font-semibold font-['Noto_Sans_TC'] text-secondary-700 shrink-0">優良教案</span>
-                    </>
-                  )}
-                  {r.hashtags?.map((tag) => (
-                    <span key={tag} className="text-[12px] font-['Noto_Sans_TC'] font-normal text-[#808080]">#{tag}</span>
-                  ))}
+          <div
+            key={r.id}
+            onClick={() => onView?.(r)}
+            className="cursor-pointer rounded-[10px] border border-black-200 bg-white px-4 py-3 shadow-[0_3px_12px_rgba(0,0,0,0.045)]"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-['Noto_Sans_TC'] text-[16px] font-bold leading-snug text-black-900">{r.title}</p>
+                  {r.good && goodBadge}
                 </div>
-                {mode === 'mine' ? (
-                  <div className="flex items-center gap-3 shrink-0">
-                    <button type="button" onClick={() => onEdit?.(r)} aria-label="編輯" disabled={!onEdit}
-                      className={!onEdit ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-70 cursor-pointer'}>
-                      <img src="/icons/edit.svg" alt="編輯" width={20} height={20} />
-                    </button>
-                    <button type="button" onClick={() => onDelete?.(r)} aria-label="刪除" disabled={!onDelete}
-                      className={!onDelete ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-70 cursor-pointer'}>
-                      <img src="/icons/trash.svg" alt="刪除" width={20} height={20} />
-                    </button>
-                  </div>
-                ) : (
-                  <button type="button" onClick={() => handleToggleLike(r)} aria-label={r.liked ? '取消收藏' : '加入收藏'}
-                    className="shrink-0 hover:opacity-70 cursor-pointer">
-                    <img src={r.liked ? '/icons/liked.svg' : '/icons/like.svg'} alt="收藏" width={20} height={20} />
-                  </button>
-                )}
+                <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-500">
+                  {[r.issue, r.family, r.category, mode === 'likes' ? r.author : ''].filter(Boolean).join('・')}
+                </p>
               </div>
-              <p className="text-[16px] font-bold font-['Noto_Sans_TC'] text-black-900 leading-snug">{r.title}</p>
+              {mode === 'likes' && likeButton(r)}
             </div>
-            {/* 下區塊 */}
-            <div className="px-4 py-2 flex items-center gap-3">
-              <div className="flex-1 flex flex-col gap-1">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    <img src="/icons/calender.svg" alt="" width={14} height={14} className="shrink-0" />
-                    <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.issue}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <img src="/icons/category.svg" alt="" width={14} height={14} className="shrink-0" />
-                    <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.category}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    <img src="/icons/home.svg" alt="" width={14} height={14} className="shrink-0" />
-                    <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.family}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <img src="/icons/author.svg" alt="" width={14} height={14} className="shrink-0" />
-                    <span className="text-[13px] font-['Noto_Sans_TC'] text-black-700">{r.author}</span>
-                  </div>
-                </div>
+            {mode === 'mine' && (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <FileCompleteness row={r} />
+                <PlanStatusBadges editingStatus={r.editingStatus} visibilityStatus={r.visibilityStatus} compact />
               </div>
-              {mode === 'likes' && (
-                <button type="button" onClick={() => onView?.(r)} aria-label="查看" disabled={!onView}
-                  className={`w-[64px] h-[26px] rounded-[4px] px-[20px] py-[4px] bg-primary-900 text-white text-[12px] font-normal font-['Noto_Sans_TC'] leading-[150%] whitespace-nowrap shrink-0 inline-flex items-center justify-center ${!onView ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'}`}>
-                  查看
-                </button>
-              )}
-            </div>
+            )}
           </div>
         ))}
       </div>
 
-    {/* === 底部區塊 === */}
-      {mode === 'mine' ? (
-        // 我的教案：手機/平板直排；桌面三欄（上傳置中、分頁靠右）
-        <div className="mt-6 w-full flex flex-col items-center gap-4 md:grid md:grid-cols-3 md:items-center md:gap-0">
-          <div className="hidden md:block" /> {/* 桌面佔位 */}
-
-          {/* 上傳教案 */}
-          <div className="md:justify-self-center">
-            <button
-              type="button"
-              onClick={() => router.push('/upload')}
-              className="
-                w-[160px] h-[48px] rounded-[8px] bg-primary-900
-                px-[20px] py-[12px] whitespace-nowrap
-                text-[16px] leading-[150%] font-['Noto_Sans_TC'] font-bold text-white
-                shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)] cursor-pointer hover:opacity-90
-              "
-            >
-              上傳教案
-            </button>
-          </div>
-
-          {/* 分頁 */}
-          <div className="md:justify-self-end">
-            <div className="h-[36px] flex items-center justify-center md:justify-end gap-2">
-              <PageBtn icon="/icons/angle-left-double.svg" disabled={!canPrev} onClick={() => setPage(1)} />
-              <PageBtn icon="/icons/angle-left.svg" disabled={!canPrev} onClick={() => setPage((p) => Math.max(1, p - 1))} />
-              <div className="h-[24px] flex items-center justify-center gap-2 text-[16px] font-['Noto_Sans_TC']">
-                第 {pad2(totalPages === 0 ? 0 : page)} 頁
-              </div>
-              <PageBtn icon="/icons/angle-right.svg" disabled={!canNext} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} />
-              <PageBtn icon="/icons/angle-right-double.svg" disabled={!canNext} onClick={() => setPage(totalPages)} />
-            </div>
-          </div>
+      {/* 分頁 */}
+      <div className="mt-6 flex h-[36px] items-center justify-center gap-2 md:justify-end">
+        <PageBtn icon="/icons/angle-left-double.svg" disabled={!canPrev} onClick={() => setPage(1)} />
+        <PageBtn icon="/icons/angle-left.svg" disabled={!canPrev} onClick={() => setPage((p) => Math.max(1, p - 1))} />
+        <div className="flex h-[24px] items-center justify-center gap-2 px-1 font-['Noto_Sans_TC'] text-[14px]">
+          第 {pad2(totalPages === 0 ? 0 : page)} 頁，共 {pad2(totalPages)} 頁
         </div>
-      ) : (
-        // 我的收藏：分頁置中（維持原樣）
-        <div className="mt-6 h-[36px] mx-auto flex items-center justify-center gap-2">
-          <PageBtn icon="/icons/angle-left-double.svg" disabled={!canPrev} onClick={() => setPage(1)} />
-          <PageBtn icon="/icons/angle-left.svg" disabled={!canPrev} onClick={() => setPage((p) => Math.max(1, p - 1))} />
-          <div className="w-[160px] h-[24px] flex items-center justify-center gap-2 text-[16px] font-['Noto_Sans_TC']">
-            第 {pad2(totalPages === 0 ? 0 : page)} 頁，共 {pad2(totalPages)} 頁
-          </div>
-          <PageBtn icon="/icons/angle-right.svg" disabled={!canNext} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} />
-          <PageBtn icon="/icons/angle-right-double.svg" disabled={!canNext} onClick={() => setPage(totalPages)} />
-        </div>
-      )}
+        <PageBtn icon="/icons/angle-right.svg" disabled={!canNext} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} />
+        <PageBtn icon="/icons/angle-right-double.svg" disabled={!canNext} onClick={() => setPage(totalPages)} />
+      </div>
     </section>
   );
 }

@@ -1,6 +1,16 @@
 import { api } from '@/lib/api';
 import { normalizeCategory } from '@/lib/categories';
 
+export type TeachingPlanEditingStatus =
+  | 'draft'
+  | 'submitted_initial'
+  | 'feedback_required'
+  | 'ready_for_final'
+  | 'final_submitted'
+  | 'locked';
+
+export type TeachingPlanVisibilityStatus = 'private' | 'public' | 'archived';
+
 export interface TeachingPlanSummary {
   id: string;
   tp_name: string;
@@ -26,6 +36,10 @@ export interface TeachingPlanDetail extends TeachingPlanSummary {
   sheet_pdf?: string | null;
   created_at: string;
   updated_at: string;
+  editing_status: TeachingPlanEditingStatus;
+  visibility_status: TeachingPlanVisibilityStatus;
+  /** 是否進過驗收流程（歷屆教案的 locked 不算）。後端未提供時為 undefined。 */
+  in_review_pipeline?: boolean;
 }
 
 interface FavoritesResponse {

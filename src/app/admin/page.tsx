@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTermContext } from '@/features/review-shared/useTermContext';
-import { ADMIN_SECTIONS } from '@/features/review-shared/sections';
+import { ADMIN_SECTIONS, sectionGranted } from '@/features/review-shared/sections';
 
 /**
  * 後台首頁。規格是導到 /admin/review（§3.2），
@@ -13,9 +13,7 @@ export default function AdminIndexPage() {
   const router = useRouter();
   const { context, loading } = useTermContext();
 
-  const granted = ADMIN_SECTIONS.filter((section) =>
-    context?.capabilities?.includes(section.capability)
-  );
+  const granted = ADMIN_SECTIONS.filter((section) => sectionGranted(section, context?.capabilities));
   const target = granted.find((section) => section.available);
 
   useEffect(() => {

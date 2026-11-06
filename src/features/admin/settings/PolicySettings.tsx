@@ -32,7 +32,7 @@ export const PolicySettings: React.FC<PolicySettingsProps> = ({ policy, saving, 
   if (!policy) return null;
 
   return (
-    <section className="mt-4 rounded-lg bg-white px-5 py-4 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+    <section className="mt-6 border-t border-black-200 pt-5">
       <h3 className="font-['Noto_Sans_TC'] text-[16px] font-bold text-black-900">本期規則</h3>
       <p className="mt-1 font-['Noto_Sans_TC'] text-[13px] text-black-700">
         這些開關決定各角色看得到什麼、能做什麼。後端會依同一份設定過濾資料，不是只藏 UI。

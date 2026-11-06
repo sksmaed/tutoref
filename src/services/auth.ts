@@ -7,6 +7,8 @@ export type UUID = string;
 export interface UserResp {
   id: UUID;
   email: string;
+  /** 姓名（User.name）。first_name / last_name 後端固定回空字串，之後會移除。 */
+  name?: string;
   first_name?: string;
   last_name?: string;
 }
@@ -71,6 +73,12 @@ export async function login(email: string, password: string): Promise<UserResp> 
 
 export async function register(payload: { email: string; password1: string; password2: string }): Promise<RegisterResponse> {
   const { data } = await api.post<RegisterResponse>("/auth/register/", payload);
+  return data;
+}
+
+/** 修改自己的姓名；去頭尾空白後須 1–255 字，錯誤碼 auth:invalid_name。 */
+export async function updateMe(payload: { name: string }): Promise<UserResp> {
+  const { data } = await api.patch<UserResp>("/auth/me", payload);
   return data;
 }
 

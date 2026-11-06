@@ -6,13 +6,13 @@ import { Toast } from '@/components/ui/toast';
 import { useTermContext } from '@/features/review-shared/useTermContext';
 import { RoundTabs, useRound } from '@/features/review-shared/RoundTabs';
 import { LockBanner } from '@/features/review-shared/LockBanner';
-import { BulkActionBar } from '@/features/review-shared/BulkActionBar';
+import { TermPageHead } from '@/features/review-shared/TermPageHead';
+import { BTN_PRIMARY } from '@/lib/button-styles';
 import { deadlineState, formatDateTime } from '@/features/review-shared/format';
 import { FamilyReviewTable } from '@/features/review-family/FamilyReviewTable';
 import { MissingSubmissionPanel } from '@/features/review-family/MissingSubmissionPanel';
 import { SubmitConfirmModal } from '@/features/review-family/SubmitConfirmModal';
 import { useFamilyReview } from '@/features/review-family/useFamilyReview';
-import { Button } from '@/components/ui/Button';
 import type { MissingItem } from '@/services/review';
 
 export default function FamilyReviewPage() {
@@ -43,7 +43,7 @@ export default function FamilyReviewPage() {
 
   const included = plans.filter((plan) => selected.has(plan.plan_id));
   const excluded = plans.filter((plan) => !selected.has(plan.plan_id));
-  const missingCount = missing.reduce((total, item) => total + (item.missing_count || 0), 0);
+  const roundLabel = round === 'final' ? '總驗' : '初驗';
 
   const dueAt = context?.stage_state?.[round]?.submission_due_at ?? null;
   const due = deadlineState(dueAt);
@@ -73,13 +73,29 @@ export default function FamilyReviewPage() {
 
   return (
     <div className="mb-16">
-      <div className="mt-4">
-        <RoundTabs />
-      </div>
+      <TermPageHead
+        title="家內教案"
+        description={
+          locked
+            ? `${roundLabel}清單已送出教案組，本輪內容已鎖定，只能檢視。`
+            : `逐份確認${roundLabel}是否納入本輪驗收；送出時會連同缺交註記一起提供給教案組。`
+        }
+        actions={
+          <button
+            type="button"
+            className={BTN_PRIMARY}
+            onClick={() => setConfirmOpen(true)}
+            disabled={locked || loading || plans.length === 0}
+          >
+            {locked ? '已送出驗收' : '送出驗收'}
+          </button>
+        }
+      />
+      <RoundTabs />
 
       {due.label && (
         <p
-          className={`mt-4 font-['Noto_Sans_TC'] text-[15px] ${due.overdue ? 'text-status-alert' : 'text-black-700'}`}
+          className={`mb-4 font-['Noto_Sans_TC'] text-[14px] ${due.overdue ? 'text-status-alert' : 'text-black-700'}`}
         >
           送件截止 {formatDateTime(dueAt)}・{due.label}
           {due.overdue && '（逾期仍可送出）'}
@@ -87,12 +103,11 @@ export default function FamilyReviewPage() {
       )}
 
       {locked && (
-        <div className="mt-4">
-          <LockBanner
-            title="本輪已送出，清單與附件已鎖定"
-            description={`送出時間 ${formatDateTime(data?.progress?.submitted_at)}，共 ${data?.progress?.snapshot_count ?? 0} 份進入驗收。本期沒有補件流程，如需調整請聯絡教案組。`}
-          />
-        </div>
+        <LockBanner
+          className="mb-4"
+          title={`${context?.current_term?.label ?? ''}・${roundLabel}家內清單已送出`}
+          description={`送出時間 ${formatDateTime(data?.progress?.submitted_at)}，共 ${data?.progress?.snapshot_count ?? 0} 份進入驗收。「納入本輪驗收」、教案附件與缺交註記皆不可再修改；本期沒有補件流程，如需調整請聯絡教案組。`}
+        />
       )}
 
       {loading ? (
@@ -100,7 +115,7 @@ export default function FamilyReviewPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-900" />
         </div>
       ) : error ? (
-        <div className="mt-6 rounded-lg bg-white px-6 py-10 text-center shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
+        <div className="rounded-[10px] border border-black-200 bg-white px-6 py-10 text-center">
           <p className="font-['Noto_Sans_TC'] text-[16px] text-status-alert">{error}</p>
         </div>
       ) : (
@@ -117,9 +132,6 @@ export default function FamilyReviewPage() {
                 return next;
               })
             }
-            onToggleAll={(checked) =>
-              setSelected(checked ? new Set(plans.map((plan) => plan.plan_id)) : new Set())
-            }
           />
 
           <MissingSubmissionPanel
@@ -129,29 +141,15 @@ export default function FamilyReviewPage() {
             readonlyTotal={data?.progress?.missing_total ?? 0}
           />
 
-          {!locked && (
-            <BulkActionBar
-              summary={
-                <>
-                  已選 <span className="font-bold text-primary-900">{included.length}</span> 份
-                  ｜缺交 <span className="font-bold">{missingCount}</span> 份
-                </>
-              }
-            >
-              <Button
-                onClick={() => setConfirmOpen(true)}
-                disabled={plans.length === 0}
-                className="bg-primary-900 px-6 py-2 font-bold text-white"
-              >
-                送出本輪驗收
-              </Button>
-            </BulkActionBar>
-          )}
+          <p className="mt-3 font-['Noto_Sans_TC'] text-[12px] text-black-500">
+            初驗送出後永久凍結；總驗會在另一個分頁重新確認一次，資料保留至下學期開始前。
+          </p>
         </>
       )}
 
       <SubmitConfirmModal
         open={confirmOpen}
+        roundLabel={roundLabel}
         included={included}
         excluded={excluded}
         missing={missing}

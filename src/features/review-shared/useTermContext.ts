@@ -52,9 +52,10 @@ function loadTermContext(force = false): Promise<TermContext | null> {
         return data;
       })
       .catch((error) => {
-        // 沒有期別 / 沒有身分都可能失敗；當成「沒有任何能力」處理，不要讓頁面爆掉。
+        // 失敗不算「已載入」：不 poison 快取，讓下一次呼叫可以重試（避免登入後
+        // 剛好碰到一次暫時性失敗就永遠卡住，需要整頁 refresh 才能恢復）。
         cache.data = null;
-        cache.loaded = true;
+        cache.loaded = false;
         throw error;
       })
       .finally(() => {

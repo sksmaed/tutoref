@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { Card, CardHeader } from '@/components/ui/Card';
+import { StatusChip } from '@/features/review-shared/StatusChip';
+import { BTN, BTN_PRIMARY } from '@/lib/button-styles';
 import type { RubricItemInput, RubricRow, RubricVersionRow } from '@/services/review';
 
 interface RubricEditorProps {
@@ -71,49 +73,85 @@ export const RubricEditor: React.FC<RubricEditorProps> = ({
   }, [initial, items]);
 
   if (!editing) {
+    const scoring = snapshot?.scoring;
+    const formula = grouped
+      .map(([group, entries]) => {
+        const values = new Set(entries.map(({ item }) => item.deduction_value));
+        return values.size === 1 ? `（${group}未達標數 × ${[...values][0]}）` : `（${group}各項扣分）`;
+      })
+      .join(' − ');
+
     return (
-      <div>
+      <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900">
-              {rubric.name}
-              {version && <span className="ml-2 text-[13px] text-black-700">v{version.version}</span>}
-            </p>
-            {initial && snapshot?.scoring && (
-              <p className="font-['Noto_Sans_TC'] text-[13px] text-black-700">
-                底分 {snapshot.scoring.base_score}・通過 {snapshot.scoring.pass_min_score}・
-                潛力優良 {snapshot.scoring.potential_excellent_threshold}
-              </p>
-            )}
-          </div>
-          <Button
-            onClick={startEditing}
-            className="border border-primary-900 bg-white px-4 py-1 text-primary-900"
-          >
+          <p className="font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900">
+            {rubric.name}
+            {version && <span className="ml-2 text-[13px] font-normal text-black-500">v{version.version}・{version.title}</span>}
+          </p>
+          <button type="button" onClick={startEditing} className={BTN}>
             以此版本建立新版
-          </Button>
+          </button>
         </div>
 
-        <div className="mt-3 flex flex-col gap-3">
-          {grouped.map(([group, entries]) => (
-            <div key={group}>
-              <p className="font-['Noto_Sans_TC'] text-[14px] font-bold text-black-900">{group}</p>
-              <ul className="mt-1 flex flex-col gap-1">
+        {initial && scoring && (
+          <Card>
+            <CardHeader title="計分公式" />
+            <p className="rounded-[11px] border border-black-200 bg-black-100/40 px-[14px] py-3 font-mono text-[12px] leading-[170%] text-black-700">
+              加權分數 = {scoring.base_score}
+              {formula ? ` − ${formula}` : ''}
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+              {[
+                { range: `> ${scoring.potential_excellent_threshold}`, text: '通過，且有成為潛力優良教案的可能' },
+                { range: `${scoring.pass_min_score}–${scoring.potential_excellent_threshold}`, text: `通過（含 ${scoring.pass_min_score}）` },
+                { range: `${scoring.discussion_min_score}–未滿 ${scoring.pass_min_score}`, text: '有疑慮，由教案組內部討論' },
+                { range: `< ${scoring.discussion_min_score}`, text: '不通過' },
+              ].map((item) => (
+                <div key={item.range} className="rounded-[10px] border border-black-200 bg-white p-[10px] font-['Noto_Sans_TC']">
+                  <p className="text-[14px] font-bold text-black-900">{item.range}</p>
+                  <p className="text-[12px] text-black-500">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+        {!initial && (
+          <Card>
+            <CardHeader
+              title="總驗判定方式"
+              description="教案紙與投影片分開判斷「通過／未通過」，未通過時需填寫理由。以下檢核項目是驗收者對照用的清單。"
+            />
+          </Card>
+        )}
+
+        {grouped.map(([group, entries], groupIndex) => {
+          const values = new Set(entries.map(({ item }) => item.deduction_value));
+          const uniform = initial && values.size === 1 ? [...values][0] : null;
+          return (
+            <div key={group} className="overflow-hidden rounded-xl border border-black-200 bg-white">
+              <div className="flex items-start justify-between gap-3 bg-black-100/60 px-4 py-[14px]">
+                <p className="font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900">
+                  {groupIndex + 1}. {group}
+                </p>
+                {uniform != null && <StatusChip status={`未達標每項 −${uniform} 分`} tone="active" />}
+              </div>
+              <ul className="px-4 pb-3 pt-[6px]">
                 {entries.map(({ item, index }) => (
                   <li
                     key={index}
-                    className="flex items-baseline justify-between gap-3 font-['Noto_Sans_TC'] text-[14px] text-black-700"
+                    className="flex items-baseline gap-2 border-b border-black-100 py-2 font-['Noto_Sans_TC'] text-[14px] text-black-900 last:border-b-0"
                   >
-                    <span>{item.label}</span>
-                    {initial && (
-                      <span className="shrink-0 text-status-alert">−{item.deduction_value}</span>
+                    <span className="text-primary-900">✓</span>
+                    <span className="flex-1">{item.label}</span>
+                    {initial && uniform == null && (
+                      <span className="shrink-0 text-[12px] text-status-alert">−{item.deduction_value}</span>
                     )}
                   </li>
                 ))}
               </ul>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     );
   }
@@ -126,7 +164,7 @@ export const RubricEditor: React.FC<RubricEditorProps> = ({
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="新版本標題"
-          className="rounded-lg border border-black-200 px-3 py-1 text-[14px]"
+          className="rounded-[10px] border border-black-200 px-3 py-1 text-[14px]"
         />
         <button
           type="button"
@@ -144,7 +182,7 @@ export const RubricEditor: React.FC<RubricEditorProps> = ({
             type="number"
             value={baseScore}
             onChange={(event) => setBaseScore(Number(event.target.value))}
-            className="ml-2 w-[80px] rounded-lg border border-black-200 px-2 py-1 text-[14px]"
+            className="ml-2 w-[80px] rounded-[10px] border border-black-200 px-2 py-1 text-[14px]"
           />
         </label>
       )}
@@ -159,14 +197,14 @@ export const RubricEditor: React.FC<RubricEditorProps> = ({
                 update(index, initial ? { category: event.target.value } : { section: event.target.value })
               }
               placeholder={initial ? '分類' : '區塊'}
-              className="w-[120px] rounded-lg border border-black-200 px-2 py-1 text-[14px]"
+              className="w-[120px] rounded-[10px] border border-black-200 px-2 py-1 text-[14px]"
             />
             <input
               type="text"
               value={item.label}
               onChange={(event) => update(index, { label: event.target.value })}
               placeholder="項目說明"
-              className="min-w-[220px] flex-1 rounded-lg border border-black-200 px-3 py-1 text-[14px]"
+              className="min-w-[220px] flex-1 rounded-[10px] border border-black-200 px-3 py-1 text-[14px]"
             />
             {initial && (
               <input
@@ -174,7 +212,7 @@ export const RubricEditor: React.FC<RubricEditorProps> = ({
                 step="0.5"
                 value={item.deduction_value ?? 0}
                 onChange={(event) => update(index, { deduction_value: Number(event.target.value) })}
-                className="w-[80px] rounded-lg border border-black-200 px-2 py-1 text-[14px]"
+                className="w-[80px] rounded-[10px] border border-black-200 px-2 py-1 text-[14px]"
               />
             )}
             <button
@@ -188,21 +226,24 @@ export const RubricEditor: React.FC<RubricEditorProps> = ({
         ))}
       </div>
 
-      <Button
+      <button
+        type="button"
+        className={`${BTN} mt-3`}
         onClick={() =>
           setItems((prev) => [
             ...prev,
             { label: '', category: '', section: '', deduction_value: initial ? 1 : null, sort_order: prev.length },
           ])
         }
-        className="mt-3 border border-primary-900 bg-white px-4 py-1 text-[14px] text-primary-900"
       >
-        新增項目
-      </Button>
+        ＋ 新增項目
+      </button>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <Checkbox checked={activate} onChange={setActivate} label="建立後立即啟用（之後鎖定的任務才會用到）" />
-        <Button
+        <button
+          type="button"
+          className={BTN_PRIMARY}
           onClick={() =>
             void onCreateVersion({
               rubric_id: rubric.id,
@@ -216,10 +257,9 @@ export const RubricEditor: React.FC<RubricEditorProps> = ({
             })
           }
           disabled={working || items.every((item) => !item.label.trim())}
-          className="bg-primary-900 px-6 py-2 font-bold text-white"
         >
           {working ? '建立中…' : '建立新版本'}
-        </Button>
+        </button>
       </div>
     </div>
   );

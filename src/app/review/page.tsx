@@ -4,7 +4,7 @@ import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTermContext } from '@/features/review-shared/useTermContext';
-import { REVIEW_SECTIONS } from '@/features/review-shared/sections';
+import { REVIEW_SECTIONS, sectionGranted } from '@/features/review-shared/sections';
 
 /**
  * 依 capability 導到該角色的預設頁（§7.1）。
@@ -15,7 +15,7 @@ export default function ReviewIndexPage() {
   const { context, loading } = useTermContext();
 
   const granted = useMemo(
-    () => REVIEW_SECTIONS.filter((section) => context?.capabilities?.includes(section.capability)),
+    () => REVIEW_SECTIONS.filter((section) => sectionGranted(section, context?.capabilities)),
     [context]
   );
   const target = granted.find((section) => section.available);

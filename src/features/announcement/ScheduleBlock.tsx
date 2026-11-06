@@ -1,60 +1,74 @@
 'use client';
 
 import React from 'react';
+import { Card, CardHeader } from '@/components/ui/Card';
 import { StatusChip } from '@/features/review-shared/StatusChip';
 import { deadlineState, formatDateTime } from '@/features/review-shared/format';
 import type { ScheduleRow } from '@/services/review';
 
-const STAGE_LABEL: Record<string, string> = { initial: '初驗', final: '總驗' };
-
 interface ScheduleBlockProps {
+  termLabel?: string;
   schedules: ScheduleRow[];
 }
 
+interface TimelineItem {
+  key: string;
+  label: string;
+  hint?: string;
+  dueAt: string | null;
+}
+
 /**
- * 公告頁的時程區塊（§6.8）。四個日期全部來自 GET /review/schedules，
+ * 公告頁右側的驗收時程（v13 `.timeline`，§6.8）。日期全部來自 GET /review/schedules，
  * 前端不自己算、不寫死；未設定就顯示「未設定」，不放假日期。
  */
-export const ScheduleBlock: React.FC<ScheduleBlockProps> = ({ schedules }) => {
-  const rows = schedules.filter((schedule) => schedule.round_no === 1);
-  if (rows.length === 0) return null;
+export const ScheduleBlock: React.FC<ScheduleBlockProps> = ({ termLabel, schedules }) => {
+  const byStage = (stage: string) =>
+    schedules.find((schedule) => schedule.stage === stage && schedule.round_no === 1);
+  const initial = byStage('initial');
+  const final = byStage('final');
+
+  const items: TimelineItem[] = [
+    {
+      key: 'initial-submission',
+      label: '初驗繳交截止',
+      hint: '教案紙與投影片需完整上傳，家長送出驗收。',
+      dueAt: initial?.submission_due_at ?? null,
+    },
+    { key: 'initial-review', label: '初驗截止', dueAt: initial?.review_due_at ?? null },
+    { key: 'final-submission', label: '修改版繳交截止', dueAt: final?.submission_due_at ?? null },
+    { key: 'final-review', label: '總驗截止', dueAt: final?.review_due_at ?? null },
+  ];
 
   return (
-    <section className="rounded-lg bg-white px-5 py-4 shadow-[2px_2px_10px_0px_rgba(0,0,0,0.1)]">
-      <h2 className="font-['Noto_Sans_TC'] text-[16px] font-bold text-black-900">本期時程</h2>
-      <div className="mt-3 flex flex-col gap-3">
-        {rows.map((schedule) => {
-          const submission = deadlineState(schedule.submission_due_at);
-          const review = deadlineState(schedule.review_due_at);
+    <Card>
+      <CardHeader title={`${termLabel ? `${termLabel} ` : ''}驗收時程`} />
+      <ol className="relative pl-6 before:absolute before:bottom-1 before:left-[7px] before:top-[6px] before:w-[2px] before:bg-black-200">
+        {items.map((item) => {
+          const state = deadlineState(item.dueAt);
           return (
-            <div key={schedule.id} className="flex flex-wrap items-center gap-x-6 gap-y-1">
-              <span className="w-[40px] font-['Noto_Sans_TC'] text-[15px] font-bold text-black-900">
-                {STAGE_LABEL[schedule.stage] ?? schedule.stage}
-              </span>
-              <span className="font-['Noto_Sans_TC'] text-[14px] text-black-700">
-                送件截止 {formatDateTime(schedule.submission_due_at)}
-                {submission.label && (
-                  <span className={`ml-2 ${submission.overdue ? 'text-status-alert' : 'text-black-500'}`}>
-                    {submission.label}
-                  </span>
+            <li
+              key={item.key}
+              className="relative pb-[18px] last:pb-0 before:absolute before:left-[-21px] before:top-[5px] before:h-[9px] before:w-[9px] before:rounded-full before:bg-primary-900 before:shadow-[0_0_0_4px_var(--color-primary-100)]"
+            >
+              <p className="font-['Noto_Sans_TC'] text-[11px] text-black-500">
+                {formatDateTime(item.dueAt)}
+                {state.label && (
+                  <span className={`ml-2 ${state.overdue ? 'text-status-alert' : ''}`}>{state.label}</span>
                 )}
-              </span>
-              <span className="font-['Noto_Sans_TC'] text-[14px] text-black-700">
-                驗收截止 {formatDateTime(schedule.review_due_at)}
-                {review.label && (
-                  <span className={`ml-2 ${review.overdue ? 'text-status-alert' : 'text-black-500'}`}>
-                    {review.label}
-                  </span>
-                )}
-              </span>
-              {(submission.overdue || review.overdue) && <StatusChip status="已逾期" tone="alert" />}
-            </div>
+              </p>
+              <p className="mt-1 flex items-center gap-2 font-['Noto_Sans_TC'] text-[14px] font-bold text-black-900">
+                {item.label}
+                {state.overdue && <StatusChip status="已逾期" tone="alert" />}
+              </p>
+              {item.hint && <p className="mt-[2px] font-['Noto_Sans_TC'] text-[12px] text-black-500">{item.hint}</p>}
+            </li>
           );
         })}
-      </div>
-      <p className="mt-3 font-['Noto_Sans_TC'] text-[12px] text-black-500">
+      </ol>
+      <p className="mt-4 font-['Noto_Sans_TC'] text-[12px] text-black-500">
         逾期不會被系統擋下，仍可送件與提交，但畫面上會標記。
       </p>
-    </section>
+    </Card>
   );
 };

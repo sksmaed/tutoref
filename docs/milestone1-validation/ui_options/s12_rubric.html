@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S12 更新驗收標準</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Milestone 1 UI 方案原型：只沿用 tutoref/src/app/globals.css 的色票與 lib/*-styles.ts 的尺寸，不新增品牌色。 */
+:root {
+  --p100: #fef7f1; --p300: #fbcf9e; --p700: #f1994a; --p900: #ed7a13;
+  --s100: #f4f7f0; --s700: #728a47;
+  --b100: #f1f1f1; --b200: #d4d4d4; --b300: #b8b8b8; --b400: #9c9c9c; --b500: #808080; --b700: #474747; --b900: #0d0d0d;
+  --idle: var(--b400); --idle-bg: var(--b100);
+  --active: var(--p900); --active-bg: var(--p100);
+  --done: var(--s700); --done-bg: var(--s100);
+  --alert: #c85f5f; --alert-bg: #faf0f0;
+  --locked: var(--b500); --locked-bg: var(--b100);
+  --info: #6392b5; --info-bg: #edf4fb;
+  --cat-nature: #728a47; --cat-social: #f1994a; --cat-general: #7f478a; --cat-info: #6392b5; --cat-art: #c85f5f;
+  --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); color: var(--b900); background: var(--b100); font-size: 14px; line-height: 1.55; }
+a { color: var(--p900); }
+
+/* ---------- 文件外框（說明區，不是原型本體） ---------- */
+.doc { max-width: 1260px; margin: 0 auto; padding: 28px 16px 80px; }
+.crumb { font-size: 12px; color: var(--b500); margin-bottom: 6px; }
+.crumb a { color: var(--b500); text-decoration: none; }
+.crumb a:hover { color: var(--p900); }
+.doc h1 { font-size: 24px; margin: 0 0 6px; }
+.doc .lead { color: var(--b700); font-size: 14px; margin: 0 0 18px; max-width: 900px; }
+.panel { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 18px 20px; margin-bottom: 16px; }
+.panel h2 { font-size: 16px; margin: 0 0 8px; }
+.panel h3 { font-size: 14px; margin: 14px 0 6px; }
+.panel p, .panel li { font-size: 14px; color: var(--b700); }
+.panel ul { margin: 6px 0 0; padding-left: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.issue-ref { display: inline-block; font-size: 12px; color: var(--alert); background: var(--alert-bg); border-radius: 6px; padding: 0 6px; margin: 0 2px; }
+.decide { border-left: 3px solid var(--p900); background: var(--p100); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 10px; font-size: 13px; color: var(--b700); }
+
+.opt-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 14px; }
+.opt-tab { cursor: pointer; border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 700; color: var(--b900); display: inline-flex; gap: 8px; align-items: center; }
+.opt-tab:hover { border-color: var(--b300); }
+.opt-tab.on { border-color: var(--p900); background: var(--p100); color: var(--p900); }
+.opt-tab .rec { font-size: 11px; font-weight: 700; color: #fff; background: var(--p900); border-radius: 6px; padding: 1px 6px; }
+.opt-tab .rec.codex { background: var(--b700); }
+.opt { display: none; }
+.opt.on { display: block; }
+.opt-meta { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 960px) { .opt-meta { grid-template-columns: 1fr; } }
+.opt-meta .panel { margin: 0; }
+.opt-meta h3 { margin-top: 0; }
+.pros li::marker { color: var(--s700); }
+.cons li::marker { color: var(--alert); }
+.verdict { font-size: 13px; color: var(--b700); background: #fff; border: 1px dashed var(--b300); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+.verdict b { color: var(--b900); }
+
+.stage { overflow-x: auto; padding-bottom: 6px; }
+.stage-cap { font-size: 12px; color: var(--b500); margin: 6px 2px 10px; }
+.pager { display: flex; justify-content: space-between; margin-top: 26px; font-size: 14px; }
+.pager a { text-decoration: none; font-weight: 700; }
+
+/* ---------- 原型：AppShell ---------- */
+.frame { position: relative; width: 1180px; min-height: 660px; display: flex; background: var(--b100); border: 1px solid var(--b200); border-radius: 14px; overflow: hidden; }
+.frame.tall { min-height: 780px; }
+.sb { width: 206px; margin: 20px 0 20px 20px; flex-shrink: 0; background: #fff; border-radius: 10px; box-shadow: 0 5px 16px rgba(0,0,0,.08); padding: 18px 16px; display: flex; flex-direction: column; }
+.sb .logo { font-size: 19px; font-weight: 700; letter-spacing: .5px; padding: 0 8px 16px; border-bottom: 1px solid var(--b100); margin-bottom: 8px; }
+.sb .logo span { color: var(--p900); }
+.sb .grp { font-size: 12px; color: var(--b400); padding: 12px 8px 5px; }
+.sb .it { display: flex; gap: 8px; align-items: center; border-radius: 7px; padding: 8px 9px; font-size: 15px; font-weight: 500; margin: 2px 0; }
+.sb .it i { width: 14px; height: 14px; border: 1.5px solid var(--b500); border-radius: 4px; display: inline-block; }
+.sb .it.on { background: var(--p100); color: var(--b900); }
+.sb .it.on i { border-color: var(--p900); }
+.sb .it .new { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--p900); background: var(--p100); border: 1px solid var(--p300); border-radius: 6px; padding: 0 5px; }
+.sb .spacer { flex: 1; }
+.sb .me { border-top: 1px solid var(--b100); padding: 14px 8px 0; display: flex; gap: 10px; align-items: center; }
+.sb .me .av { width: 29px; height: 29px; border-radius: 50%; background: var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--b700); }
+.sb .me b { display: block; font-size: 12px; }
+.sb .me small { display: block; font-size: 10px; color: var(--b400); }
+/* .main 不設 position，讓彈窗遮罩與抽屜以整個 .frame 為範圍（正式站的 Dialog 會連側欄一起蓋住）。 */
+.main { flex: 1; min-width: 0; padding: 20px 34px 40px 34px; }
+.userbtn { position: absolute; right: 24px; top: 20px; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--b200); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 3px 10px rgba(0,0,0,.05); }
+.ph { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; padding-right: 64px; margin-bottom: 22px; }
+.ph h1 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.5; }
+.ph .sub { font-size: 13px; color: var(--b500); margin-top: 2px; }
+.ph .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- 原型：元件 ---------- */
+.card { background: #fff; border: 1px solid var(--b200); border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,.045); padding: 20px; }
+.card + .card { margin-top: 14px; }
+.card .ct { font-size: 15px; font-weight: 700; }
+.card .cd { font-size: 12px; color: var(--b500); margin-top: 3px; line-height: 1.55; }
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.metric { background: #fff; border: 1px solid var(--b200); border-radius: 10px; padding: 16px 18px; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.metric small { font-size: 12px; color: var(--b500); }
+.metric b { display: block; font-size: 28px; font-weight: 800; line-height: 1.2; margin: 3px 0; }
+.metric span { font-size: 12px; color: var(--b500); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+.metrics.three { grid-template-columns: repeat(3, 1fr); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: 10px; border: 1px solid var(--b200); background: #fff; color: var(--b900); padding: 9px 13px; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: default; }
+.btn.primary { background: var(--p900); border-color: var(--p900); color: #fff; }
+.btn.danger { background: #fff; border-color: var(--alert-bg); color: var(--alert); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--b700); }
+.btn.sm { border-radius: 8px; padding: 6px 9px; font-size: 12px; }
+.btn[disabled] { opacity: .5; }
+.link { color: var(--p900); font-weight: 700; text-decoration: none; }
+.link-file { display: inline-flex; gap: 5px; align-items: center; color: var(--p900); font-weight: 700; font-size: 13px; text-decoration: none; white-space: nowrap; }
+.link-file::before { content: ''; width: 11px; height: 13px; border: 1.5px solid currentColor; border-radius: 2px; display: inline-block; }
+
+.chip { display: inline-flex; align-items: center; border-radius: 8px; padding: 2px 8px; font-size: 13px; font-weight: 500; white-space: nowrap; line-height: 1.5; }
+.chip.idle { background: var(--idle-bg); color: var(--idle); }
+.chip.active { background: var(--active-bg); color: var(--active); }
+.chip.done { background: var(--done-bg); color: var(--done); }
+.chip.alert { background: var(--alert-bg); color: var(--alert); }
+.chip.locked { background: var(--locked-bg); color: var(--locked); }
+.chip.info { background: var(--info-bg); color: var(--info); }
+.role { display: inline-flex; border-radius: 6px; background: var(--b100); color: var(--b700); font-size: 12px; padding: 1px 7px; margin: 1px 3px 1px 0; white-space: nowrap; }
+.variant { display: inline-flex; font-size: 11px; font-weight: 700; color: var(--b700); background: var(--b100); border: 1px solid var(--b200); border-radius: 6px; padding: 0 6px; margin-left: 4px; }
+.tag { display: inline-flex; gap: 4px; align-items: center; border-radius: 999px; border: 1px solid var(--p300); background: var(--p100); color: var(--p900); font-size: 12px; font-weight: 700; padding: 2px 9px; white-space: nowrap; }
+.tag .x { color: var(--b500); font-weight: 400; }
+
+/* 與 lib/table-styles.ts 的 TABLE_WRAP 相同：容器可橫向捲動 */
+.tbl { overflow-x: auto; border: 1px solid var(--b200); border-radius: 10px; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.045); }
+.tbl table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { background: var(--p100); text-align: left; font-size: 13px; font-weight: 700; padding: 13px 14px; border-bottom: 1px solid var(--b100); white-space: nowrap; }
+.tbl td { padding: 13px 14px; border-bottom: 1px solid var(--b100); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tr.hl td { background: rgba(254,247,241,.6); }
+.tbl tr.sel td { background: var(--p100); }
+.tbl td small, .tbl th small { display: block; font-size: 12px; color: var(--b500); font-weight: 400; }
+.tbl .cb { width: 42px; text-align: center; }
+.tbl tr.group td { background: #fafafa; font-size: 12px; font-weight: 700; color: var(--b700); padding: 7px 14px; }
+.tbl.clickable tbody tr:not(.group) { cursor: pointer; }
+.box { width: 15px; height: 15px; border: 1.5px solid var(--b300); border-radius: 4px; display: inline-block; vertical-align: middle; background: #fff; }
+.box.on { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.on::after { content: ''; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.box.mixed { background: var(--p900); border-color: var(--p900); position: relative; }
+.box.mixed::after { content: ''; position: absolute; left: 3px; top: 6px; width: 7px; height: 2px; background: #fff; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.tabs span { padding: 10px 16px; font-size: 15px; font-weight: 700; color: var(--b500); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs span.on { color: var(--p900); border-color: var(--p900); }
+.seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 10px; background: #fff; border: 1px solid var(--b200); }
+.seg span { padding: 6px 12px; border-radius: 7px; font-size: 14px; font-weight: 700; color: var(--b700); }
+.seg span.on { background: var(--p900); color: #fff; }
+
+.bulk { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--p300); background: var(--p100); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; color: var(--b700); }
+.bulk b { color: var(--b900); }
+.banner { border-radius: 8px; border: 1px solid; padding: 12px 16px; margin-bottom: 14px; }
+.banner b { display: block; font-size: 15px; }
+.banner p { margin: 3px 0 0; font-size: 14px; }
+.banner.locked { background: var(--locked-bg); border-color: var(--b200); color: var(--b700); }
+.banner.active { background: var(--active-bg); border-color: var(--p300); color: var(--b900); }
+.banner.alert { background: var(--alert-bg); border-color: #efcfcf; color: var(--alert); }
+.banner.done { background: var(--done-bg); border-color: #dbe4cf; color: var(--b900); }
+.banner.info { background: var(--info-bg); border-color: #cfe0ef; color: var(--b900); }
+
+.ctl { border: 1px solid var(--b200); background: #fff; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; color: var(--b900); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+.ctl.ph { color: var(--b400); }
+.ctl.sel::after { content: '▾'; margin-left: auto; color: var(--b500); font-size: 12px; padding-left: 8px; }
+.ctl.req { border-color: var(--p700); }
+.ctl.full { width: 100%; }
+.ctl.dis { background: var(--b100); color: var(--b500); }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.toolbar .grow { flex: 1; min-width: 220px; }
+.flabel { display: block; font-size: 12px; font-weight: 700; color: var(--b700); margin-bottom: 6px; }
+.fhint { display: block; font-size: 12px; color: var(--b500); margin-top: 5px; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fgrid .span2 { grid-column: span 2; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill { border: 1px solid var(--b200); border-radius: 999px; padding: 4px 11px; font-size: 13px; background: #fff; color: var(--b700); white-space: nowrap; }
+.pill.on { border-color: var(--p900); background: var(--p100); color: var(--p900); font-weight: 700; }
+.pill.dis { color: var(--b400); background: var(--b100); }
+.radio { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; margin-right: 14px; }
+.radio i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--b300); display: inline-block; background: #fff; }
+.radio.on i { border: 5px solid var(--p900); }
+.check { display: inline-flex; gap: 7px; align-items: center; font-size: 14px; margin-right: 14px; white-space: nowrap; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 9px 16px; font-size: 14px; margin: 0; }
+.kv dt { color: var(--b500); }
+.kv dd { margin: 0; font-weight: 500; }
+.muted { color: var(--b500); }
+.small { font-size: 12px; }
+.alert-text { color: var(--alert); }
+.ok-text { color: var(--s700); }
+.row { display: flex; gap: 10px; align-items: center; }
+.row.between { justify-content: space-between; }
+.stack > * + * { margin-top: 12px; }
+.hr { height: 1px; background: var(--b100); margin: 14px 0; }
+.steps { display: flex; gap: 8px; margin-bottom: 16px; }
+.steps span { flex: 1; font-size: 12px; font-weight: 700; color: var(--b400); border-top: 3px solid var(--b200); padding-top: 6px; }
+.steps span.on { color: var(--p900); border-color: var(--p900); }
+.steps span.done { color: var(--s700); border-color: var(--s700); }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 0 0 14px 22px; }
+.timeline li::before { content: ''; position: absolute; left: 4px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--p900); }
+.timeline li::after { content: ''; position: absolute; left: 8px; top: 18px; bottom: 2px; width: 1px; background: var(--b200); }
+.timeline li:last-child::after { display: none; }
+.timeline small { display: block; font-size: 12px; color: var(--b500); }
+.drop { border: 1.5px dashed var(--b300); border-radius: 12px; background: #fff; padding: 20px; text-align: center; color: var(--p900); font-weight: 700; font-size: 14px; }
+.drop small { display: block; color: var(--b500); font-weight: 400; font-size: 12px; margin-top: 4px; }
+.drop.filled { border-style: solid; border-color: var(--p300); background: var(--p100); color: var(--b900); text-align: left; }
+.drop.off { color: var(--b400); background: var(--b100); }
+.pdf { background: #fff; border: 1px solid var(--b200); border-radius: 8px; height: 100%; min-height: 380px; padding: 14px; font-size: 11px; color: var(--b500); }
+.pdf .ln { height: 7px; background: var(--b100); border-radius: 3px; margin: 7px 0; }
+.pdf .ln.w6 { width: 60%; } .pdf .ln.w8 { width: 80%; } .pdf .ln.w4 { width: 40%; }
+.cat { font-size: 13px; font-weight: 700; }
+.cat.nature { color: var(--cat-nature); } .cat.social { color: var(--cat-social); } .cat.general { color: var(--cat-general); } .cat.art { color: var(--cat-art); } .cat.info { color: var(--cat-info); }
+.diff { font-size: 13px; }
+.diff s { color: var(--b400); }
+.diff b { color: var(--p900); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--b300); margin-right: 6px; }
+.dot.done { background: var(--s700); } .dot.alert { background: var(--alert); } .dot.active { background: var(--p900); }
+
+/* ---------- 原型：覆蓋層 ---------- */
+.scrim { position: absolute; inset: 0; background: rgba(13,13,13,.4); display: flex; align-items: center; justify-content: center; padding: 30px; z-index: 5; }
+.scrim.light { background: rgba(13,13,13,.25); }
+.dialog { background: #fff; border-radius: 18px; box-shadow: 0 24px 90px rgba(0,0,0,.25); width: 760px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+/* 與 components/ui/Dialog.tsx 的 SIZE_CLASS 相同：sm 500、md 760、lg 1040 */
+.dialog.md { width: 760px; } .dialog.lg { width: 1040px; } .dialog.sm { width: 500px; }
+.dialog .dh { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid var(--b200); padding: 18px 20px; }
+.dialog .dh small { display: block; font-size: 12px; color: var(--b500); }
+.dialog .dh b { display: block; font-size: 17px; }
+.dialog .dh .x { font-size: 22px; color: var(--b500); line-height: 1; }
+.dialog .db { padding: 20px; overflow: auto; }
+.dialog .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+.dialog .df .left { margin-right: auto; font-size: 12px; color: var(--b500); }
+/* 與 components/ui/Drawer.tsx 相同：寬 min(620px, 92vw)，底下有半透明遮罩 */
+.frame:has(.drawer)::before { content: ''; position: absolute; inset: 0; background: rgba(13,13,13,.25); z-index: 5; }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 620px; background: #fff; border-left: 1px solid var(--b200); box-shadow: -20px 0 60px rgba(0,0,0,.12); z-index: 6; display: flex; flex-direction: column; }
+.drawer .dh { border-bottom: 1px solid var(--b200); padding: 18px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+.drawer .dh small { display: block; font-size: 12px; color: var(--b500); }
+.drawer .dh b { font-size: 18px; }
+.drawer .db { padding: 20px; overflow: auto; flex: 1; }
+.drawer .df { border-top: 1px solid var(--b200); padding: 14px 20px; display: flex; gap: 8px; justify-content: flex-end; }
+.menu { position: absolute; right: 24px; top: 66px; width: 220px; background: #fff; border: 1px solid var(--b200); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.12); padding: 8px; z-index: 4; font-size: 14px; }
+.menu .who { padding: 8px 10px 10px; border-bottom: 1px solid var(--b100); margin-bottom: 4px; }
+.menu .who b { display: block; }
+.menu .who small { color: var(--b500); font-size: 12px; }
+.menu .mi { padding: 8px 10px; border-radius: 8px; }
+.menu .mi.on { background: var(--p100); color: var(--p900); font-weight: 700; }
+/* 原型上的編號標記；說明寫在原型下方的 .legend，避免遮住畫面。 */
+.pin { position: absolute; z-index: 9; width: 22px; height: 22px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,0,0,.25); }
+.legend { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--b700); }
+.legend li { display: flex; gap: 6px; align-items: center; }
+.legend b { width: 20px; height: 20px; border-radius: 50%; background: var(--b900); color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+
+/* 驗收標準：制定入口、草稿、變更確認與本期採用共用樣式。 */
+[hidden] { display: none !important; }
+button, select { cursor: pointer; }
+button, input, select { font-family: var(--font); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--p900); outline-offset: 3px; }
+.btn { cursor: pointer; text-decoration: none; }
+.btn:disabled { cursor: not-allowed; }
+.prototype-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+.prototype-nav a { text-decoration: none; }
+.frame { width: 100%; min-width: 1000px; }
+.main { padding-left: 24px; padding-right: 24px; }
+.page-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--b200); margin-bottom: 18px; }
+.page-tabs a, .page-tabs span { padding: 10px 16px; color: var(--b500); text-decoration: none; font-size: 15px; font-weight: 700; }
+.page-tabs .on { color: var(--p900); border-bottom: 2px solid var(--p900); }
+.round-switch { display: flex; gap: 6px; margin-bottom: 18px; align-items: center; }
+.round-switch button { font: inherit; }
+.round-switch .context { margin-left: auto; font-size: 12px; color: var(--b500); }
+.section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.section-head h2 { margin: 0; font-size: 18px; }
+.section-head p { margin: 4px 0 0; color: var(--b500); font-size: 12px; }
+.entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+.entry-card { display: flex; align-items: flex-start; gap: 14px; margin: 0 !important; }
+.entry-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 38px; height: 38px; border-radius: 10px; background: var(--p100); color: var(--p900); font-size: 19px; }
+.entry-card h3 { font-size: 15px; margin: 0 0 5px; }
+.entry-card p { color: var(--b500); font-size: 12px; margin: 0 0 12px; }
+.version-card { border-top: 3px solid var(--p900); }
+.meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+.meta-grid small { color: var(--b500); display: block; font-size: 12px; margin-bottom: 4px; }
+.meta-grid b { font-size: 13px; word-break: break-word; }
+.score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+.score-box { border: 1px solid var(--b200); border-radius: 8px; padding: 12px; }
+.score-box b { display: block; font-size: 17px; }
+.score-box small { color: var(--b500); font-size: 12px; }
+.formula { margin: 12px 0 0; padding: 12px 14px; background: var(--b100); border-radius: 8px; font-size: 13px; }
+.rubric-table { box-shadow: none; }
+.rubric-table th, .rubric-table td { vertical-align: top; }
+.rubric-table td { overflow-wrap: anywhere; }
+.rubric-table input, .rubric-table select, .rubric-table textarea { width: 100%; min-width: 0; }
+.rubric-table textarea { resize: vertical; min-height: 76px; line-height: 1.6; font-family: var(--font); }
+.rubric-table input[type="number"] { padding: 9px 8px; appearance: textfield; }
+.rubric-table input[type="number"]::-webkit-inner-spin-button { appearance: none; margin: 0; }
+.editor-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 14px; align-items: start; }
+.editor-layout .card { margin: 0; }
+.editor-layout .card + .card { margin-top: 14px; }
+.preview-side { background: var(--p100); border: 1px solid var(--p300); border-radius: 10px; padding: 16px; font-size: 12px; }
+.preview-side h3 { font-size: 14px; margin: 0 0 8px; }
+.preview-side ul { padding-left: 18px; margin: 8px 0; }
+.preview-side li { margin: 8px 0; overflow-wrap: anywhere; }
+.score-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+.field-error { color: var(--alert); font-size: 12px; margin: 6px 0 0; }
+.source-note { margin: 0 0 14px; color: var(--b500); font-size: 12px; overflow-wrap: anywhere; }
+.import-drop { padding: 24px; border: 1.5px dashed var(--b300); border-radius: 10px; text-align: center; }
+.import-drop p { color: var(--b500); font-size: 12px; }
+.import-drop .row { justify-content: center; }
+.import-drop input { max-width: 100%; }
+.parse-steps { display: flex; gap: 12px; margin: 18px 0; }
+.parse-steps span { flex: 1; border-top: 3px solid var(--b200); padding-top: 7px; color: var(--b500); font-size: 12px; }
+.parse-steps .on { border-color: var(--p900); color: var(--p900); font-weight: 700; }
+.check-label { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.7; }
+.check-label input { accent-color: var(--p900); margin-top: 5px; }
+.confirm-dialog { padding: 0; border: 1px solid var(--b200); width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 40px); color: var(--b900); font: inherit; }
+.confirm-dialog:not([open]) { display: none; }
+.confirm-dialog::backdrop { background: rgba(13,13,13,.4); }
+.confirm-dialog .dh button { border: 0; background: none; font: inherit; font-size: 22px; color: var(--b500); cursor: pointer; }
+.confirm-dialog .dh { flex-shrink: 0; }
+.confirm-dialog .df { flex-shrink: 0; }
+.confirm-dialog h3 { font-size: 14px; margin: 0 0 10px; }
+.change-table table { table-layout: fixed; }
+.change-table th:first-child { width: 28%; }
+.change-table th:nth-child(2) { width: 32%; }
+.change-table td { overflow-wrap: anywhere; white-space: normal; }
+.change-table .before { color: var(--b500); background: var(--b100); }
+.change-table .after { color: var(--p900); font-weight: 700; background: var(--p100); }
+.impact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.impact-grid > div { border: 1px solid var(--b200); border-radius: 9px; padding: 12px 14px; }
+.impact-grid p { font-size: 12px; margin: 5px 0 0; color: var(--b500); }
+.impact-grid .next { border-color: var(--p300); background: var(--p100); }
+.status-line { min-height: 24px; margin: 10px 0; color: var(--s700); font-size: 13px; }
+@media (max-width: 700px) { .doc { padding: 20px 12px 48px; } .confirm-dialog .impact-grid { grid-template-columns: 1fr; } .confirm-dialog .db { padding: 16px; } }
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="crumb"><a href="index.html">Milestone 1 UI 方案</a> ／ S12</div>
+  <h1>S12｜制定與採用本期評分標準</h1>
+  <p class="lead">沿用方案 A 的固定格式編輯，分開提供「人工編輯」與「匯入企劃書」入口。兩種方式都先建立草稿、確認變更後再採用；本期使用的版本另有完整檢視頁。</p>
+  <div class="grid2">
+    <div class="panel"><h2>兩個制定入口</h2><p><b>人工編輯：</b>以目前版本為基礎，調整類別、檢核項目、扣分、底分及門檻。</p><p><b>匯入企劃書：</b>上傳文件，由後台解析並對應系統欄位，顯示出處與待確認項目，經人工檢查後帶入草稿。</p></div>
+    <div class="panel"><h2>採用與版本規則</h2><p>初驗採底分扣分制；總驗維持教案紙／投影片分開判定。已分配任務維持原版本，之後新分配任務使用新版本。</p><p>A-2 改以「項目／變更前／變更後」比較，分開呈現計分變更、條文變更與影響範圍，避免把資訊塞在同一格。</p></div>
+  </div>
+  <p class="small muted">互動 UI 原型：可切換初驗／總驗、編輯草稿、預覽解析及確認採用。匯入採內建示意資料，不讀取文件內容、不呼叫後台、不寫入正式資料；重新整理會還原。</p>
+  <nav class="prototype-nav" aria-label="原型畫面"><a class="btn sm" href="#current" data-view="current">A-0 本期採用標準</a><a class="btn sm" href="#manual" data-view="manual">A-1 人工編輯入口</a><a class="btn sm" href="#import" data-view="import">A-3 企劃書匯入入口</a><button class="btn sm" type="button" id="preview-confirm">A-2 預覽變更確認</button></nav>
+  <div class="stage"><div class="frame tall">
+    <div class="sb" data-sb="leader" data-on="review"></div>
+    <div class="main">
+      <div class="userbtn">組</div>
+      <div class="ph"><div><h1>本期驗收管理</h1><div class="sub">27 冬・管理驗收時程、標準，以及初驗與總驗的教案、分配和結果。</div></div></div>
+      <div class="page-tabs"><a href="s11_schedule.html">驗收時程</a><span class="on">驗收標準</span><span>初驗</span><span>總驗</span></div>
+      <div class="round-switch" aria-label="驗收標準輪次"><button class="pill" type="button" data-round="initial">初驗標準</button><button class="pill" type="button" data-round="final">總驗標準</button><span class="context">27 冬・台北時間</span></div>
+      <p class="status-line" id="rubric-status" role="status"></p>
+      <section id="current-view" aria-labelledby="current-title">
+        <div class="section-head"><div><h2 id="current-title">本期採用的評分標準</h2><p>新分配的驗收任務將使用此版本。</p></div><span class="chip done">本期採用</span></div>
+        <div id="current-content"></div>
+        <div class="entry-grid">
+          <div class="card entry-card"><div class="entry-icon" aria-hidden="true">✎</div><div><h3>人工編輯標準</h3><p>沿用目前版本，逐項編輯內容、計分與門檻。</p><button class="btn primary sm" type="button" data-open="manual">以目前版本建立草稿</button></div></div>
+          <div class="card entry-card"><div class="entry-icon" aria-hidden="true">↑</div><div><h3>匯入企劃書制定標準</h3><p>由後台解析文件，檢查對應欄位與來源後建立草稿。</p><button class="btn sm" type="button" data-open="import">匯入企劃書</button></div></div>
+        </div>
+      </section>
+      <section id="manual-view" hidden aria-labelledby="manual-title">
+        <div class="section-head"><div><h2 id="manual-title">人工編輯評分標準</h2><p id="draft-version"></p></div><button class="btn sm" type="button" data-open="current">返回本期採用標準</button></div>
+        <p class="source-note" id="draft-source"></p>
+        <form id="editor-form" novalidate>
+          <div class="editor-layout"><div>
+            <div class="card"><div class="ct">標準內容</div><label style="display:block;margin-top:12px"><span class="flabel">版本名稱</span><input class="ctl full" id="draft-name" required maxlength="100"></label><div class="hr"></div>
+              <div class="score-inputs" id="score-inputs">
+                <label><span class="flabel">底分</span><input class="ctl full" id="base-score" type="number" min="0" step="0.5" required></label>
+                <label><span class="flabel">潛力優良（大於）</span><input class="ctl full" id="excellent-score" type="number" min="0" step="0.5" required></label>
+                <label><span class="flabel">通過（大於或等於）</span><input class="ctl full" id="pass-score" type="number" min="0" step="0.5" required></label>
+                <label><span class="flabel">需討論（大於或等於）</span><input class="ctl full" id="discussion-score" type="number" min="0" step="0.5" required></label>
+              </div>
+              <p class="small muted" id="final-rule" hidden>總驗不使用底分或分數門檻；教案紙與投影片各自判定通過／未通過，未通過時須填理由。投影片未附時顯示「未附（選填）」。</p>
+              <p class="field-error" id="score-error" role="alert"></p>
+            </div>
+            <div class="card"><div class="row between" style="margin-bottom:12px"><b>檢核項目</b><button type="button" class="btn sm" id="add-item">＋ 新增項目</button></div><div id="item-editor"></div><p class="field-error" id="item-error" role="alert"></p></div>
+          </div><aside class="preview-side"><h3>驗收者表單預覽</h3><div id="live-preview"></div><p class="small muted">修改會保留在草稿；確認採用前不影響本期版本。</p></aside></div>
+          <div class="form-actions"><button class="btn" type="button" data-open="current">返回檢視（保留草稿）</button><button class="btn primary" type="submit">檢查變更並採用</button></div>
+        </form>
+      </section>
+      <section id="import-view" hidden aria-labelledby="import-title">
+        <div class="section-head"><div><h2 id="import-title">匯入企劃書制定標準</h2><p>文件上傳 → 後台解析 → 檢查與修正 → 確認採用</p></div><button class="btn sm" type="button" data-open="current">返回本期採用標準</button></div>
+        <div class="card">
+          <div class="parse-steps"><span class="on">01 選擇企劃書</span><span id="parse-step">02 解析與欄位對應</span><span id="review-step">03 檢查後帶入草稿</span></div>
+          <div class="import-drop"><b>上傳教案組企劃書</b><p>預計支援 PDF、DOCX；此原型僅展示選檔與解析示意。</p><div class="row"><input type="file" id="proposal-file" accept=".pdf,.docx" aria-label="選擇企劃書"><button class="btn sm" type="button" id="demo-file">使用示意企劃書</button></div><p id="selected-file">尚未選擇企劃書</p></div>
+          <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="parse-file" type="button" disabled>解析企劃書（示意）</button><button class="btn sm" id="parse-failure" type="button" disabled>預覽解析失敗</button></div>
+          <p class="field-error" id="parse-error" role="alert"></p>
+        </div>
+        <div class="card" id="parse-result" hidden>
+          <div class="card-head"><div><div class="ct">解析結果與系統欄位對應</div><div class="cd" id="parsed-source"></div></div><span class="chip active">待人工確認</span></div>
+          <div class="banner active"><b>發現 1 項需確認</b><p>「時間安排」條文包含轉場時間描述，請對照來源確認；帶入草稿後仍可修正內容與計分。</p></div>
+          <div id="parse-mapping"></div>
+          <label class="check-label" style="margin-top:14px"><input id="review-import" type="checkbox"><span>我已檢查欄位對應及待確認條文，將解析內容帶入草稿後再確認採用。</span></label>
+          <div class="form-actions"><button class="btn primary" type="button" id="load-import" disabled>帶入編輯器檢查與修正</button></div>
+        </div>
+      </section>
+    </div>
+  </div></div>
+  <div class="pager"><a href="s11_schedule.html">← S11 編輯本期時程</a><a href="index.html">回到總覽 →</a></div>
+</div>
+<dialog class="dialog confirm-dialog" id="change-dialog" aria-labelledby="change-title">
+  <div class="dh"><div><small id="change-context"></small><b id="change-title">確認變更並採用新版本</b></div><button type="button" id="close-confirm" aria-label="關閉變更確認">×</button></div>
+  <div class="db"><p class="source-note" id="change-source"></p>
+    <section id="score-changes-section"><h3>計分設定變更</h3><div class="tbl rubric-table change-table" id="score-changes"></div></section>
+    <section style="margin-top:18px"><h3>檢核項目變更</h3><div class="tbl rubric-table change-table" id="item-changes"></div></section>
+    <section style="margin-top:18px"><h3>生效範圍</h3><div class="impact-grid"><div><b>已分配 6 份・維持原版</b><p id="existing-impact"></p></div><div class="next"><b>之後新分配・採用新版</b><p id="new-impact"></p></div></div><p class="small muted">既有任務的評分與已提交結果保留，不會因本次採用重新計分。</p></section>
+    <label class="check-label"><input id="confirm-checked" type="checkbox"><span>我已核對變更內容，並確認新版本僅用於之後新分配的任務。</span></label>
+  </div>
+  <div class="df"><button class="btn" type="button" id="back-to-draft">返回草稿</button><button class="btn primary" type="button" id="activate-version" disabled>確認採用</button></div>
+</dialog>
+<script>
+(function () {
+  const PEOPLE = {
+    leader: { name: '組長阿凱', mail: 'demo-leader@tutoref.tw', av: '組' },
+    parent: { name: '電光家長', mail: 'demo-parent-dianguang@…', av: '電' },
+    writer: { name: '撰寫者小美', mail: 'demo-writer@tutoref.tw', av: '撰' },
+    reviewer: { name: '驗收者一', mail: 'demo-reviewer-1@tutoref.tw', av: '驗' },
+  };
+
+  // data-sb="leader|parent|writer|reviewer"、data-on="<key>"、data-archived（改名「已歸檔教案」）、data-family（顯示家內教案）
+  document.querySelectorAll('.sb[data-sb]').forEach((sb) => {
+    const role = sb.dataset.sb;
+    const on = sb.dataset.on || '';
+    // 原型呈現的都是改版後的狀態，預設顯示「已歸檔教案」；data-legacy 才顯示舊名，data-archived 額外標「改名」
+    const archived = !sb.hasAttribute('data-legacy');
+    const family = sb.hasAttribute('data-family') || role === 'parent';
+    // data-name / data-mail / data-av 可覆寫側欄底部顯示的人（例如加拿家長）
+    const base = PEOPLE[role] || PEOPLE.leader;
+    const person = sb.dataset.name ? { name: sb.dataset.name, mail: sb.dataset.mail || '', av: sb.dataset.av || sb.dataset.name[0] } : base;
+    const item = (key, label, extra = '') =>
+      `<div class="it${key === on ? ' on' : ''}"><i></i>${label}${extra}</div>`;
+    let html = '<div class="logo">Tut<span>★</span>ref</div>';
+    html += item('search', '教案檢索') + item('package', '學習資源') + item('news', '訊息公告');
+    html += '<div class="grp">我的教案</div>';
+    html += item('mine', archived ? '已歸檔教案' : '已上傳教案', archived && sb.hasAttribute('data-archived') ? '<span class="new">改名</span>' : '');
+    html += item('likes', '已收藏教案');
+    html += '<div class="grp">教案驗收</div>';
+    if (family) html += item('family', '家內教案', role !== 'parent' && sb.hasAttribute('data-family') ? '<span class="new">開放</span>' : '');
+    html += item('tasks', '我的驗收任務');
+    if (role === 'leader') {
+      html += item('review', '本期驗收管理');
+      html += '<div class="grp">教案組管理</div>';
+      html += item('members', '成員管理') + item('plans', '教案管理') + item('rubric', '驗收標準');
+    }
+    html += '<div class="spacer"></div>';
+    html += `<div class="me"><div class="av">${person.av}</div><div><b>${person.name}</b><small>${person.mail}</small></div></div>`;
+    sb.innerHTML = html;
+  });
+
+})();
+
+(() => {
+  const $ = id => document.getElementById(id);
+  const clone = value => JSON.parse(JSON.stringify(value));
+  const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const roundLabel = () => round === 'initial' ? '初驗' : '總驗';
+  const initialItems = [
+    { id: 1, category: '基本格式', label: '檔名、字體、字型是否符合要求', deduction: 1 },
+    { id: 2, category: '時間安排', label: '各流程時間是否合理', deduction: 1.5 },
+    { id: 3, category: '完整度', label: '各知識點是否有清楚說明', deduction: 2 }
+  ];
+  const finalItems = [
+    { id: 1, category: '教案紙', label: '已依初驗回饋完成修正', deduction: 0 },
+    { id: 2, category: '教案紙', label: '各流程時間與教學目標相符', deduction: 0 },
+    { id: 3, category: '投影片', label: '內容與教案紙相符，文字與圖像清楚', deduction: 0 }
+  ];
+  const initialVersion = (kind) => ({ version: 1, name: `27 冬${kind === 'initial' ? '初驗' : '總驗'}評分標準`, source: '人工編輯', adopted: '2027/01/03 20:00', scoring: { base: 32, excellent: 30, pass: 25, discussion: 20 }, items: clone(kind === 'initial' ? initialItems : finalItems) });
+  const current = { initial: initialVersion('initial'), final: initialVersion('final') };
+  const drafts = { initial: null, final: null };
+  const imports = { initial: { file: '', parsed: false, reviewed: false }, final: { file: '', parsed: false, reviewed: false } };
+  const params = new URLSearchParams(location.search);
+  let round = params.get('round') === 'final' ? 'final' : 'initial';
+  let view = ['manual', 'import'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'current';
+  let nextItemId = 10;
+  let previewOnly = false;
+  let demoDraft = null;
+  function draft() {
+    if (!drafts[round]) drafts[round] = { ...clone(current[round]), name: `${current[round].name} v${current[round].version + 1}`, source: '人工編輯' };
+    return drafts[round];
+  }
+  function scoringBoxes(s) {
+    return `<div class="score-grid">${[[`> ${s.excellent}`, '潛力優良'],[`${s.pass}～${s.excellent}`, '通過（含兩端）'],[`≥ ${s.discussion}、< ${s.pass}`, '需討論'],[`< ${s.discussion}`, '不通過']].map(([range, name]) => `<div class="score-box"><b>${range}</b><small>${name}</small></div>`).join('')}</div>`;
+  }
+  function readonlyItems(items) {
+    return `<div class="tbl rubric-table"><table><thead><tr><th scope="col" style="width:110px">${round === 'initial' ? '類別' : '判定對象'}</th><th scope="col">檢核項目</th>${round === 'initial' ? '<th scope="col" style="width:110px">未達標扣分</th>' : ''}</tr></thead><tbody>${items.map(item => `<tr><td>${esc(item.category)}</td><td>${esc(item.label)}</td>${round === 'initial' ? `<td>−${item.deduction} 分</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+  }
+  function renderCurrent() {
+    const c = current[round];
+    $('current-content').innerHTML = `<div class="card version-card"><div class="row between"><div><b class="ct">${esc(c.name)}</b> <span class="chip active">v${c.version}</span></div><span class="muted small">${c.items.length} 項檢核</span></div><div class="meta-grid"><div><small>適用輪次</small><b>${roundLabel()}</b></div><div><small>制定方式</small><b>${esc(c.source)}</b></div><div><small>採用時間</small><b>${esc(c.adopted)}</b></div><div><small>採用者</small><b>組長阿凱</b></div></div></div><div class="card"><div class="ct">${round === 'initial' ? '計分方式與結果門檻' : '總驗判定方式'}</div>${round === 'initial' ? `<p class="formula">評分 = 底分 <b>${c.scoring.base}</b> − 各未達標項目的扣分加總</p>${scoringBoxes(c.scoring)}` : '<p class="small muted">教案紙與投影片各自判定「通過／未通過」；未通過需填寫理由。投影片未附時顯示「未附（選填）」，不視為缺附件。</p>'}</div><div class="card"><div class="ct" style="margin-bottom:12px">完整檢核標準</div>${readonlyItems(c.items)}</div><div class="banner locked" style="margin-top:14px"><b>任務使用分配當下的版本</b><p>本頁顯示新分配任務採用的 v${c.version}；已分配任務保留各自版本，可於任務詳情確認。</p></div>`;
+  }
+  function renderEditor() {
+    const d = draft();
+    $('manual-title').textContent = d.source === '人工編輯' ? '人工編輯評分標準' : '匯入草稿・檢查與修正';
+    $('draft-version').textContent = `${roundLabel()}・草稿 v${current[round].version + 1}，以目前 v${current[round].version} 為基礎`;
+    $('draft-source').textContent = `草稿來源：${d.source}。尚未採用，不會影響本期評分。`;
+    $('draft-name').value = d.name;
+    [['base-score','base'],['excellent-score','excellent'],['pass-score','pass'],['discussion-score','discussion']].forEach(([id,key]) => $(id).value = d.scoring[key]);
+    $('score-inputs').hidden = round !== 'initial';
+    $('final-rule').hidden = round === 'initial';
+    $('score-error').textContent = '';
+    $('item-error').textContent = '';
+    $('item-editor').innerHTML = `<div class="tbl rubric-table"><table><thead><tr><th scope="col" style="width:105px">${round === 'initial' ? '類別' : '判定對象'}</th><th scope="col">檢核項目</th>${round === 'initial' ? '<th scope="col" style="width:80px">扣分</th>' : ''}<th scope="col" style="width:64px">操作</th></tr></thead><tbody>${d.items.map((item, index) => `<tr data-index="${index}"><td>${round === 'initial' ? `<input class="ctl" data-field="category" aria-label="第 ${index+1} 項類別" value="${esc(item.category)}">` : `<select class="ctl" data-field="category" aria-label="第 ${index+1} 項判定對象"><option ${item.category === '教案紙' ? 'selected' : ''}>教案紙</option><option ${item.category === '投影片' ? 'selected' : ''}>投影片</option></select>`}</td><td><textarea class="ctl" rows="2" data-field="label" aria-label="第 ${index+1} 項檢核內容" >${esc(item.label)}</textarea></td>${round === 'initial' ? `<td><input class="ctl" type="number" min="0" step="0.5" data-field="deduction" aria-label="第 ${index+1} 項扣分" value="${item.deduction}"></td>` : ''}<td><button type="button" class="btn danger sm" data-remove="${index}" aria-label="移除第 ${index+1} 項">移除</button></td></tr>`).join('')}</tbody></table></div>`;
+    renderPreview();
+  }
+  function renderPreview() {
+    const d = draft();
+    $('live-preview').innerHTML = (round === 'initial' ? `<p>底分 <b>${d.scoring.base ?? '—'}</b>，依未達標項目扣分。</p><p>潛力優良 > ${d.scoring.excellent ?? '—'}<br>通過 ≥ ${d.scoring.pass ?? '—'}<br>需討論 ≥ ${d.scoring.discussion ?? '—'}</p>` : '<p>教案紙／投影片分別判定通過；不通過時填寫理由。</p>') + `<ul>${d.items.map(item => `<li>${esc(item.category || '未分類')}：${esc(item.label || '尚未填寫')}${round === 'initial' ? `（−${item.deduction ?? '—'}）` : ''}</li>`).join('')}</ul>`;
+  }
+  function renderImport() {
+    const data = imports[round];
+    $('selected-file').textContent = data.file || '尚未選擇企劃書';
+    $('parse-file').disabled = !data.file;
+    $('parse-failure').disabled = !data.file;
+    $('parse-result').hidden = !data.parsed;
+    $('review-import').checked = data.reviewed;
+    $('load-import').disabled = !data.parsed || !data.reviewed;
+    $('parse-step').classList.toggle('on', data.parsed);
+    $('review-step').classList.toggle('on', data.reviewed);
+    if (!data.parsed) return;
+    $('parsed-source').textContent = `來源：${data.file}・${roundLabel()}標準・示意解析結果`;
+    const fields = round === 'initial' ? [['底分','100','第 6 頁'],['潛力優良／通過／需討論','94／83／62','第 6 頁'],['基本格式／完整度','3 項檢核，含扣分值','第 6～7 頁']] : [['判定方式','教案紙與投影片分開判斷','第 8 頁'],['判定對象與檢核項目','3 項檢核，不採扣分制','第 8～9 頁']];
+    $('parse-mapping').innerHTML = `<div class="tbl rubric-table"><table><thead><tr><th scope="col">系統欄位</th><th scope="col">解析內容</th><th scope="col">文件出處</th><th scope="col">檢查狀態</th></tr></thead><tbody>${fields.map(([a,b,c]) => `<tr><td>${a}</td><td>${b}</td><td>${c}</td><td><span class="chip done">已對應</span></td></tr>`).join('')}<tr><td>時間安排・檢核條文</td><td>各流程時間是否合理，並預留轉場時間</td><td>第 ${round === 'initial' ? '7' : '8'} 頁</td><td><span class="chip alert">待確認</span></td></tr></tbody></table></div>`;
+  }
+  function show(next) {
+    view = next;
+    $('rubric-status').textContent = '';
+    ['current','manual','import'].forEach(key => $(`${key}-view`).hidden = view !== key);
+    document.querySelectorAll('[data-round]').forEach(btn => { const on = btn.dataset.round === round; btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on)); });
+    if (view === 'current') renderCurrent();
+    if (view === 'manual') renderEditor();
+    if (view === 'import') renderImport();
+    const url = new URL(location.href);
+    url.searchParams.set('round', round); url.hash = view;
+    history.replaceState(null, '', url);
+  }
+  function validate() {
+    const d = draft();
+    let scoreError = !d.name.trim() ? '請填寫版本名稱。' : '';
+    if (round === 'initial') {
+      const s = d.scoring;
+      if (Object.values(s).some(n => n === null || !Number.isFinite(n) || n < 0)) scoreError = '底分與門檻皆須填入大於或等於 0 的數字。';
+      else if (!(s.base > s.excellent && s.excellent >= s.pass && s.pass > s.discussion)) scoreError = '請確認：底分 > 潛力優良門檻 ≥ 通過門檻 > 需討論門檻。';
+    }
+    const itemError = !d.items.length ? '請至少保留一項檢核項目。' : d.items.some(item => !item.category.trim() || !item.label.trim() || round === 'initial' && (item.deduction === null || !Number.isFinite(item.deduction) || item.deduction <= 0)) ? '每項皆須填寫類別、內容；初驗扣分須大於 0。' : '';
+    $('score-error').textContent = scoreError;
+    $('item-error').textContent = itemError;
+    if (scoreError) $('score-error').scrollIntoView({block: 'center'});
+    else if (itemError) $('item-error').scrollIntoView({block: 'center'});
+    return !scoreError && !itemError;
+  }
+  function changeRow(name, before, after) { return `<tr><td>${esc(name)}</td><td class="before">${esc(before)}</td><td class="after">${esc(after)}</td></tr>`; }
+  function changeTable(rows) { return `<table><thead><tr><th scope="col">項目</th><th scope="col">變更前</th><th scope="col">變更後</th></tr></thead><tbody>${rows.join('') || '<tr><td colspan="3" class="muted">本區無變更</td></tr>'}</tbody></table>`; }
+  function openConfirm(d, onlyPreview = false) {
+    previewOnly = onlyPreview;
+    const c = current[round];
+    const nextVersion = c.version + 1;
+    $('change-context').textContent = `畫面 A-2・27 冬・${roundLabel()}標準・v${c.version} → v${nextVersion}${onlyPreview ? '（版面示意）' : ''}`;
+    $('change-source').textContent = `新版名稱：${d.name}｜制定方式：${d.source}`;
+    $('score-changes-section').hidden = round !== 'initial';
+    $('score-changes').innerHTML = changeTable([['base','底分'],['excellent','潛力優良（>）'],['pass','通過（≥）'],['discussion','需討論（≥）']].filter(([key]) => c.scoring[key] !== d.scoring[key]).map(([key,label]) => changeRow(label,c.scoring[key],d.scoring[key])));
+    const changes = [];
+    for (const item of d.items) {
+      const prev = c.items.find(p => p.id === item.id);
+      const description = i => `${i.category}｜${i.label}${round === 'initial' ? `（扣 ${i.deduction} 分）` : ''}`;
+      if (!prev) changes.push(changeRow('新增檢核項目','—',description(item)));
+      else if (description(prev) !== description(item)) changes.push(changeRow('修改檢核項目',description(prev),description(item)));
+    }
+    for (const item of c.items) if (!d.items.some(i => i.id === item.id)) changes.push(changeRow('移除檢核項目',`${item.category}｜${item.label}`,'移除'));
+    $('item-changes').innerHTML = changeTable(changes);
+    $('existing-impact').textContent = `維持 v${c.version}：2 份已提交、4 份待驗收，不受本次變更影響。`;
+    $('new-impact').textContent = `採用後新分配的${roundLabel()}任務使用 v${nextVersion}；其他輪次不受影響。`;
+    $('confirm-checked').checked = false;
+    $('activate-version').disabled = true;
+    $('activate-version').textContent = onlyPreview ? '版面預覽・請返回草稿' : `確認採用 v${nextVersion}`;
+    $('change-dialog').showModal();
+  }
+  document.querySelectorAll('[data-open], [data-view]').forEach(btn => btn.addEventListener('click', e => { e.preventDefault(); show(btn.dataset.open || btn.dataset.view); }));
+  document.querySelectorAll('[data-round]').forEach(btn => btn.addEventListener('click', () => { round = btn.dataset.round; $('proposal-file').value = ''; $('parse-error').textContent = ''; show(view); }));
+  $('draft-name').addEventListener('input', e => { draft().name = e.target.value; });
+  [['base-score','base'],['excellent-score','excellent'],['pass-score','pass'],['discussion-score','discussion']].forEach(([id,key]) => $(id).addEventListener('input', e => { draft().scoring[key] = e.target.value === '' ? null : Number(e.target.value); renderPreview(); }));
+  $('item-editor').addEventListener('input', e => {
+    const key = e.target.dataset.field;
+    if (!key) return;
+    draft().items[Number(e.target.closest('tr').dataset.index)][key] = key === 'deduction' ? e.target.value === '' ? null : Number(e.target.value) : e.target.value;
+    renderPreview();
+  });
+  $('item-editor').addEventListener('click', e => { const btn = e.target.closest('[data-remove]'); if (btn) { draft().items.splice(Number(btn.dataset.remove),1); renderEditor(); } });
+  $('add-item').addEventListener('click', () => { draft().items.push({id:nextItemId++,category:round === 'initial' ? '' : '教案紙',label:'',deduction:1}); renderEditor(); $('item-editor').querySelector('tbody tr:last-child [data-field="label"]').focus(); });
+  $('editor-form').addEventListener('submit', e => { e.preventDefault(); if (validate()) openConfirm(draft()); });
+  function selectFile(name) { imports[round] = { file:name,parsed:false,reviewed:false }; $('parse-error').textContent = ''; renderImport(); }
+  $('proposal-file').addEventListener('change', e => { const file = e.target.files[0]; if (!file) return; if (!/\.(pdf|docx)$/i.test(file.name)) { selectFile(''); $('parse-error').textContent = '請選擇 PDF 或 DOCX 企劃書。'; return; } selectFile(file.name); });
+  $('demo-file').addEventListener('click', () => { $('proposal-file').value = ''; selectFile('教案組企劃書_27冬.pdf'); });
+  $('parse-file').addEventListener('click', () => { if (!imports[round].file) return; imports[round].parsed = true; imports[round].reviewed = false; $('parse-error').textContent = ''; renderImport(); });
+  $('parse-failure').addEventListener('click', () => { imports[round].parsed = false; imports[round].reviewed = false; renderImport(); $('parse-error').textContent = '解析失敗：無法辨識評分標準段落。請重新選檔、重試，或改用人工編輯；目前採用標準不受影響。'; });
+  $('review-import').addEventListener('change', e => { imports[round].reviewed = e.target.checked; renderImport(); });
+  $('load-import').addEventListener('click', () => {
+    const data = imports[round]; if (!data.parsed || !data.reviewed) return;
+    const d = clone(current[round]); d.name = `27 冬${roundLabel()}評分標準（企劃書匯入）`; d.source = `企劃書匯入：${data.file}`;
+    if (round === 'initial') d.scoring = {base:100,excellent:94,pass:83,discussion:62};
+    d.items[1].label = '各流程時間是否合理，並預留轉場時間';
+    drafts[round] = d; show('manual');
+  });
+  $('preview-confirm').addEventListener('click', () => {
+    demoDraft = clone(current[round]); demoDraft.name = `27 冬${roundLabel()}評分標準 v${current[round].version+1}`;
+    if (round === 'initial') demoDraft.scoring = {base:100,excellent:94,pass:83,discussion:62};
+    demoDraft.items[1].label = '各流程時間是否合理，並預留轉場時間';
+    openConfirm(demoDraft, true);
+  });
+  $('confirm-checked').addEventListener('change', e => { $('activate-version').disabled = previewOnly || !e.target.checked; });
+  $('close-confirm').addEventListener('click', () => $('change-dialog').close());
+  $('back-to-draft').addEventListener('click', () => { $('change-dialog').close(); if (previewOnly && !drafts[round]) drafts[round] = clone(demoDraft); show('manual'); });
+  $('activate-version').addEventListener('click', () => {
+    if (previewOnly || !$('confirm-checked').checked || !validate()) return;
+    const d = clone(draft()); d.version = current[round].version + 1; d.adopted = '本次操作（原型示意）';
+    current[round] = d; drafts[round] = null;
+    $('change-dialog').close(); show('current');
+    $('rubric-status').textContent = `已在原型採用${roundLabel()}標準 v${d.version}；正式資料未變更。`;
+  });
+  show(view);
+})();
+
+</script>
+</body>
+</html>

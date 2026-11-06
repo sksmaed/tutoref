@@ -35,5 +35,5 @@ export const RoundTabs: React.FC = () => {
     [pathname, router, searchParams]
   );
 
-  return <Tab tabs={ROUND_TABS} active={round} onChange={handleChange} />;
+  return <Tab tabs={ROUND_TABS} active={round} onChange={handleChange} variant="compact" className="mb-4" />;
 };
